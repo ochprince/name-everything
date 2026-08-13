@@ -59,9 +59,11 @@ export function PracticeCard({
           />
         </figure>
 
-        <h2 className="mt-10 text-center text-xl font-medium leading-snug tracking-[0.01em] text-day">
-          {card.sentence}
-        </h2>
+        <div className="mt-10 rounded-2xl bg-rose px-4 py-3">
+          <h2 className="text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
+            {card.sentence}
+          </h2>
+        </div>
 
         <div className="mt-7 flex gap-3">
           <FoldRow label="Word" defaultOpen={expandWordDefault}>
