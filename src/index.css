@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  color: #1a1a1a;
-  background: #f7f4ef;
-  font-family: "Segoe UI", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  color: #f4f1ea;
+  background: #05060a;
+  font-family: "Big Shoulders Text", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
 html,
@@ -16,4 +16,51 @@ body,
 
 body {
   margin: 0;
+}
+
+.cyc-wash {
+  background-color: #05060a;
+  background-image:
+    radial-gradient(
+      ellipse 175% 70% at 50% 108%,
+      #f4f1ea 0%,
+      #e8a598 16%,
+      #d4897c 32%,
+      #1e3a8a 52%,
+      #12245c 64%,
+      transparent 74%
+    ),
+    linear-gradient(180deg, #05060a 0%, #05060a 30%, #070b16 42%);
+}
+
+.cyc-wash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+}
+
+.fold-panel {
+  animation: lighting-raise 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes lighting-raise {
+  from {
+    opacity: 0;
+    filter: brightness(0.35);
+  }
+  to {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fold-panel,
+  .fold-chevron {
+    animation: none;
+    transition: none;
+  }
 }

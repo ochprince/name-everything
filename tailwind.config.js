@@ -4,11 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#1a1a1a',
-        paper: '#f7f4ef',
-        accent: '#0f6b5c',
-        muted: '#6b6560',
-        danger: '#8b3a3a',
+        cyc: '#05060a',
+        cobalt: '#1e3a8a',
+        rose: '#e8a598',
+        day: '#f4f1ea',
+        ink: '#05060a',
+      },
+      fontFamily: {
+        cue: [
+          '"Big Shoulders Text"',
+          '"Noto Sans SC"',
+          '"PingFang SC"',
+          '"Microsoft YaHei"',
+          'sans-serif',
+        ],
       },
     },
   },
