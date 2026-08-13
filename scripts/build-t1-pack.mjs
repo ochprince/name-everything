@@ -57,7 +57,7 @@ function unescapeSentence(sentence) {
 function parseZh(meanCn) {
   if (!meanCn) return undefined
   let text = meanCn.replace(/^n\./, '')
-  const split = text.split(/[；,，;]/)
+  const split = text.split(/[；，;]/)
   text = split[0].trim()
   return text || undefined
 }
