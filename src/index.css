@@ -46,6 +46,29 @@ body {
   animation: lighting-raise 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+dialog.cue-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border: none;
+  background: #05060a;
+}
+
+dialog.cue-sheet[open] {
+  animation: lighting-raise 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+dialog.cue-sheet::backdrop {
+  background: #05060a;
+}
+
 @keyframes lighting-raise {
   from {
     opacity: 0;
@@ -59,7 +82,8 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .fold-panel,
-  .fold-chevron {
+  .fold-chevron,
+  dialog.cue-sheet[open] {
     animation: none;
     transition: none;
   }
