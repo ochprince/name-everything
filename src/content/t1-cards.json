@@ -1,0 +1,562 @@
+[
+  {
+    "id": "ladder",
+    "word": "ladder",
+    "sentence": "I climbed up the ladder to change the light bulb.",
+    "image": "https://ali.bczcdn.com/r/i_13_8950_0_5_160405151318-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_ladder_20231218142026034_9b6140a46e1b180efdfc.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/sa_1_8950_0_6_160406144733.aac",
+    "zh": "梯子"
+  },
+  {
+    "id": "boot",
+    "word": "boot",
+    "sentence": "The person wore a pair of brown boots to hike.",
+    "image": "https://ali.bczcdn.com/r/cb66403960d6ba5c4670f4575390e80a_88759_1535525831.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_boot_20231213104510173_3c26f4b799f276e6ed56.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/6d3f6a4dc7195069739cb96715df49e3_33478_1535525824.mp3",
+    "zh": "靴子"
+  },
+  {
+    "id": "bowl",
+    "word": "bowl",
+    "sentence": "The four bowls are in four different colors.",
+    "image": "https://ali.bczcdn.com/r/14d846e88e3923d44b7322046d4dd893_43513_1575012009.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_bowl_20240129094727041_c03caee193e5b17f2602.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/156edd0e546f2527_1266763312234125908_250117.mp3",
+    "zh": "碗"
+  },
+  {
+    "id": "spoon",
+    "word": "spoon",
+    "sentence": "There is a wooden spoon in the bowl.",
+    "image": "https://ali.bczcdn.com/r/702ad25593f1f141c51399746ab13151_98675_1577956845.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/spoon.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/be4d30dfa03d4891e81006f52673db0a_30910_1577956842.mp3",
+    "zh": "匙"
+  },
+  {
+    "id": "plate",
+    "word": "plate",
+    "sentence": "There is an empty plate on the wooden table.",
+    "image": "https://ali.bczcdn.com/r/171c9bbf1b5d38609291a5838b451660_87588_1535599009.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/plate.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/08445b57158ab251_1266763241853856680_250117.mp3",
+    "zh": "盘子"
+  },
+  {
+    "id": "basin",
+    "word": "basin",
+    "sentence": "The basin in our bathroom is very clean.",
+    "image": "https://ali.bczcdn.com/r/d3ab8b5a65b9a6791b850044edf2998c_89873_1565343347.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_basin_20231213114923390_0c77bf030bfa89d0d6d8.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/9d0812984095a226b14171bfd4d3b80b_16033_1619333641.mp3",
+    "zh": "水池"
+  },
+  {
+    "id": "couch",
+    "word": "couch",
+    "sentence": "I prefer a red couch in my house.",
+    "image": "https://ali.bczcdn.com/r/6e99943e4d58b840fc9ac4069462f71d_80150_1566807998.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_couch_20231031133800827_550a2913a31ceefae8a1.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/sa_2_5320_0_3_20150808144503.aac",
+    "zh": "长沙发"
+  },
+  {
+    "id": "curtain",
+    "word": "curtain",
+    "sentence": "The purple curtains make my living room look so elegant.",
+    "image": "https://ali.bczcdn.com/r/96bffbf58467e781a5d63ab56a07e42d_179706_1573721096.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/bcaf9e72bc807e0b8e835fba1b31586e_5832_1709792810.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/f0be9a957f717461b15bee2f0092d979_42872_1574151609.mp3",
+    "zh": "窗帘"
+  },
+  {
+    "id": "glue",
+    "word": "glue",
+    "sentence": "Glue is very useful for sticking things together!",
+    "image": "https://ali.bczcdn.com/r/530b3b7a2d017206b8dfefb3d863e785_52131_1729066841.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_glue_20231102114029127_dcd326046698c8b3aa6e.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/v8rqp92j7hejs5t45qm82lw5ykj6ej3t.mp3",
+    "zh": "胶水"
+  },
+  {
+    "id": "mirror",
+    "word": "mirror",
+    "sentence": "The old woman is looking into the mirror.",
+    "image": "https://ali.bczcdn.com/r/869d3382aad2e380afeacec222d3dd16_83490_1534227578.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_mirror_20231226101743638_2fa1229e197b2024a13d.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/mat92v9nhr8a7lqgzrldezbvtnf55qce.mp3",
+    "zh": "镜子"
+  },
+  {
+    "id": "laptop",
+    "word": "laptop",
+    "sentence": "A laptop is sitting on a wooden table.",
+    "image": "https://ali.bczcdn.com/r/e5e2a8044de57906bde3fab265964656_80781_1577954043.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/laptop.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/n4n4xj55az8z5qahlegwhuyq4h5epsbl.mp3",
+    "zh": "笔记本电脑"
+  },
+  {
+    "id": "keyboard",
+    "word": "keyboard",
+    "sentence": "I can't focus on my work with such a lovely keyboard.",
+    "image": "https://ali.bczcdn.com/r/20150528_172527_1_18030-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/3086b8dd25921ac457ec24953d70bc1e_14947_1534229046.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/hkmn33s3a5yp62j68wfqdfdu2jn4radq.mp3",
+    "zh": "键盘"
+  },
+  {
+    "id": "cap",
+    "word": "cap",
+    "sentence": "This is a blue police cap.",
+    "image": "https://ali.bczcdn.com/r/i_24_8103_0_5_20150808225445-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/cap.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/d9ec7e56197731c0_1266741633531489194_250113.mp3",
+    "zh": "帽子"
+  },
+  {
+    "id": "diary",
+    "word": "diary",
+    "sentence": "The girl keeps a diary every day.",
+    "image": "https://ali.bczcdn.com/r/12ed311d6854d3d017c7fd1637761be0_47740_1656985158.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "home"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/diary.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/j5yes433phf3rnz7gqd4cmz9tlk5ts96.mp3",
+    "zh": "日记"
+  },
+  {
+    "id": "airplane",
+    "word": "airplane",
+    "sentence": "You can go through the clouds by taking airplanes. It feels so amazing!",
+    "image": "https://ali.bczcdn.com/r/i_1_2733_0_4_150923101055-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_airplane_20231215135522701_501c73e6e2d1dada534d.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/sa_1_2733_0_4_151017092958.aac",
+    "zh": "飞机"
+  },
+  {
+    "id": "garage",
+    "word": "garage",
+    "sentence": "There is a car parked in the garage.",
+    "image": "https://ali.bczcdn.com/r/5b8e650365acca63c6f768574c89eeef_112156_1533120466.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/fee09bc07a4827fe8eb9bf8772979cb6_18485_1533120488.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/524h5r7ety7aw6dz4zmg2ubddlub5n3w.mp3",
+    "zh": "车库"
+  },
+  {
+    "id": "gym",
+    "word": "gym",
+    "sentence": "There are many people exercising in the gym.",
+    "image": "https://ali.bczcdn.com/r/65db3cae29d73a199ae29a040cedb7b8_192453_1533120816.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/f6f92e8ea1da8f4613403d638b88a084_16397_1533120826.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/lbsclds7egdgeak7mczcwkkvnbpky42f.mp3",
+    "zh": "体育馆"
+  },
+  {
+    "id": "clinic",
+    "word": "clinic",
+    "sentence": "Patients are waiting to see a doctor in the clinic.",
+    "image": "https://ali.bczcdn.com/r/c0a9d8eb9c45ea776a476cb58d1deb1b_176127_1575014705.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_clinic_20231226105408839_79016f9ba6d9bb447345.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/ncsb494bzkq8j4jqpykzuhgsk3d3r6js.mp3",
+    "zh": "诊所"
+  },
+  {
+    "id": "museum",
+    "word": "museum",
+    "sentence": "There are many pieces of art in the museum.",
+    "image": "https://ali.bczcdn.com/r/f2bc4fdb5f11562490735f20fc81d895_182027_1611225150.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_museum_20240814161154682_4eff221a7a46a5897842.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/qy7mejscjxgplsne5anyxsr56bd7fmbd.mp3",
+    "zh": "博物馆"
+  },
+  {
+    "id": "grocery",
+    "word": "grocery",
+    "sentence": "The man works happily in this grocery store.",
+    "image": "https://ali.bczcdn.com/r/8c9e00eaf6632f6c333c07e6a48ef742_97993_1579597791.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/grocery.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/fee92c3bb93f34a4e00a5aadee9c6bb7_41710_1579597788.mp3",
+    "zh": "食品杂货店"
+  },
+  {
+    "id": "motel",
+    "word": "motel",
+    "sentence": "I drove all night until I found a motel where I could stay.",
+    "image": "https://ali.bczcdn.com/r/caeb09fc721f05c2dc0fa4c2ae0e4399_90285_1733133239.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_motel_20231222100552917_9b57ba05740d382497ed.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/656ba0e9ab846c9f0703c455ac7558d3_42152_1597715700.mp3",
+    "zh": "汽车旅馆"
+  },
+  {
+    "id": "dock",
+    "word": "dock",
+    "sentence": "The boat is berthed at the dock.",
+    "image": "https://ali.bczcdn.com/r/52cdf0abf394d5f89e627f84227b68cf_100359_1584008632.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_dock_20231221132342857_71acdbcd2648f93eac8d.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/1d4aa46e1b6c753a264a2868cc6fbcbb_43168_1584008629.mp3",
+    "zh": "码头"
+  },
+  {
+    "id": "harbor",
+    "word": "harbor",
+    "sentence": "The harbor is full of boats.",
+    "image": "https://ali.bczcdn.com/r/556cf8f39170009cf577a0a2cd85e62a_170285_1571126124.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_harbor_20231222105803149_c66c1dce8db0599b4692.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/15aca27638e886e0f1143b8272445525_25088_1572408000.mp3",
+    "zh": "海港"
+  },
+  {
+    "id": "jet",
+    "word": "jet",
+    "sentence": "Most long-distance travel is done by jet plane.",
+    "image": "https://ali.bczcdn.com/r/92cc7bce38e8f532886f62e38c7336b1_27820_1565706336.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_jet_20231031112830728_4fcb40e9f540ed8a8a34.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/5fbb32ee6a4a0958ca342ce2f7ce0ece_19638_1626502400.mp3",
+    "zh": "喷气式飞机"
+  },
+  {
+    "id": "bank",
+    "word": "bank",
+    "sentence": "Is the bank a safe place to keep my money?",
+    "image": "https://ali.bczcdn.com/r/a843a9e341cb742bd9e3666ed0b99f88_62046_1723441581.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_bank_20231101114416764_2af7fb6f503b30589ac4.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/dwzrayanzbj8g5bbabbv67w52ybs8utg.mp3",
+    "zh": "银行"
+  },
+  {
+    "id": "gate",
+    "word": "gate",
+    "sentence": "The gate with beautiful patterns is made of iron.",
+    "image": "https://ali.bczcdn.com/r/76bc2f9a1a3b4a58e38b237930722343_84959_1577952124.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/257f141b3ba43fceee2b2931cac2fc0c_5184_1709778949.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/azv5a263x8zy8x9mk9q27pa6ytg3a45d.mp3",
+    "zh": "大门"
+  },
+  {
+    "id": "cabin",
+    "word": "cabin",
+    "sentence": "We like to go to our small log cabin in the woods.",
+    "image": "https://ali.bczcdn.com/r/8dd06ba474daf4aa8030379663fcd324_258742_1697182655.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_cabin_20230921140952618_8e909a9a8802e528ef2c.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/9n3he6bucbe4staeg6htrazcyfdrd4eh.mp3",
+    "zh": "（简陋的）小屋"
+  },
+  {
+    "id": "corridor",
+    "word": "corridor",
+    "sentence": "The doctors and nurses are talking in the corridor.",
+    "image": "https://ali.bczcdn.com/r/72b184ebb6410219d5fce33732b7f516_132692_1552896755.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "street"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_corridor_20231218141415447_dcdae80a9b9946b0d93a.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/df85c9c85c62fabad07c372881a118e9_45767_1552896761.mp3",
+    "zh": "走廊"
+  },
+  {
+    "id": "ingredient",
+    "word": "ingredient",
+    "sentence": "Flour is the main ingredient of bread.",
+    "image": "https://ali.bczcdn.com/r/515ec3b8b18e91163500af63125e473a_98745_1594801776.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "food"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_ingredient_20231219112043551_a7268d2d22246649ca10.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/66e87852ba50ba8ffe36ee63ed26d719_59360_1594801788.mp3",
+    "zh": "（烹调的）原料"
+  },
+  {
+    "id": "dish",
+    "word": "dish",
+    "sentence": "Add a slice of lemon to flavor the dish.",
+    "image": "https://ali.bczcdn.com/r/ae72a60e1c4d7dac781bbfbe8194f92d_89459_1577936579.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "food"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_dish_20230920170740782_55caf829fe5e07c34a2d.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/a4160e0431110bdfe518aa4408c19a21_35230_1577936574.mp3",
+    "zh": "菜肴"
+  },
+  {
+    "id": "barbecue",
+    "word": "barbecue",
+    "sentence": "We are cooking meat on the barbecue at the party.",
+    "image": "https://ali.bczcdn.com/r/8685db51d0145b909548d6508f01af2f_99110_1576225444.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "food"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_barbecue_20231220112255265_95b813cc9934cfeb4335.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/297a1456c6403f767fd81200acfa5fab_32638_1576225441.mp3",
+    "zh": "烧烤架"
+  },
+  {
+    "id": "harvest",
+    "word": "harvest",
+    "sentence": "The farmer is happy about the harvest of rice.",
+    "image": "https://ali.bczcdn.com/r/2e510f435be8c71f6ffcdb5c4c17ca3e_608788_1610526705.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "food"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/be5df8b683298a66f2785b115a732a5a_4277_1557743336.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/229e7af53a672029439271164044ed8d_16973_1619331424.mp3",
+    "zh": "收成"
+  },
+  {
+    "id": "lung",
+    "word": "lung",
+    "sentence": "Lungs are the organs responsible for breathing.",
+    "image": "https://ali.bczcdn.com/r/b3cb5ab1c984eac12b4d0783719e6c53_100622_1584676743.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "body"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_lung_20231212104126268_57be4ef3afed60984177.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/9zwdzjalg8wxmv9hkkby2bjhpm948l6w.mp3",
+    "zh": "肺"
+  },
+  {
+    "id": "bear",
+    "word": "bear",
+    "sentence": "Look! The bear is eating honey.",
+    "image": "https://ali.bczcdn.com/r/i_1_5603_0_4_151019143147-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "body"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_bear_20230823102022791_cec04d6360c55092866e.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/svebn4tmhatj4relwcvp2mfgsvrd5vta.mp3",
+    "zh": "熊"
+  },
+  {
+    "id": "nest",
+    "word": "nest",
+    "sentence": "Most birds lay their eggs in their nests.",
+    "image": "https://ali.bczcdn.com/r/i_1_9280_0_3_20150808131344-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "body"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/nest.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/w7vugj6qpdfm78qzh8g5sctqb7w6yrfc.mp3",
+    "zh": "巢"
+  },
+  {
+    "id": "branch",
+    "word": "branch",
+    "sentence": "The man cut off a branch from the tree.",
+    "image": "https://ali.bczcdn.com/r/i_1_5621_0_4_150928154844-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "body"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_branch_20231226103359948_33adda47f6c6515a4929.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/sa_1_5621_0_4_151017093657.aac",
+    "zh": "树枝"
+  },
+  {
+    "id": "log",
+    "word": "log",
+    "sentence": "The logs are put on top of each other.",
+    "image": "https://ali.bczcdn.com/r/i_1_4780_0_4_150923102739-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "body"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_log_20231219114618804_8b173c487fc58c482f9c.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/sa_1_4780_0_4_151017113551.aac",
+    "zh": "原木"
+  },
+  {
+    "id": "ocean",
+    "word": "ocean",
+    "sentence": "Oceans are large areas of water between continents.",
+    "image": "https://ali.bczcdn.com/r/cf9e964eb0f53b4f79031260dde9060a_75439_1587627653.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "body"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/ocean.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/8clq7nnyclb6m2ys3ppuzp4peqx2zcfh.mp3",
+    "zh": "海洋"
+  },
+  {
+    "id": "trail",
+    "word": "trail",
+    "sentence": "The cyclist is riding on the forest trail.",
+    "image": "https://ali.bczcdn.com/r/20cb2c161658c74b2bfe57c4de164794_79701_1588924336.jpeg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "body"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/us_trail_20231101140534898_849562325135803dab75.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/4a797c8199d204a7d968b83ac5dc8929_44604_1588924333.mp3",
+    "zh": "小径"
+  },
+  {
+    "id": "bench",
+    "word": "bench",
+    "sentence": "There are many benches along the street.",
+    "image": "https://ali.bczcdn.com/r/i_1_8042_0_8_160323161109-gigapixel-scale.jpg",
+    "imageSource": "baicizhan",
+    "tags": [
+      "body"
+    ],
+    "tier": "T1",
+    "wordAudio": "https://ali.bczcdn.com/r/d243d80dd39eaee2f6526bcc2b93f0fd_13903_1534229573.mp3",
+    "sentenceAudio": "https://ali.bczcdn.com/r/1b7b3cb23c1a8cce_1266763243975650276_250117.mp3",
+    "zh": "长凳"
+  }
+]
