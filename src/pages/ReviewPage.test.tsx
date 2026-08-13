@@ -47,4 +47,40 @@ describe('ReviewPage', () => {
       screen.getByText('暂时没有 Forgot，去练习里诚实点一下吧'),
     ).toBeInTheDocument()
   })
+
+  it('returns to the list from the overlay close control', async () => {
+    const user = userEvent.setup()
+    const card = loadCards()[0]
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: [card.id],
+    })
+    render(<ReviewPage />)
+
+    await user.click(screen.getByRole('button', { name: card.sentence }))
+    expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '返回列表' }))
+
+    expect(
+      screen.queryByRole('button', { name: 'Got it' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: card.sentence })).toBeInTheDocument()
+  })
+
+  it('keeps the overlay open when 记录 is toggled', async () => {
+    const user = userEvent.setup()
+    const card = loadCards()[0]
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: [card.id],
+    })
+    render(<ReviewPage />)
+
+    await user.click(screen.getByRole('button', { name: card.sentence }))
+    await user.click(screen.getByRole('button', { name: '记录' }))
+
+    expect(screen.getByRole('button', { name: '已记录' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument()
+  })
 })

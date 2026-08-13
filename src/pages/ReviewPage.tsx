@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { PracticeCard } from '../components/PracticeCard'
 import { loadCards } from '../content/loadCards'
 import { useProgress } from '../hooks/useProgress'
@@ -47,11 +47,22 @@ export function ReviewPage() {
   const [tab, setTab] = useState<QueueTab>('forgot')
   const [openId, setOpenId] = useState<string | null>(null)
 
+  const sheetRef = useRef<HTMLDialogElement>(null)
   const queueIds = tab === 'forgot' ? progress.forgotIds : progress.pinnedIds
   const listed = cardsForIds(queueIds)
   const openCard = openId
     ? loadCards().find((card) => card.id === openId) ?? null
     : null
+
+  useEffect(() => {
+    const sheet = sheetRef.current
+    if (!openCard || !sheet || sheet.open) return
+    if (typeof sheet.showModal === 'function') {
+      sheet.showModal()
+    } else {
+      sheet.setAttribute('open', '')
+    }
+  }, [openCard])
 
   const emptyCopy =
     tab === 'forgot'
@@ -147,7 +158,7 @@ export function ReviewPage() {
 
       {openCard ? (
         <dialog
-          open
+          ref={sheetRef}
           aria-label="练习卡片"
           className="cue-sheet"
           onCancel={(event) => {
@@ -156,7 +167,16 @@ export function ReviewPage() {
           }}
           onClose={closeSheet}
         >
+          <button
+            type="button"
+            aria-label="返回列表"
+            onClick={closeSheet}
+            className="absolute left-4 top-5 z-40 min-h-11 rounded-2xl px-3 font-cue text-lg font-semibold tracking-[0.08em] text-day transition-[filter] duration-200 ease-out hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day"
+          >
+            返回
+          </button>
           <PracticeCard
+            key={openCard.id}
             card={openCard}
             pinned={progress.pinnedIds.includes(openCard.id)}
             expandWordDefault={progress.settings.expandWord}

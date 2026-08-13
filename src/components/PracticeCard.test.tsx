@@ -81,6 +81,27 @@ describe('PracticeCard', () => {
     expect(screen.queryByText('杯子')).not.toBeInTheDocument()
   })
 
+  it('resets Word fold when the card id changes', async () => {
+    const user = userEvent.setup()
+    const { rerender } = render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: 'Word' }))
+    expect(screen.getByText('cup')).toBeInTheDocument()
+
+    const next: Card = {
+      ...card,
+      id: 'bag',
+      word: 'bag',
+      sentence: 'This is a bag.',
+      image: '/images/cards/bag.svg',
+      zh: '包',
+    }
+    rerender(<PracticeCard {...props} card={next} />)
+
+    expect(screen.getByText('This is a bag.')).toBeInTheDocument()
+    expect(screen.queryByText('bag')).not.toBeInTheDocument()
+    expect(screen.queryByText('cup')).not.toBeInTheDocument()
+  })
+
   it('fires Got it / Forgot / pin callbacks', async () => {
     const user = userEvent.setup()
     const onGotIt = vi.fn()

@@ -89,7 +89,11 @@ export function PracticeCard({
         </div>
 
         <div className="mt-7 flex gap-3">
-          <FoldRow label="Word" defaultOpen={expandWordDefault}>
+          <FoldRow
+            key={`${card.id}-word-${expandWordDefault}`}
+            label="Word"
+            defaultOpen={expandWordDefault}
+          >
             <span className="inline-flex items-center justify-center gap-1">
               <span>{card.word}</span>
               <CueSpeaker
@@ -100,7 +104,11 @@ export function PracticeCard({
             </span>
           </FoldRow>
           {card.zh ? (
-            <FoldRow label="中文" defaultOpen={expandZhDefault}>
+            <FoldRow
+              key={`${card.id}-zh-${expandZhDefault}`}
+              label="中文"
+              defaultOpen={expandZhDefault}
+            >
               {card.zh}
             </FoldRow>
           ) : null}

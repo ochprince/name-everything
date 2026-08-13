@@ -77,4 +77,27 @@ describe('playCardAudio', () => {
     expect(instances).toHaveLength(2)
     expect(instances[1].src).toBe('https://cdn.example/b.mp3')
   })
+
+  it('does not speak from a stale play() rejection after a newer play started', async () => {
+    const { speakFn, cancelFn } = stubSpeech()
+    let rejectFirst!: (reason: Error) => void
+    let calls = 0
+    stubAudio(() => {
+      calls += 1
+      if (calls === 1) {
+        return new Promise((_, reject) => {
+          rejectFirst = reject
+        })
+      }
+      return Promise.resolve()
+    })
+
+    playCardAudio('https://cdn.example/a.mp3', 'first')
+    playCardAudio('https://cdn.example/b.mp3', 'second')
+    expect(cancelFn).toHaveBeenCalled()
+    rejectFirst(new Error('stale'))
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(speakFn).not.toHaveBeenCalled()
+  })
 })

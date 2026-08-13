@@ -41,19 +41,26 @@ export function PracticePage() {
       </p>
       {current ? (
         <PracticeCard
+          key={current.id}
           card={current}
           pinned={progress.pinnedIds.includes(current.id)}
           expandWordDefault={progress.settings.expandWord}
           expandZhDefault={progress.settings.expandZh}
           onGotIt={() => {
-            const next = markGotIt(progress, current.id, todayKey())
-            update(() => next)
-            advance(next)
+            let next: ProgressState | undefined
+            update((p) => {
+              next = markGotIt(p, current.id, todayKey())
+              return next
+            })
+            if (next) advance(next)
           }}
           onForgot={() => {
-            const next = markForgot(progress, current.id)
-            update(() => next)
-            advance(next)
+            let next: ProgressState | undefined
+            update((p) => {
+              next = markForgot(p, current.id)
+              return next
+            })
+            if (next) advance(next)
           }}
           onTogglePin={() => {
             update((p) => togglePin(p, current.id))

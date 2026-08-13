@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { loadProgress } from '../lib/storage'
 import { PracticePage } from './PracticePage'
 
 beforeEach(() => {
@@ -21,6 +22,20 @@ describe('PracticePage', () => {
     expect(screen.getByRole('button', { name: '已记录' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Got it' }))
+    expect(screen.getByText('今日 1')).toBeInTheDocument()
+  })
+
+  it('keeps a pin when Got it is batched with 记录', () => {
+    render(<PracticePage />)
+    const pin = screen.getByRole('button', { name: '记录' })
+    const gotIt = screen.getByRole('button', { name: 'Got it' })
+
+    act(() => {
+      pin.click()
+      gotIt.click()
+    })
+
+    expect(loadProgress().pinnedIds).toHaveLength(1)
     expect(screen.getByText('今日 1')).toBeInTheDocument()
   })
 })
