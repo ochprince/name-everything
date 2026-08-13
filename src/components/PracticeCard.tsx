@@ -4,15 +4,6 @@ import { FoldRow } from './FoldRow'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
 
-const DIRECTION_CONTRACT = `<!--
-THESIS: The object stands on a night-to-dawn cyclorama; English is the spoken line in the horizon, not a vocab flashcard.
-OWN-WORLD: Depthless cyc black, a cobalt horizon band, rose gathering toward day-wash; lighting-plot stencil caps; the photo is an actor inset on the wash, never a cream card.
-STORY: See the thing, say the sentence, optionally raise Word / 中文 like a lighting cue; Got it is day.
-FIRST VIEWPORT: Phone column — cyc wash full screen; 4:3 object photo floating with side margins; sentence on the rose band; two collapsed cue rows; Forgot / 记录 / Got it as cues, Got it filled day-wash.
-FORM: Cyclorama dawn, Operate, committed color strategy, seed af3fdd03.
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
--->`
-
 export interface PracticeCardProps {
   card: Card
   pinned: boolean
@@ -43,10 +34,9 @@ export function PracticeCard({
 
   return (
     <article data-seed="af3fdd03" className="relative min-h-dvh overflow-x-hidden font-cue">
-      <div hidden aria-hidden="true" dangerouslySetInnerHTML={{ __html: DIRECTION_CONTRACT }} />
       <div className="cyc-wash pointer-events-none absolute inset-0" />
       <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-4 pb-28">
-        <p className="pt-6 text-center text-sm font-semibold tracking-[0.28em] text-day">
+        <p className="px-20 pt-6 text-center text-sm font-semibold tracking-[0.28em] text-day">
           Name Everything
         </p>
 
