@@ -1,4 +1,6 @@
+import { Volume2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { playCardAudio } from '../lib/playAudio'
 import type { Card } from '../types/card'
 import { FoldRow } from './FoldRow'
 
@@ -16,6 +18,32 @@ export interface PracticeCardProps {
 
 const cueButton =
   'min-h-14 flex-1 rounded-2xl px-2.5 font-cue text-lg font-semibold tracking-[0.08em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'
+
+function CueSpeaker({
+  label,
+  tone,
+  onPlay,
+}: {
+  label: string
+  tone: 'onRose' | 'onCyc'
+  onPlay: () => void
+}) {
+  const onRose = tone === 'onRose'
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onPlay}
+      className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition-[filter] duration-200 ease-out hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:brightness-95 ${
+        onRose
+          ? 'border-cyc/45 text-cyc focus-visible:outline-cyc'
+          : 'border-day/70 text-day focus-visible:outline-day'
+      }`}
+    >
+      <Volume2 aria-hidden="true" className="size-4 stroke-[2.25]" />
+    </button>
+  )
+}
 
 export function PracticeCard({
   card,
@@ -49,15 +77,27 @@ export function PracticeCard({
           />
         </figure>
 
-        <div className="mt-10 rounded-2xl bg-rose px-4 py-3">
-          <h2 className="text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
+        <div className="mt-10 flex items-center gap-2 rounded-2xl bg-rose px-3 py-3">
+          <h2 className="min-w-0 flex-1 text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
             {card.sentence}
           </h2>
+          <CueSpeaker
+            label="朗读句子"
+            tone="onRose"
+            onPlay={() => playCardAudio(card.sentenceAudio, card.sentence)}
+          />
         </div>
 
         <div className="mt-7 flex gap-3">
           <FoldRow label="Word" defaultOpen={expandWordDefault}>
-            {card.word}
+            <span className="inline-flex items-center justify-center gap-1">
+              <span>{card.word}</span>
+              <CueSpeaker
+                label="朗读单词"
+                tone="onCyc"
+                onPlay={() => playCardAudio(card.wordAudio, card.word)}
+              />
+            </span>
           </FoldRow>
           {card.zh ? (
             <FoldRow label="中文" defaultOpen={expandZhDefault}>

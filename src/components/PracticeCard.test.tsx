@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PracticeCard } from './PracticeCard'
@@ -15,7 +15,55 @@ const card: Card = {
   tier: 'T1',
 }
 
+const props = {
+  card,
+  pinned: false,
+  expandWordDefault: false,
+  expandZhDefault: false,
+  onGotIt: () => {},
+  onForgot: () => {},
+  onTogglePin: () => {},
+}
+
+function stubSpeech() {
+  const speakFn = vi.fn()
+  const cancelFn = vi.fn()
+  vi.stubGlobal('speechSynthesis', { speak: speakFn, cancel: cancelFn })
+  vi.stubGlobal(
+    'SpeechSynthesisUtterance',
+    class {
+      text: string
+      lang = ''
+      constructor(text: string) {
+        this.text = text
+      }
+    },
+  )
+  return { speakFn, cancelFn }
+}
+
+function stubAudio() {
+  const instances: { src: string; play: ReturnType<typeof vi.fn> }[] = []
+  vi.stubGlobal(
+    'Audio',
+    class {
+      src: string
+      play = vi.fn(() => Promise.resolve())
+      pause = vi.fn()
+      constructor(src: string) {
+        this.src = src
+        instances.push(this)
+      }
+    },
+  )
+  return { instances }
+}
+
 describe('PracticeCard', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('shows sentence but hides word and zh by default', () => {
     render(
       <PracticeCard
@@ -55,5 +103,48 @@ describe('PracticeCard', () => {
     expect(onGotIt).toHaveBeenCalled()
     expect(onForgot).toHaveBeenCalled()
     expect(onTogglePin).toHaveBeenCalled()
+  })
+
+  it('shows a sentence speaker always and a word speaker only when expanded', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    expect(screen.getByRole('button', { name: '朗读句子' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '朗读单词' }),
+    ).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Word' }))
+    expect(screen.getByRole('button', { name: '朗读单词' })).toBeInTheDocument()
+    expect(screen.getByText('cup')).toBeInTheDocument()
+  })
+
+  it('plays CDN audio for the sentence when the url is http(s)', async () => {
+    stubSpeech()
+    const { instances } = stubAudio()
+    const user = userEvent.setup()
+    render(
+      <PracticeCard
+        {...props}
+        card={{
+          ...card,
+          sentenceAudio: 'https://cdn.example/sentence.mp3',
+        }}
+      />,
+    )
+    await user.click(screen.getByRole('button', { name: '朗读句子' }))
+    expect(instances).toHaveLength(1)
+    expect(instances[0].src).toBe('https://cdn.example/sentence.mp3')
+  })
+
+  it('falls back to TTS when sentence audio is missing', async () => {
+    const { speakFn } = stubSpeech()
+    stubAudio()
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: '朗读句子' }))
+    expect(speakFn).toHaveBeenCalledTimes(1)
+    const utterance = speakFn.mock.calls[0][0] as SpeechSynthesisUtterance
+    expect(utterance.text).toBe('This is a cup.')
+    expect(utterance.lang).toBe('en-US')
   })
 })
