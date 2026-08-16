@@ -1,6 +1,6 @@
 # Name Everything
 
-看见一个东西，说出那句英文。面向手机的练习循环：一张图、一段思考倒计时，然后 Find it / Forgot / Got it。
+看见一个东西，说出那句英文。面向手机的练习循环：一张图、一段思考倒计时，然后 Aha! / Forgot / Got it。
 
 **试用：** [https://ochprince.github.io/name-everything/](https://ochprince.github.io/name-everything/)
 
@@ -60,8 +60,8 @@ node scripts/build-t1-pack.mjs
 
 本地执行 `npm run dev` 后做冒烟检查（完成后关掉开发服）：
 
-- [ ] **练习** — 可见图片；cue 区为倒计时；Find it 前单词 / 句子隐藏；超时亮答案、复习计数 +1，等 Next 再切下一张
-- [ ] Find it 后出单词和例句；Forgot / Got it 立即生效
+- [ ] **练习** — 可见图片；cue 区为倒计时；Aha! 前单词 / 句子隐藏；超时亮答案、复习计数 +1，等 Next 再切下一张
+- [ ] Aha! 后出单词和例句；Forgot / Got it 立即生效
 - [ ] 一组 10 次练习 Got it 后出现「今日已完成」；继续后计数保持 10 / 10，可再来一组
 - [ ] **复习** — Forgot 列表随操作更新；打开即出图+词+句
 - [ ] **我的** — 今日数量、连续天数、思考时长会持久化

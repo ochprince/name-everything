@@ -63,7 +63,7 @@ describe('PracticeCard', () => {
     vi.useRealTimers()
   })
 
-  it('hides word and sentence during think and only offers Find it', () => {
+  it('hides word and sentence during think and only offers Aha!', () => {
     render(<PracticeCard {...props} />)
 
     expect(screen.queryByText('This is a cup.')).not.toBeInTheDocument()
@@ -72,7 +72,7 @@ describe('PracticeCard', () => {
     expect(screen.queryByRole('button', { name: '显示提示' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Got it' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Forgot' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
     expect(screen.getByTestId('think-countdown')).toHaveTextContent('5')
   })
 
@@ -81,13 +81,13 @@ describe('PracticeCard', () => {
     fireEvent.click(screen.getByTestId('card-photo'))
     fireEvent.click(screen.getByTestId('think-countdown'))
     expect(screen.queryByText('cup')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
   })
 
-  it('reveals word and sentence on Find it, then Forgot and Got it', async () => {
+  it('reveals word and sentence on Aha!, then Forgot and Got it', async () => {
     const user = userEvent.setup()
     render(<PracticeCard {...props} />)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
 
     expect(screen.getByText('cup')).toBeInTheDocument()
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
@@ -97,13 +97,13 @@ describe('PracticeCard', () => {
     )
     expect(screen.getByRole('button', { name: 'Forgot' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
   })
 
-  it('stays revealed after Find it when the cue panel is clicked', async () => {
+  it('stays revealed after Aha! when the cue panel is clicked', async () => {
     const user = userEvent.setup()
     render(<PracticeCard {...props} />)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     fireEvent.click(screen.getByTestId('cue-panel'))
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
   })
@@ -132,7 +132,7 @@ describe('PracticeCard', () => {
     expect(screen.getByText('cup')).toBeInTheDocument()
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Got it' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Forgot' })).not.toBeInTheDocument()
     expect(onTimeout).toHaveBeenCalledTimes(1)
@@ -141,11 +141,11 @@ describe('PracticeCard', () => {
     expect(onNext).toHaveBeenCalledTimes(1)
   })
 
-  it('Find it cancels the think timer', async () => {
+  it('Aha! cancels the think timer', async () => {
     vi.useFakeTimers()
     const onTimeout = vi.fn()
     render(<PracticeCard {...props} thinkHoldMs={5000} onTimeout={onTimeout} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Find it' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Aha!' }))
     act(() => {
       vi.advanceTimersByTime(5000)
     })
@@ -156,16 +156,16 @@ describe('PracticeCard', () => {
     const user = userEvent.setup()
     const onForgot = vi.fn()
     render(<PracticeCard {...props} onForgot={onForgot} />)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     await user.click(screen.getByRole('button', { name: 'Forgot' }))
     expect(onForgot).toHaveBeenCalledTimes(1)
   })
 
-  it('fires Got it after Find it', async () => {
+  it('fires Got it after Aha!', async () => {
     const user = userEvent.setup()
     const onGotIt = vi.fn()
     render(<PracticeCard {...props} onGotIt={onGotIt} />)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     await user.click(screen.getByRole('button', { name: 'Got it' }))
     expect(onGotIt).toHaveBeenCalledTimes(1)
     expect(screen.queryByRole('button', { name: '记录' })).not.toBeInTheDocument()
@@ -174,7 +174,7 @@ describe('PracticeCard', () => {
   it('resets to think when the card id changes', async () => {
     const user = userEvent.setup()
     const { rerender } = render(<PracticeCard {...props} />)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     expect(screen.getByText('cup')).toBeInTheDocument()
 
     const next: Card = {
@@ -187,7 +187,7 @@ describe('PracticeCard', () => {
     }
     rerender(<PracticeCard {...props} card={next} />)
     expect(screen.queryByText('This is a bag.')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
   })
 
   it('review sheet starts revealed with no think timer', () => {
@@ -204,29 +204,29 @@ describe('PracticeCard', () => {
     expect(screen.getByText('cup')).toBeInTheDocument()
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
     act(() => {
       vi.advanceTimersByTime(3000)
     })
     expect(onTimeout).not.toHaveBeenCalled()
   })
 
-  it('switches to zh after Find it', async () => {
+  it('switches to zh after Aha!', async () => {
     const user = userEvent.setup()
     render(<PracticeCard {...props} />)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     await user.click(screen.getByRole('radio', { name: 'ZH' }))
     expect(screen.getByText('杯子')).toBeInTheDocument()
     expect(screen.queryByText('cup')).not.toBeInTheDocument()
   })
 
-  it('auto-plays the word then the sentence after Find it', () => {
+  it('auto-plays the word then the sentence after Aha!', () => {
     vi.useFakeTimers()
     const { speakFn } = stubSpeech()
     stubAudio()
     render(<PracticeCard {...props} autoSpeak />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Find it' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Aha!' }))
     expect(speakFn).toHaveBeenCalledTimes(1)
     expect((speakFn.mock.calls[0][0] as SpeechSynthesisUtterance).text).toBe(
       'cup',
@@ -254,7 +254,7 @@ describe('PracticeCard', () => {
         }}
       />,
     )
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     await user.click(screen.getByRole('button', { name: '朗读句子' }))
     expect(instances).toHaveLength(1)
     expect(instances[0].src).toBe('https://cdn.example/sentence.mp3')
@@ -265,7 +265,7 @@ describe('PracticeCard', () => {
     stubAudio()
     const user = userEvent.setup()
     render(<PracticeCard {...props} />)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     await user.click(screen.getByRole('button', { name: '朗读句子' }))
     expect(speakFn).toHaveBeenCalledTimes(1)
     const utterance = speakFn.mock.calls[0][0] as SpeechSynthesisUtterance
@@ -280,7 +280,7 @@ describe('PracticeCard', () => {
     const onGotIt = vi.fn()
     render(<PracticeCard {...props} autoSpeak onGotIt={onGotIt} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Find it' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Aha!' }))
     expect(speakFn).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: 'Got it' }))

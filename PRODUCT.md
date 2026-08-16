@@ -16,7 +16,7 @@ Interface chrome may be Chinese. Learning content is English-first.
 
 ## Product Purpose
 
-Name Everything is a mobile-first practice loop: see a picture, recall under a short timer, then Find it / Forgot / Got it. Success is a daily set of 10 practice Got its and a local review trail. Week-1 success is a usable Web loop, not accounts or store launch.
+Name Everything is a mobile-first practice loop: see a picture, recall under a short timer, then Aha! / Forgot / Got it. Success is a daily set of 10 practice Got its and a local review trail. Week-1 success is a usable Web loop, not accounts or store launch.
 
 ## Positioning
 
@@ -30,8 +30,8 @@ Used on a phone in one column, often with one hand, in mixed indoor or commute l
 
 Confirmed for week 1:
 
-- Practice think phase: image + countdown; word and sentence hidden until Find it or timeout.
-- Practice buttons: `Find it` while thinking; then `Forgot` | `Got it` (`Got it` is primary). Timeout reveals in place, marks Forgot, and waits for `Next`.
+- Practice think phase: image + countdown; word and sentence hidden until Aha! or timeout.
+- Practice buttons: `Aha!` while thinking; then `Forgot` | `Got it` (`Got it` is primary). Timeout reveals in place, marks Forgot, and waits for `Next`.
 - Daily set of 10 practice Got its; 较好记忆 leaves the practice pool.
 - Bottom tabs: 练习 / 复习 / 我的.
 - T1 only. No auth, no SRS, no camera, no AI generation, no Capacitor shell.

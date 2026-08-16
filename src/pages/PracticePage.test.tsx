@@ -21,7 +21,7 @@ afterEach(() => {
 })
 
 describe('PracticePage', () => {
-  it('shows set progress and advances on Find it then Got it', async () => {
+  it('shows set progress and advances on Aha! then Got it', async () => {
     const user = userEvent.setup()
     renderWithProgress(<PracticePage />)
 
@@ -32,7 +32,7 @@ describe('PracticePage', () => {
 
     const beforeId = loadProgress().currentCardId
     expect(beforeId).toBeTruthy()
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     await user.click(screen.getByRole('button', { name: 'Got it' }))
     expect(screen.getByText('1 / 10')).toBeInTheDocument()
     expect(loadProgress().currentCardId).toBeTruthy()
@@ -43,7 +43,7 @@ describe('PracticePage', () => {
   it('keeps the same card after remount until Got it / Forgot / timeout', async () => {
     const user = userEvent.setup()
     const first = renderWithProgress(<PracticePage />)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     const word = screen.getByRole('heading', { level: 2 }).textContent
     const id = loadProgress().currentCardId
     expect(id).toBeTruthy()
@@ -51,7 +51,7 @@ describe('PracticePage', () => {
 
     renderWithProgress(<PracticePage />)
     expect(loadProgress().currentCardId).toBe(id)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(word!)
   })
 
@@ -65,7 +65,7 @@ describe('PracticePage', () => {
     })
     renderWithProgress(<PracticePage />)
     expect(loadProgress().currentCardId).toBe(card.id)
-    await user.click(screen.getByRole('button', { name: 'Find it' }))
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
       card.word,
     )
@@ -83,13 +83,13 @@ describe('PracticePage', () => {
     expect(loadProgress().forgotIds).toContain(id)
     expect(loadProgress().reviewUnseenCount).toBe(1)
     expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
     act(() => {
       vi.advanceTimersByTime(2000)
     })
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(loadProgress().currentCardId).not.toBe(id)
-    expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
   })
 
   it('does not restore a timeout card after leaving practice', () => {
@@ -105,7 +105,7 @@ describe('PracticePage', () => {
 
     renderWithProgress(<PracticePage />)
     expect(loadProgress().currentCardId).not.toBe(id)
-    expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
   })
 
   it('shows 今日已完成 after 10 practice Got its and Continue starts the next set', async () => {
@@ -125,10 +125,10 @@ describe('PracticePage', () => {
     renderWithProgress(<PracticePage />)
 
     expect(screen.getByText('今日已完成')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '继续' }))
     expect(screen.getByText('10 / 10')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
   })
 
   it('shows 这一批都会了 when every card is 较好记忆', () => {

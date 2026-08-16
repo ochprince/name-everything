@@ -14,7 +14,7 @@
 - Interface chrome may be Chinese; card face stays English unless ZH is chosen after reveal.
 - No fake SRS; weights are 5:2 only; 较好记忆 never returns to practice.
 - Timeout never reveals the answer.
-- Copy: Find it / Forgot / Got it / 今日已完成 / 继续 / 这一批都会了 / 思考时长.
+- Copy: Aha! / Forgot / Got it / 今日已完成 / 继续 / 这一批都会了 / 思考时长.
 - Inherit cyclorama tokens; no cream flashcards, gradient text, or hero-metric wrap.
 - TDD: failing test before production code.
 - Update `README.md` and `README.zh.md` together.
@@ -57,7 +57,7 @@
 
 **Files:** `src/components/PracticeCard.tsx`, `src/components/PracticeCard.test.tsx`, `src/index.css`
 
-**Produces:** think countdown + Find it; reveal Forgot/Got it with no hold; `onTimeout`; `chrome='sheet'` starts revealed.
+**Produces:** think countdown + Aha!; reveal Forgot/Got it with no hold; `onTimeout`; `chrome='sheet'` starts revealed.
 
 - [ ] Failing tests
 - [ ] Implement

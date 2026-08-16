@@ -80,7 +80,7 @@ components:
 
 The practice surface is a **cyclorama**: depthless night at the top, a cobalt horizon, rose gathering toward day-wash at the feet. The object photograph is an actor inset on that wash. The speakable English sentence sits on a rose horizon band. Word and 中文 are lighting cues you raise; **Got it** is day.
 
-This is Operate UI. Familiar tap targets, locked button copy (`Find it` then `Forgot` / `Got it`), one-handed phone column. Expression lives in the wash, the cue type, and the action materials — not in a cream flashcard shell.
+This is Operate UI. Familiar tap targets, locked button copy (`Aha!` then `Forgot` / `Got it`), one-handed phone column. Expression lives in the wash, the cue type, and the action materials — not in a cream flashcard shell.
 
 ## Colors
 
@@ -114,8 +114,8 @@ Controls are `rounded-2xl` (16px). Fold cues and speaker marks are pills/circles
 
 - **Got it** — day-wash fill, cyc ink, primary.
 - **Forgot** — cyc fill, day outline.
-- **Find it** — day-wash fill, same cue size as Got it; think phase only.
-- **Next** — same day-wash fill as Find it; timeout reveal only.
+- **Aha!** — day-wash fill, same cue size as Got it; think phase only.
+- **Next** — same day-wash fill as Aha!; timeout reveal only.
 - **Horizon sentence** — rose band + speaker.
 - **Think countdown** — large day numeral in the cue stage (not a tappable eye). Timeout reveals in place; 复习 badge increments.
 - **BottomNav** — cyc bar, rose active, day/80 idle; hairline rose→cobalt.
@@ -126,7 +126,7 @@ Motion is a lighting raise, not page choreography. Word and sentence lift ~480ms
 
 **Do**
 
-- Lead with the picture; keep word/sentence hidden until Find it (or review).
+- Lead with the picture; keep word/sentence hidden until Aha! (or review).
 - Put sentence ink on rose as `cyc`.
 - Treat empty Forgot / 记录 as rose cue bands with the spec copy.
 

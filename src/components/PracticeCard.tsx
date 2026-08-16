@@ -339,7 +339,7 @@ export function PracticeCard({
               onClick={revealCues}
               className={`${cueButton} bg-day text-cyc hover:brightness-105`}
             >
-              Find it
+              Aha!
             </button>
           )}
         </div>
