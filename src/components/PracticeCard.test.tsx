@@ -114,14 +114,32 @@ describe('PracticeCard', () => {
     expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
   })
 
-  it('hides cues when the photo is clicked', async () => {
+  it('does not hide cues when the photo is clicked', async () => {
     const user = userEvent.setup()
     render(<PracticeCard {...props} />)
     await user.click(screen.getByRole('button', { name: '显示提示' }))
     fireEvent.click(screen.getByTestId('card-photo'))
 
+    expect(screen.getByText('This is a cup.')).toBeInTheDocument()
+  })
+
+  it('hides cues when the sentence band is clicked', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: '显示提示' }))
+    fireEvent.click(screen.getByTestId('sentence-band'))
+
     expect(screen.queryByText('This is a cup.')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
+  })
+
+  it('keeps cues open when the sentence speaker is clicked', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: '显示提示' }))
+    await user.click(screen.getByRole('button', { name: '朗读句子' }))
+
+    expect(screen.getByText('This is a cup.')).toBeInTheDocument()
   })
 
   it('keeps cues open when the word is clicked', async () => {

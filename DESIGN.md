@@ -109,7 +109,7 @@ Controls are `rounded-2xl` (16px). Fold cues and speaker marks are pills/circles
 - **Forgot** — cyc fill, day outline.
 - **记录 / 已记录** — rose fill, cyc ink.
 - **Horizon sentence** — rose band + speaker.
-- **Reveal eye** — closed eye is a mark in the middle stage; the whole stage between photo and actions reveals. Empty stage / Esc hides.
+- **Reveal eye** — closed eye is a mark in the middle stage; the whole stage between photo and actions reveals. Blank cue / sentence band / Esc hides; the photo does not toggle hide. Speakers and language radios stay interactive.
 - **BottomNav** — cyc bar, rose active, day/80 idle; hairline rose→cobalt.
 
 Motion is a lighting raise, not page choreography. Word and sentence lift ~480ms (`cubic-bezier(0.16, 1, 0.3, 1)`) with a short `translateY`, sentence 80ms later. Forgot recedes as a cobalt sheet right→left in linear time matching the hold; the front is three parallel day hairlines on one gentle S-curve, fill stopping at the middle line. Second Forgot skips, Got it cancels. Default hold 5s; 不停顿 skips the hold. `prefers-reduced-motion: reduce` drops raise and tide visuals; the timer stays.

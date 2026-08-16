@@ -285,10 +285,7 @@ export function PracticeCard({
 
         <figure
           data-testid="card-photo"
-          className={`flex shrink-0 justify-center px-2 ${sheet ? 'mt-3' : 'mt-4'}${
-            revealed ? ' cursor-pointer' : ''
-          }`}
-          onClick={revealed ? hideCues : undefined}
+          className={`flex shrink-0 justify-center px-2 ${sheet ? 'mt-3' : 'mt-4'}`}
         >
           <img
             src={imageSrc}
@@ -342,11 +339,11 @@ export function PracticeCard({
                   )}
                 </div>
               </div>
-              <div className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-rose px-3 py-3">
-                <p
-                  className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc"
-                  onClick={(event) => event.stopPropagation()}
-                >
+              <div
+                data-testid="sentence-band"
+                className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-rose px-3 py-3"
+              >
+                <p className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
                   {card.sentence}
                 </p>
                 <span onClick={(event) => event.stopPropagation()}>
