@@ -1,6 +1,8 @@
 # Name Everything
 
-**See a thing, say the English sentence.** Mobile-first practice loop: one image + one speakable English sentence, then Got it / Forgot / 记录.
+**See a thing, say the English sentence.** Mobile-first practice loop: one image + one speakable English sentence, then Got it / Forgot.
+
+**试用：** [https://ochprince.github.io/name-everything/](https://ochprince.github.io/name-everything/)
 
 ## Disclaimer
 
@@ -55,9 +57,9 @@ Card images and audio **hotlink the 百词斩 CDN** (`https://ali.bczcdn.com/r/�
 
 Manual smoke-check after `npm run dev` (stop the dev server when done):
 
-- [ ] **练习** — image + original sentence visible; word / 中文 hidden until expand
+- [ ] **练习** — image visible; word / sentence hidden until expand; blank tap hides again
 - [ ] Sentence speaker plays CDN audio (TTS fallback if CDN fails)
-- [ ] Got it / Forgot / 记录 behave per spec; 已记录 when pinned
-- [ ] **复习** — Forgot and 记录 queues update after actions
-- [ ] **我的** — today count, streak, settings (default expand word / 中文) persist
+- [ ] Got it / Forgot advance the deck; card survives refresh until one of them
+- [ ] **复习** — Forgot list updates after actions
+- [ ] **我的** — today count, streak, settings persist
 - [ ] Mobile viewport usable (one column, large tap targets)
