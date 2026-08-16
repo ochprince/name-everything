@@ -375,7 +375,7 @@ export function PracticeCard({
           <button
             type="button"
             onClick={confirmForgot}
-            className={`${cueButton} relative overflow-hidden border border-day/75 bg-cyc text-day hover:border-day hover:brightness-110`}
+            className={`${cueButton} forgot-cue bg-cyc text-day hover:brightness-110`}
           >
             {forgetting ? <ForgetTide durationMs={forgetHoldMs} /> : null}
             <span className="relative z-10">Forgot</span>
