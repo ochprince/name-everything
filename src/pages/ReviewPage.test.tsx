@@ -88,4 +88,14 @@ describe('ReviewPage', () => {
     renderWithProgress(<ReviewPage />)
     expect(loadProgress().reviewUnseenCount).toBe(0)
   })
+
+  it('leaves extra space under the queue so highlights clear the dawn wash', () => {
+    const card = loadCards()[0]
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: [card.id],
+    })
+    renderWithProgress(<ReviewPage />)
+    expect(document.getElementById('review-queue')).toHaveClass('pb-40')
+  })
 })

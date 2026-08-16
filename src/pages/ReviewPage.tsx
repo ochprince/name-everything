@@ -107,7 +107,7 @@ export function ReviewPage() {
           ) : null}
         </p>
 
-        <div id="review-queue">
+        <div id="review-queue" className="pb-40">
           {listed.length === 0 ? (
             <div className="mt-16 rounded-2xl bg-rose px-4 py-5">
               <p className="text-center text-lg font-medium leading-snug tracking-[0.01em] text-cyc">
