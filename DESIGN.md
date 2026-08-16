@@ -93,7 +93,7 @@ One family: self-hosted **Big Shoulders Text** (latin) with **Noto Sans SC** for
 
 ## Layout
 
-Mobile-first single column, `max-w-md`, `px-4`. Photo is 4:3, slightly inset (`px-2`) so it reads as a set piece, not a full-bleed card. Reserve `pb-28` for the tab bar on stage chrome; review overlay uses `sheet` chrome (no tab reserve). Safe-area padding on the top of each page.
+Mobile-first single column, `max-w-md`, `px-4`. Photo keeps a 4:3 set-piece crop, slightly inset (`px-2`), capped at about `32vh` so the cue stage has room. The cue panel between photo and actions is a stable flex region (min ~12.5rem): closed eye and revealed word/sentence swap inside it without shoving Forgot / Got it. Stage chrome uses a fixed `h-dvh` column with `pb-28` for the tab bar; review overlay uses `sheet` chrome (no tab reserve). Safe-area padding on the top of each page.
 
 ## Elevation & Depth
 

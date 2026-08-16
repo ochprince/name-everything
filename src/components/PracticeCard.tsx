@@ -263,7 +263,7 @@ export function PracticeCard({
     <article data-seed="af3fdd03" className="relative z-0 min-h-dvh overflow-x-clip font-cue">
       <div className="cyc-wash pointer-events-none absolute inset-0" />
       <div
-        className={`relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 ${
+        className={`relative mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden px-4 ${
           sheet ? 'pb-6 pt-16' : 'pb-28 pt-[max(1.25rem,env(safe-area-inset-top))]'
         }`}
       >
@@ -285,7 +285,7 @@ export function PracticeCard({
 
         <figure
           data-testid="card-photo"
-          className={`px-2 ${sheet ? 'mt-4' : 'mt-8'}${
+          className={`flex shrink-0 justify-center px-2 ${sheet ? 'mt-3' : 'mt-4'}${
             revealed ? ' cursor-pointer' : ''
           }`}
           onClick={revealed ? hideCues : undefined}
@@ -294,21 +294,22 @@ export function PracticeCard({
             src={imageSrc}
             alt=""
             decoding="async"
-            className="aspect-[4/3] w-full rounded-xl object-cover shadow-[0_22px_44px_-14px_rgba(0,0,0,0.7)]"
+            className="aspect-[4/3] h-auto w-full max-h-[32vh] rounded-xl object-cover shadow-[0_22px_44px_-14px_rgba(0,0,0,0.7)]"
             onError={() => setImageSrc(FALLBACK_IMAGE)}
           />
         </figure>
 
         <div
-          className="flex min-h-0 flex-1 cursor-pointer flex-col"
+          data-testid="cue-panel"
+          className="flex min-h-[12.5rem] flex-1 cursor-pointer flex-col overflow-y-auto overscroll-contain"
           onClick={revealed ? hideCues : undefined}
         >
           {revealed ? (
-            <>
+            <div className="flex min-h-full flex-col justify-center gap-3 py-2">
               <div
                 data-testid="cue-stage"
                 aria-label="提示区"
-                className="flex min-h-0 w-full flex-1 flex-col items-center justify-center"
+                className="flex w-full shrink-0 flex-col items-center justify-center"
               >
                 <div
                   id="card-cues"
@@ -360,7 +361,7 @@ export function PracticeCard({
               </div>
               <div
                 data-testid="lang-rail"
-                className="flex shrink-0 justify-center pb-1 pt-4"
+                className="flex shrink-0 justify-center pb-1 pt-1"
               >
                 <span onClick={(event) => event.stopPropagation()}>
                   <LangToggle
@@ -370,7 +371,7 @@ export function PracticeCard({
                   />
                 </span>
               </div>
-            </>
+            </div>
           ) : (
             <button
               type="button"
@@ -378,7 +379,7 @@ export function PracticeCard({
               aria-expanded="false"
               aria-controls="card-cues"
               onClick={revealCues}
-              className="flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-day"
+              className="flex min-h-full w-full flex-1 cursor-pointer flex-col items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-day"
             >
               <span className={iconButton} aria-hidden="true">
                 <EyeOffIcon className="size-6 stroke-[2.25]" />
@@ -387,7 +388,7 @@ export function PracticeCard({
           )}
         </div>
 
-        <div className="mt-auto flex gap-2.5 pt-8">
+        <div className="mt-auto flex shrink-0 gap-2.5 pt-4">
           <button
             type="button"
             onClick={confirmForgot}
