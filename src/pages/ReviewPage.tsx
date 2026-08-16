@@ -51,6 +51,8 @@ export function ReviewPage() {
     } else {
       sheet.setAttribute('open', '')
     }
+    // Keep initial focus on the dialog shell so 「返回」 does not look selected.
+    sheet.focus()
   }, [openCard])
 
   function closeSheet() {
@@ -106,8 +108,9 @@ export function ReviewPage() {
       {openCard ? (
         <dialog
           ref={sheetRef}
+          tabIndex={-1}
           aria-label="练习卡片"
-          className="cue-sheet"
+          className="cue-sheet outline-none"
           onCancel={(event) => {
             event.preventDefault()
             closeSheet()
@@ -118,7 +121,11 @@ export function ReviewPage() {
             type="button"
             aria-label="返回列表"
             onClick={closeSheet}
-            className="absolute left-4 top-[max(1.25rem,env(safe-area-inset-top))] z-40 min-h-11 rounded-2xl px-3 font-cue text-lg font-semibold tracking-[0.08em] text-day transition-[filter] duration-200 ease-out hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day [-webkit-tap-highlight-color:transparent]"
+            onMouseDown={(event) => {
+              // Avoid sticky :focus ring after tap on iOS / mouse.
+              event.preventDefault()
+            }}
+            className="absolute left-4 top-[max(1.25rem,env(safe-area-inset-top))] z-40 min-h-11 rounded-2xl border border-day/40 px-3 font-cue text-lg font-semibold tracking-[0.08em] text-day outline-none transition-[filter,border-color] duration-200 ease-out hover:border-day/70 hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day [-webkit-tap-highlight-color:transparent]"
           >
             返回
           </button>
