@@ -1,6 +1,6 @@
 # Name Everything
 
-**See a thing, say the English sentence.** Mobile-first practice loop: one image + one speakable English sentence, then Got it / Forgot.
+看见一个东西，说出那句英文。面向手机的练习循环：一张图 + 一句可说出口的英文，然后 Got it / Forgot。
 
 **试用：** [https://ochprince.github.io/name-everything/](https://ochprince.github.io/name-everything/)
 
@@ -14,52 +14,52 @@ This project is for personal learning and technical exchange only, and is not in
 
 If you believe any content infringes your rights, please open a GitHub Issue or contact the repository owner. We will review the request and remove or take down the material promptly.
 
-## Quick start
+## 快速开始
 
 ```bash
 npm install
-npm run dev      # local dev server
-npm test         # unit tests (Vitest)
-npm run build    # production build
+npm run dev      # 本地开发
+npm test         # 单元测试（Vitest）
+npm run build    # 生产构建
 ```
 
-## Spec
+## 规格
 
-Design spec: [`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)
+设计规格见：[`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)
 
-## Week-1 out of scope
+## 第一周范围外
 
-- AI long-tail card generation
-- Camera / photo recognition mode
-- Capacitor native shell or app-store release
-- Listen & repeat (recording / pronunciation scoring)
-- Live 60s life-scene challenges
-- Formal product naming / brand polish pass
-- Multi-device accounts or sync
-- Formal spaced-repetition (SRS) scheduling
-- Copying 百词斩 jpeg/mp3 binaries into this repo
+- 长尾卡片的 AI 生成
+- 拍照 / 识图模式
+- Capacitor 原生壳或上架应用商店
+- 跟读录音与发音打分
+- 60 秒生活场景限时挑战
+- 正式产品命名与品牌打磨
+- 多设备账号与同步
+- 正式间隔重复（SRS）调度
+- 把百词斩的 jpeg / mp3 二进制拷进本仓库
 
-## Regenerate T1 cards
+## 重新生成 T1 卡片
 
-From the repo root (requires sibling checkout `my_app` with `assets/data/words/cet4-all`):
+在仓库根目录执行（需要同级目录中有 `my_app`，且含 `assets/data/words/cet4-all`）：
 
 ```bash
 node scripts/build-t1-pack.mjs
 ```
 
-Writes `src/content/t1-cards.json` with CDN URLs for images and audio.
+会写入 `src/content/t1-cards.json`（图片与音频为 CDN 地址）。
 
-## Media notes
+## 媒体说明
 
-Card images and audio **hotlink the 百词斩 CDN** (`https://ali.bczcdn.com/r/…`) for practice wiring. See **Disclaimer** above for ownership and takedown. Do not treat this pack as a long-term product asset; replace with licensed media before any commercial or store release.
+卡片图片与音频通过百词斩 CDN（`https://ali.bczcdn.com/r/…`）热链，仅用于练习接线。权属与下架说明见上方 **Disclaimer**。不要把当前词包当长期产品素材；商业化或上架前请换成已获授权的媒体。
 
-## Week-1 verification checklist
+## 第一周验证清单
 
-Manual smoke-check after `npm run dev` (stop the dev server when done):
+本地执行 `npm run dev` 后做冒烟检查（完成后关掉开发服）：
 
-- [ ] **练习** — image visible; word / sentence hidden until expand; blank tap hides again
-- [ ] Sentence speaker plays CDN audio (TTS fallback if CDN fails)
-- [ ] Got it / Forgot advance the deck; card survives refresh until one of them
-- [ ] **复习** — Forgot list updates after actions
-- [ ] **我的** — today count, streak, settings persist
-- [ ] Mobile viewport usable (one column, large tap targets)
+- [ ] **练习** — 可见图片；展开前单词 / 句子隐藏；点空白可再次收起
+- [ ] 句子喇叭可播 CDN 音频（失败时回退 TTS）
+- [ ] Got it / Forgot 会切下一张；刷新后仍保留当前卡，直到点了其中之一
+- [ ] **复习** — Forgot 列表随操作更新
+- [ ] **我的** — 今日数量、连续天数、设置会持久化
+- [ ] 手机视口可用（单列、点击区域够大）
