@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { screen, act } from '@testing-library/react'
+import { screen, act, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProgress } from '../test/renderWithProgress'
 import { loadCards } from '../content/loadCards'
@@ -71,7 +71,7 @@ describe('PracticePage', () => {
     )
   })
 
-  it('timeout reveals the answer then enqueues Forgot after the hold', () => {
+  it('timeout enqueues Forgot and waits for Next before advancing', () => {
     vi.useFakeTimers()
     renderWithProgress(<PracticePage />)
     const id = loadProgress().currentCardId
@@ -80,13 +80,17 @@ describe('PracticePage', () => {
       vi.advanceTimersByTime(5000)
     })
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
-    expect(loadProgress().forgotIds).not.toContain(id)
+    expect(loadProgress().forgotIds).toContain(id)
+    expect(loadProgress().reviewUnseenCount).toBe(1)
+    expect(loadProgress().currentCardId).toBe(id)
+    expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
     act(() => {
       vi.advanceTimersByTime(2000)
     })
-    expect(loadProgress().forgotIds).toContain(id)
+    expect(loadProgress().currentCardId).toBe(id)
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(loadProgress().currentCardId).not.toBe(id)
-    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
   })
 

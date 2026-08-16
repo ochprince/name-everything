@@ -108,10 +108,18 @@ describe('PracticeCard', () => {
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
   })
 
-  it('reveals the answer for 2s on timeout before calling onTimeout', () => {
+  it('reveals the answer on timeout, calls onTimeout, and offers Next', () => {
     vi.useFakeTimers()
     const onTimeout = vi.fn()
-    render(<PracticeCard {...props} thinkHoldMs={3000} onTimeout={onTimeout} />)
+    const onNext = vi.fn()
+    render(
+      <PracticeCard
+        {...props}
+        thinkHoldMs={3000}
+        onTimeout={onTimeout}
+        onNext={onNext}
+      />,
+    )
 
     act(() => {
       vi.advanceTimersByTime(2999)
@@ -123,17 +131,14 @@ describe('PracticeCard', () => {
     })
     expect(screen.getByText('cup')).toBeInTheDocument()
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Got it' })).not.toBeInTheDocument()
-    expect(onTimeout).not.toHaveBeenCalled()
-    act(() => {
-      vi.advanceTimersByTime(1999)
-    })
-    expect(onTimeout).not.toHaveBeenCalled()
-    act(() => {
-      vi.advanceTimersByTime(1)
-    })
+    expect(screen.queryByRole('button', { name: 'Forgot' })).not.toBeInTheDocument()
     expect(onTimeout).toHaveBeenCalledTimes(1)
+    expect(onNext).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(onNext).toHaveBeenCalledTimes(1)
   })
 
   it('Find it cancels the think timer', async () => {
@@ -297,6 +302,17 @@ describe('PracticeCard', () => {
     expect(speakFn).toHaveBeenCalledTimes(1)
     expect((speakFn.mock.calls[0][0] as SpeechSynthesisUtterance).text).toBe(
       'cup',
+    )
+    act(() => {
+      vi.advanceTimersByTime(2999)
+    })
+    expect(speakFn).toHaveBeenCalledTimes(1)
+    act(() => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(speakFn).toHaveBeenCalledTimes(2)
+    expect((speakFn.mock.calls[1][0] as SpeechSynthesisUtterance).text).toBe(
+      'This is a cup.',
     )
   })
 

@@ -90,11 +90,12 @@ export function ReviewPage() {
   }
 
   return (
-    <main data-seed="af3fdd03" className="relative z-0 min-h-dvh overflow-x-clip bg-cyc font-cue">
+    <main data-seed="af3fdd03" className="relative z-0 h-dvh overflow-hidden bg-cyc font-cue">
       {/* THESIS: Review is a cue sheet of the Forgot queue on the cyclorama. OWN-WORLD: cyc/cobalt/rose/day; actor-inset thumbs; sentence on the wash. STORY: Scan Forgot, raise the same practice card, Got it is day. FIRST VIEWPORT: Phone column, cyc wash, 复习, thumb+sentence rows or rose-band empty cue. FORM: Cyclorama dawn, Operate, committed, seed af3fdd03. */}
       <div className="cyc-wash pointer-events-none absolute inset-0" />
 
-      <div className="relative mx-auto max-w-md px-4 pb-28">
+      <div className="relative h-full overflow-x-clip overflow-y-auto">
+        <div className="mx-auto max-w-md px-4 pb-28">
         <h1 className="pt-[max(1.5rem,env(safe-area-inset-top))] text-center text-sm font-semibold tracking-[0.22em] text-day">
           复习
         </h1>
@@ -131,6 +132,7 @@ export function ReviewPage() {
               ))}
             </ul>
           )}
+        </div>
         </div>
       </div>
 

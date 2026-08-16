@@ -83,22 +83,6 @@ body {
   animation: lighting-raise 520ms cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
 }
 
-.timeout-fly {
-  pointer-events: none;
-  position: fixed;
-  z-index: 40;
-  object-fit: cover;
-  border-radius: 12px;
-  animation: timeout-fly 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes timeout-fly {
-  to {
-    transform: translate(var(--dx), var(--dy)) scale(0.16);
-    opacity: 0.2;
-  }
-}
-
 .forgot-cue {
   position: relative;
   overflow: hidden;
@@ -146,7 +130,6 @@ dialog.cue-sheet::backdrop {
   .cue-raise,
   .cue-raise-late,
   .fold-chevron,
-  .timeout-fly,
   dialog.cue-sheet[open] {
     animation: none;
     transition: none;

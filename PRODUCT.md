@@ -30,8 +30,8 @@ Used on a phone in one column, often with one hand, in mixed indoor or commute l
 
 Confirmed for week 1:
 
-- Practice think phase: image + countdown; word and sentence hidden until Find it or skipped on timeout.
-- Practice buttons: `Find it` while thinking; then `Forgot` | `Got it` (`Got it` is primary). Timeout never reveals.
+- Practice think phase: image + countdown; word and sentence hidden until Find it or timeout.
+- Practice buttons: `Find it` while thinking; then `Forgot` | `Got it` (`Got it` is primary). Timeout reveals in place, marks Forgot, and waits for `Next`.
 - Daily set of 10 practice Got its; 较好记忆 leaves the practice pool.
 - Bottom tabs: 练习 / 复习 / 我的.
 - T1 only. No auth, no SRS, no camera, no AI generation, no Capacitor shell.

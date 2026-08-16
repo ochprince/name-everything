@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect } from 'react'
 import { PracticeCard } from '../components/PracticeCard'
 import { loadCards } from '../content/loadCards'
 import { useProgress } from '../hooks/useProgress'
@@ -14,7 +14,6 @@ import {
   type ProgressState,
 } from '../lib/storage'
 import type { Card } from '../types/card'
-import { TIMEOUT_FLY_MS } from '../lib/timing'
 
 function findCard(id: string | null): Card | null {
   if (!id) return null
@@ -73,8 +72,6 @@ export function PracticePage() {
   const remaining = remainingPracticeCount(catalog, progress)
   const today = todayKey()
   const view = currentSetView(progress, remaining, today)
-  const [flying, setFlying] = useState(false)
-  const flyTimer = useRef<number | null>(null)
 
   useLayoutEffect(() => {
     if (view.wrap !== 'none') return
@@ -83,51 +80,8 @@ export function PracticePage() {
     update((p) => pickAndCursor(p))
   }, [current, progress.strongIds, remaining, update, view.wrap])
 
-  useLayoutEffect(() => {
-    return () => {
-      if (flyTimer.current !== null) window.clearTimeout(flyTimer.current)
-      document.querySelectorAll('[data-testid="timeout-fly"]').forEach((node) => {
-        node.remove()
-      })
-    }
-  }, [])
-
   function advanceAfter(mutate: (p: ProgressState) => ProgressState) {
     update((p) => pickAndCursor(mutate(p)))
-  }
-
-  function handleTimeout() {
-    if (!current || flying) return
-    const reduce =
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const nav = document.getElementById('nav-review')
-    const img = document.querySelector<HTMLImageElement>(
-      '[data-testid="card-photo"] img',
-    )
-    if (reduce || !nav || !img) {
-      advanceAfter((p) => markForgot(p, current.id, today))
-      return
-    }
-    const from = img.getBoundingClientRect()
-    const to = nav.getBoundingClientRect()
-    const clone = img.cloneNode(true) as HTMLImageElement
-    clone.setAttribute('data-testid', 'timeout-fly')
-    clone.className = 'timeout-fly'
-    clone.style.left = `${from.left}px`
-    clone.style.top = `${from.top}px`
-    clone.style.width = `${from.width}px`
-    clone.style.height = `${from.height}px`
-    clone.style.setProperty('--dx', `${to.left + to.width / 2 - from.left - from.width / 2}px`)
-    clone.style.setProperty('--dy', `${to.top + to.height / 2 - from.top - from.height / 2}px`)
-    document.body.appendChild(clone)
-    setFlying(true)
-    flyTimer.current = window.setTimeout(() => {
-      flyTimer.current = null
-      clone.remove()
-      setFlying(false)
-      advanceAfter((p) => markForgot(p, current.id, today))
-    }, TIMEOUT_FLY_MS)
   }
 
   if (view.wrap === 'pack') {
@@ -170,7 +124,12 @@ export function PracticePage() {
           onForgot={() => {
             advanceAfter((p) => markForgot(p, current.id, today))
           }}
-          onTimeout={handleTimeout}
+          onTimeout={() => {
+            update((p) => markForgot(p, current.id, today))
+          }}
+          onNext={() => {
+            advanceAfter((p) => p)
+          }}
         />
       ) : (
         <>

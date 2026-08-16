@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { playCardAudio, stopCardAudio } from '../lib/playAudio'
 import type { HintLang, ThinkHoldMs } from '../lib/storage'
-import { TIMEOUT_REVEAL_MS } from '../lib/timing'
 import type { Card } from '../types/card'
 import { LangToggle } from './LangToggle'
 
@@ -15,6 +14,7 @@ export interface PracticeCardProps {
   onGotIt: () => void
   onForgot: () => void
   onTimeout?: () => void
+  onNext?: () => void
   progressLabel?: string
   chrome?: 'stage' | 'sheet'
 }
@@ -74,6 +74,7 @@ export function PracticeCard({
   onGotIt,
   onForgot,
   onTimeout,
+  onNext,
   progressLabel,
   chrome = 'stage',
 }: PracticeCardProps) {
@@ -123,6 +124,11 @@ export function PracticeCard({
     onGotIt()
   }
 
+  function confirmNext() {
+    clearAutoSpeak()
+    onNext?.()
+  }
+
   useEffect(() => {
     setImageSrc(card.image)
   }, [card.image])
@@ -148,25 +154,14 @@ export function PracticeCard({
     const timeout = setTimeout(() => {
       setRevealed(true)
       setTimeoutHold(true)
+      startAutoSpeak()
+      onTimeoutRef.current?.()
     }, thinkHoldMs)
     return () => {
       clearInterval(interval)
       clearTimeout(timeout)
     }
   }, [card.id, revealed, sheet, thinkHoldMs])
-
-  useEffect(() => {
-    if (!timeoutHold) return
-    startAutoSpeak()
-    const hold = setTimeout(() => {
-      onTimeoutRef.current?.()
-    }, TIMEOUT_REVEAL_MS)
-    return () => {
-      clearTimeout(hold)
-    }
-    // Speak + notify once per timeout-hold, using the current card.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeoutHold])
 
   useEffect(() => {
     if (!sheet || !autoSpeak) return
@@ -303,7 +298,13 @@ export function PracticeCard({
 
         <div className="mt-auto flex shrink-0 gap-2.5 pt-4">
           {timeoutHold ? (
-            <div className="min-h-14 flex-1" aria-hidden="true" />
+            <button
+              type="button"
+              onClick={confirmNext}
+              className={`${cueButton} bg-day text-cyc hover:brightness-105`}
+            >
+              Next
+            </button>
           ) : revealed ? (
             <>
               <button

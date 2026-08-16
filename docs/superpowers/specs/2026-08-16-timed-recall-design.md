@@ -12,16 +12,17 @@ The current loop lets the user tap Got it / Forgot with no time pressure. The cl
 
 Practice card, think phase:
 
-1. Photo only. Cue stage shows a countdown (default 5s; settings 3s / 5s / 10s).
+1. Photo only. Cue stage shows a countdown (default 5s; settings 3s / 5s / 10s / 15s).
 2. One action: **Find it**. Tapping the photo or the number does not reveal.
-3. Timer hits 0: do **not** show word/sentence. Photo flies to bottom-nav **复习**. Card → Forgot queue (毫无记忆). Next card. Reduced motion: skip the fly, still enqueue and advance.
+3. Timer hits 0: reveal word + sentence (auto-speak if enabled). Card → Forgot queue (毫无记忆) immediately so the 复习 badge increments. Bottom action is **Next** only — no Forgot / Got it, no fly-to-nav. Stay on the card until Next.
 
 Find it:
 
 1. Stop the timer. Raise word + sentence (existing lighting raise). Auto-speak if enabled.
 2. Actions become **Forgot** | **Got it**. No Forgot hold / tide. Study as long as needed. Stay revealed until one action.
 
-Forgot (after reveal): enqueue Forgot, next card (no fly).  
+Forgot (after Find it): enqueue Forgot, next card.  
+Timeout **Next**: advance only (Forgot already recorded).  
 Got it: graduate to 较好记忆, count toward today’s set, next card (or a wrap screen).
 
 ## Daily set
@@ -65,4 +66,4 @@ Cyclorama tokens, bottom tabs, `pinnedIds` (unused), CDN media, no auth.
 
 ## Anti-goals
 
-Fake SRS intervals. Reveal on timeout. Recycle 较好记忆 into practice. Hero-metric wrap screens. Forgot tide.
+Fake SRS intervals. Auto-advance or fly the photo on timeout. Recycle 较好记忆 into practice. Hero-metric wrap screens. Forgot tide.

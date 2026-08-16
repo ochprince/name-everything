@@ -98,4 +98,17 @@ describe('ReviewPage', () => {
     renderWithProgress(<ReviewPage />)
     expect(document.getElementById('review-queue')).toHaveClass('pb-40')
   })
+
+  it('sizes the cyclorama to the viewport so the wash is not stretched by the list', () => {
+    const card = loadCards()[0]
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: [card.id],
+    })
+    renderWithProgress(<ReviewPage />)
+    const main = document.querySelector('main')
+    expect(main).toHaveClass('h-dvh')
+    expect(main).toHaveClass('overflow-hidden')
+    expect(main?.querySelector('.cyc-wash')).toHaveClass('absolute', 'inset-0')
+  })
 })
