@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useProgress } from '../hooks/useProgress'
 
 const tabs = [
   { to: '/', label: '练习', end: true },
@@ -7,6 +8,9 @@ const tabs = [
 ] as const
 
 export function BottomNav() {
+  const { progress } = useProgress()
+  const unseen = progress.reviewUnseenCount
+
   return (
     <nav
       aria-label="主导航"
@@ -22,6 +26,11 @@ export function BottomNav() {
             key={tab.to}
             to={tab.to}
             end={tab.end}
+            aria-label={
+              tab.to === '/review' && unseen > 0
+                ? `复习，${unseen} 个待复习`
+                : undefined
+            }
             className={({ isActive }) =>
               [
                 'flex min-h-14 flex-1 items-center justify-center text-lg font-semibold tracking-[0.18em] transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-day',
@@ -32,13 +41,21 @@ export function BottomNav() {
             {({ isActive }) => (
               <span
                 id={tab.to === '/review' ? 'nav-review' : undefined}
-                className={
+                className={`relative ${
                   isActive
                     ? 'border-b-2 border-rose pb-0.5'
                     : 'border-b-2 border-transparent pb-0.5'
-                }
+                }`}
               >
                 {tab.label}
+                {tab.to === '/review' && unseen > 0 ? (
+                  <span
+                    data-testid="review-unseen"
+                    className="absolute -right-3 -top-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose px-1 text-[0.65rem] font-semibold leading-none tracking-normal text-cyc"
+                  >
+                    {unseen > 9 ? '9+' : unseen}
+                  </span>
+                ) : null}
               </span>
             )}
           </NavLink>

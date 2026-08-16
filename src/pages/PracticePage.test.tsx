@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { renderWithProgress } from '../test/renderWithProgress'
 import { loadCards } from '../content/loadCards'
 import {
   defaultProgress,
@@ -22,7 +23,7 @@ afterEach(() => {
 describe('PracticePage', () => {
   it('shows set progress and advances on Find it then Got it', async () => {
     const user = userEvent.setup()
-    render(<PracticePage />)
+    renderWithProgress(<PracticePage />)
 
     expect(screen.getByText('0 / 10')).toBeInTheDocument()
     expect(
@@ -41,14 +42,14 @@ describe('PracticePage', () => {
 
   it('keeps the same card after remount until Got it / Forgot / timeout', async () => {
     const user = userEvent.setup()
-    const first = render(<PracticePage />)
+    const first = renderWithProgress(<PracticePage />)
     await user.click(screen.getByRole('button', { name: 'Find it' }))
     const word = screen.getByRole('heading', { level: 2 }).textContent
     const id = loadProgress().currentCardId
     expect(id).toBeTruthy()
     first.unmount()
 
-    render(<PracticePage />)
+    renderWithProgress(<PracticePage />)
     expect(loadProgress().currentCardId).toBe(id)
     await user.click(screen.getByRole('button', { name: 'Find it' }))
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(word!)
@@ -62,7 +63,7 @@ describe('PracticePage', () => {
       currentCardId: card.id,
       recentPracticeTag: card.tags[0] ?? null,
     })
-    render(<PracticePage />)
+    renderWithProgress(<PracticePage />)
     expect(loadProgress().currentCardId).toBe(card.id)
     await user.click(screen.getByRole('button', { name: 'Find it' }))
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
@@ -70,13 +71,18 @@ describe('PracticePage', () => {
     )
   })
 
-  it('timeout enqueues Forgot and advances without showing the word', () => {
+  it('timeout reveals the answer then enqueues Forgot after the hold', () => {
     vi.useFakeTimers()
-    render(<PracticePage />)
+    renderWithProgress(<PracticePage />)
     const id = loadProgress().currentCardId
     expect(id).toBeTruthy()
     act(() => {
       vi.advanceTimersByTime(5000)
+    })
+    expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
+    expect(loadProgress().forgotIds).not.toContain(id)
+    act(() => {
+      vi.advanceTimersByTime(2000)
     })
     expect(loadProgress().forgotIds).toContain(id)
     expect(loadProgress().currentCardId).not.toBe(id)
@@ -98,7 +104,7 @@ describe('PracticePage', () => {
       recentPracticeTag: catalog[9].tags[0] ?? null,
     }
     saveProgress(progress)
-    render(<PracticePage />)
+    renderWithProgress(<PracticePage />)
 
     expect(screen.getByText('今日已完成')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
@@ -115,7 +121,7 @@ describe('PracticePage', () => {
       progress = markGotIt(progress, card.id, today)
     }
     saveProgress(progress)
-    render(<PracticePage />)
+    renderWithProgress(<PracticePage />)
     expect(screen.getByText('这一批都会了')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '继续' })).not.toBeInTheDocument()
   })

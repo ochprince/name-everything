@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PracticeCard } from '../components/PracticeCard'
 import { loadCards } from '../content/loadCards'
 import { useProgress } from '../hooks/useProgress'
-import { markForgot, markReviewGotIt, todayKey } from '../lib/storage'
+import { markForgot, markReviewGotIt, clearReviewUnseen, todayKey } from '../lib/storage'
+import { highlightParts } from '../lib/highlightWord'
 import type { Card } from '../types/card'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
@@ -33,6 +34,31 @@ function cardsForIds(ids: string[]): Card[] {
   })
 }
 
+function SentenceHighlight({
+  sentence,
+  word,
+}: {
+  sentence: string
+  word: string
+}) {
+  return (
+    <span className="line-clamp-2 text-lg font-medium leading-snug tracking-[0.01em] text-day">
+      {highlightParts(sentence, word).map((part, index) =>
+        part.highlight ? (
+          <mark
+            key={`${part.text}-${index}`}
+            className="bg-transparent font-semibold text-rose"
+          >
+            {part.text}
+          </mark>
+        ) : (
+          <span key={`${part.text}-${index}`}>{part.text}</span>
+        ),
+      )}
+    </span>
+  )
+}
+
 export function ReviewPage() {
   const { progress, update } = useProgress()
   const [openId, setOpenId] = useState<string | null>(null)
@@ -42,6 +68,10 @@ export function ReviewPage() {
   const openCard = openId
     ? loadCards().find((card) => card.id === openId) ?? null
     : null
+
+  useLayoutEffect(() => {
+    update(clearReviewUnseen)
+  }, [update])
 
   useEffect(() => {
     const sheet = sheetRef.current
@@ -90,13 +120,12 @@ export function ReviewPage() {
                 <li key={card.id}>
                   <button
                     type="button"
+                    aria-label={card.sentence}
                     onClick={() => setOpenId(card.id)}
                     className="flex w-full items-center gap-4 rounded-2xl text-left transition-[filter] duration-200 ease-out hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day"
                   >
                     <CueThumb src={card.image} />
-                    <span className="line-clamp-2 text-lg font-medium leading-snug tracking-[0.01em] text-day">
-                      {card.sentence}
-                    </span>
+                    <SentenceHighlight sentence={card.sentence} word={card.word} />
                   </button>
                 </li>
               ))}

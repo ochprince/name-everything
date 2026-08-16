@@ -119,7 +119,7 @@ Controls are `rounded-2xl` (16px). Fold cues and speaker marks are pills/circles
 - **Think countdown** — large day numeral in the cue stage (not a tappable eye). Timeout flies the photo into 复习.
 - **BottomNav** — cyc bar, rose active, day/80 idle; hairline rose→cobalt.
 
-Motion is a lighting raise, not page choreography. Word and sentence lift ~480ms (`cubic-bezier(0.16, 1, 0.3, 1)`) with a short `translateY`, sentence 80ms later. Think time is 3s / 5s / 10s (default 5s). Timeout recedes the photo to the 复习 tab in the same 480ms curve. `prefers-reduced-motion: reduce` drops raise and fly visuals; the think timer stays.
+Motion is a lighting raise, not page choreography. Word and sentence lift ~480ms (`cubic-bezier(0.16, 1, 0.3, 1)`) with a short `translateY`, sentence 80ms later. Think time is 3s / 5s / 10s / 15s (default 5s). Timeout raises the answer for 2s, then recedes the photo to the 复习 tab in ~800ms. `prefers-reduced-motion: reduce` drops raise and fly visuals; the think timer and 2s answer hold stay.
 
 ## Do's and Don'ts
 

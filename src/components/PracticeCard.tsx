@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { playCardAudio, stopCardAudio } from '../lib/playAudio'
 import type { HintLang, ThinkHoldMs } from '../lib/storage'
+import { TIMEOUT_REVEAL_MS } from '../lib/timing'
 import type { Card } from '../types/card'
 import { LangToggle } from './LangToggle'
 
@@ -79,6 +80,7 @@ export function PracticeCard({
   const [imageSrc, setImageSrc] = useState(card.image)
   const sheet = chrome === 'sheet'
   const [revealed, setRevealed] = useState(sheet)
+  const [timeoutHold, setTimeoutHold] = useState(false)
   const [hintLang, setHintLang] = useState<HintLang>(
     card.zh && hintLangDefault === 'zh' ? 'zh' : 'en',
   )
@@ -127,6 +129,7 @@ export function PracticeCard({
 
   useEffect(() => {
     setRevealed(sheet)
+    setTimeoutHold(false)
     setHintLang(card.zh && hintLangDefault === 'zh' ? 'zh' : 'en')
     setRemaining(Math.round(thinkHoldMs / 1000))
     if (autoTimer.current !== null) {
@@ -143,13 +146,27 @@ export function PracticeCard({
       setRemaining((secs) => Math.max(0, secs - 1))
     }, 1000)
     const timeout = setTimeout(() => {
-      onTimeoutRef.current?.()
+      setRevealed(true)
+      setTimeoutHold(true)
     }, thinkHoldMs)
     return () => {
       clearInterval(interval)
       clearTimeout(timeout)
     }
   }, [card.id, revealed, sheet, thinkHoldMs])
+
+  useEffect(() => {
+    if (!timeoutHold) return
+    startAutoSpeak()
+    const hold = setTimeout(() => {
+      onTimeoutRef.current?.()
+    }, TIMEOUT_REVEAL_MS)
+    return () => {
+      clearTimeout(hold)
+    }
+    // Speak + notify once per timeout-hold, using the current card.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeoutHold])
 
   useEffect(() => {
     if (!sheet || !autoSpeak) return
@@ -285,7 +302,9 @@ export function PracticeCard({
         </div>
 
         <div className="mt-auto flex shrink-0 gap-2.5 pt-4">
-          {revealed ? (
+          {timeoutHold ? (
+            <div className="min-h-14 flex-1" aria-hidden="true" />
+          ) : revealed ? (
             <>
               <button
                 type="button"

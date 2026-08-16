@@ -108,7 +108,7 @@ describe('PracticeCard', () => {
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
   })
 
-  it('calls onTimeout when the think timer ends without Find it', () => {
+  it('reveals the answer for 2s on timeout before calling onTimeout', () => {
     vi.useFakeTimers()
     const onTimeout = vi.fn()
     render(<PracticeCard {...props} thinkHoldMs={3000} onTimeout={onTimeout} />)
@@ -118,6 +118,18 @@ describe('PracticeCard', () => {
     })
     expect(onTimeout).not.toHaveBeenCalled()
     expect(screen.queryByText('cup')).not.toBeInTheDocument()
+    act(() => {
+      vi.advanceTimersByTime(1)
+    })
+    expect(screen.getByText('cup')).toBeInTheDocument()
+    expect(screen.getByText('This is a cup.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Got it' })).not.toBeInTheDocument()
+    expect(onTimeout).not.toHaveBeenCalled()
+    act(() => {
+      vi.advanceTimersByTime(1999)
+    })
+    expect(onTimeout).not.toHaveBeenCalled()
     act(() => {
       vi.advanceTimersByTime(1)
     })
@@ -274,11 +286,25 @@ describe('PracticeCard', () => {
     expect(speakFn).toHaveBeenCalledTimes(1)
   })
 
-  it('does not auto-play on timeout', () => {
+  it('auto-plays on timeout reveal when autoSpeak is on', () => {
     vi.useFakeTimers()
     const { speakFn } = stubSpeech()
     stubAudio()
     render(<PracticeCard {...props} autoSpeak thinkHoldMs={3000} />)
+    act(() => {
+      vi.advanceTimersByTime(3000)
+    })
+    expect(speakFn).toHaveBeenCalledTimes(1)
+    expect((speakFn.mock.calls[0][0] as SpeechSynthesisUtterance).text).toBe(
+      'cup',
+    )
+  })
+
+  it('does not auto-play on timeout when autoSpeak is off', () => {
+    vi.useFakeTimers()
+    const { speakFn } = stubSpeech()
+    stubAudio()
+    render(<PracticeCard {...props} thinkHoldMs={3000} />)
     act(() => {
       vi.advanceTimersByTime(3000)
     })

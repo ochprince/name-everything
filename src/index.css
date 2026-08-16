@@ -89,7 +89,7 @@ body {
   z-index: 40;
   object-fit: cover;
   border-radius: 12px;
-  animation: timeout-fly 480ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: timeout-fly 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes timeout-fly {

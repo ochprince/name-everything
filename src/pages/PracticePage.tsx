@@ -14,6 +14,7 @@ import {
   type ProgressState,
 } from '../lib/storage'
 import type { Card } from '../types/card'
+import { TIMEOUT_FLY_MS } from '../lib/timing'
 
 function findCard(id: string | null): Card | null {
   if (!id) return null
@@ -126,7 +127,7 @@ export function PracticePage() {
       clone.remove()
       setFlying(false)
       advanceAfter((p) => markForgot(p, current.id, today))
-    }, 480)
+    }, TIMEOUT_FLY_MS)
   }
 
   if (view.wrap === 'pack') {

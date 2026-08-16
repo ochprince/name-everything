@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { renderWithProgress } from '../test/renderWithProgress'
 import { loadCards } from '../content/loadCards'
 import { defaultProgress, loadProgress, saveProgress, todayKey } from '../lib/storage'
 import { ReviewPage } from './ReviewPage'
@@ -11,7 +12,7 @@ beforeEach(() => {
 
 describe('ReviewPage', () => {
   it('shows empty Forgot copy when the queue is empty', () => {
-    render(<ReviewPage />)
+    renderWithProgress(<ReviewPage />)
     expect(
       screen.getByText('暂时没有 Forgot，去练习里诚实点一下吧'),
     ).toBeInTheDocument()
@@ -25,9 +26,10 @@ describe('ReviewPage', () => {
       ...defaultProgress(),
       forgotIds: [card.id],
     })
-    render(<ReviewPage />)
+    renderWithProgress(<ReviewPage />)
 
-    expect(screen.getByText(card.sentence)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: card.sentence })).toBeInTheDocument()
+    expect(screen.getByText(card.word, { selector: 'mark' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: card.sentence }))
     await user.click(screen.getByRole('button', { name: 'Got it' }))
 
@@ -44,7 +46,7 @@ describe('ReviewPage', () => {
       ...defaultProgress(),
       forgotIds: [card.id],
     })
-    render(<ReviewPage />)
+    renderWithProgress(<ReviewPage />)
 
     await user.click(screen.getByRole('button', { name: card.sentence }))
     expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument()
@@ -64,7 +66,7 @@ describe('ReviewPage', () => {
       ...defaultProgress(),
       forgotIds: [card.id],
     })
-    render(<ReviewPage />)
+    renderWithProgress(<ReviewPage />)
 
     await user.click(screen.getByRole('button', { name: card.sentence }))
     await user.click(screen.getByRole('button', { name: 'Got it' }))
@@ -74,5 +76,16 @@ describe('ReviewPage', () => {
     expect(progress.warmIds).toContain(card.id)
     expect(progress.strongIds).not.toContain(card.id)
     expect(progress.gotItToday[todayKey()] ?? []).not.toContain(card.id)
+  })
+
+  it('clears the review unseen badge when the page opens', () => {
+    const card = loadCards()[0]
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: [card.id],
+      reviewUnseenCount: 3,
+    })
+    renderWithProgress(<ReviewPage />)
+    expect(loadProgress().reviewUnseenCount).toBe(0)
   })
 })

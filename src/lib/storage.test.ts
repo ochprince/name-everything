@@ -9,6 +9,7 @@ import {
   todayKey,
   currentSetView,
   ackDailyContinue,
+  clearReviewUnseen,
   defaultProgress,
 } from './storage'
 
@@ -80,7 +81,7 @@ describe('progress storage', () => {
     })
   })
 
-  it('migrates forgetHoldMs 0 and 15000 to thinkHoldMs 5000, keeps 3s', () => {
+  it('migrates forgetHoldMs 0 to thinkHoldMs 5000, keeps 3s and 15s', () => {
     localStorage.setItem(
       'name-everything/progress/v1',
       JSON.stringify({
@@ -97,7 +98,7 @@ describe('progress storage', () => {
         settings: { hintLang: 'en', autoSpeak: false, forgetHoldMs: 15000 },
       }),
     )
-    expect(loadProgress().settings.thinkHoldMs).toBe(5000)
+    expect(loadProgress().settings.thinkHoldMs).toBe(15000)
 
     localStorage.setItem(
       'name-everything/progress/v1',
@@ -129,6 +130,29 @@ describe('progress storage', () => {
     expect(s.warmIds).toContain('cup')
     expect(s.strongIds).not.toContain('cup')
     expect(s.gotItToday[today] ?? []).not.toContain('cup')
+  })
+
+  it('keeps 15s as a valid thinkHoldMs', () => {
+    localStorage.setItem(
+      'name-everything/progress/v1',
+      JSON.stringify({
+        ...defaultProgress(),
+        settings: { hintLang: 'en', autoSpeak: false, thinkHoldMs: 15000 },
+      }),
+    )
+    expect(loadProgress().settings.thinkHoldMs).toBe(15000)
+  })
+
+  it('increments reviewUnseenCount only when a card newly enters Forgot', () => {
+    const today = todayKey()
+    let s = markForgot(loadProgress(), 'cup', today)
+    expect(s.reviewUnseenCount).toBe(1)
+    s = markForgot(s, 'cup', today)
+    expect(s.reviewUnseenCount).toBe(1)
+    s = markForgot(s, 'door', today)
+    expect(s.reviewUnseenCount).toBe(2)
+    s = clearReviewUnseen(s)
+    expect(s.reviewUnseenCount).toBe(0)
   })
 
   it('Forgot touches streak and demotes warm back to the review queue', () => {

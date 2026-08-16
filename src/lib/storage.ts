@@ -2,13 +2,14 @@ const KEY = 'name-everything/progress/v1'
 
 export type HintLang = 'en' | 'zh'
 
-export const THINK_HOLD_OPTIONS = [3000, 5000, 10000] as const
+export const THINK_HOLD_OPTIONS = [3000, 5000, 10000, 15000] as const
 export type ThinkHoldMs = (typeof THINK_HOLD_OPTIONS)[number]
 
 export const THINK_HOLD_LABELS: Record<ThinkHoldMs, string> = {
   3000: '3s',
   5000: '5s',
   10000: '10s',
+  15000: '15s',
 }
 
 export type WrapKind = 'none' | 'daily' | 'pack'
@@ -20,6 +21,7 @@ export type ProgressState = {
   strongIds: string[]
   gotItToday: Record<string, string[]>
   dailyContinues: Record<string, number>
+  reviewUnseenCount: number
   currentCardId: string | null
   recentPracticeTag: string | null
   streaks: { lastActiveDate: string | null; count: number }
@@ -45,6 +47,7 @@ export function defaultProgress(): ProgressState {
     strongIds: [],
     gotItToday: {},
     dailyContinues: {},
+    reviewUnseenCount: 0,
     currentCardId: null,
     recentPracticeTag: null,
     streaks: { lastActiveDate: null, count: 0 },
@@ -129,6 +132,12 @@ export function loadProgress(): ProgressState {
       strongIds: asIdList(parsed.strongIds),
       gotItToday: asDayMap(parsed.gotItToday),
       dailyContinues: asContinueMap(parsed.dailyContinues),
+      reviewUnseenCount:
+        typeof parsed.reviewUnseenCount === 'number' &&
+        Number.isFinite(parsed.reviewUnseenCount) &&
+        parsed.reviewUnseenCount > 0
+          ? Math.floor(parsed.reviewUnseenCount)
+          : 0,
       currentCardId:
         typeof parsed.currentCardId === 'string' ? parsed.currentCardId : null,
       recentPracticeTag:
@@ -186,12 +195,19 @@ export function markForgot(
   today: string = todayKey(),
 ): ProgressState {
   const next = touchStreak(state, today)
+  const isNew = !next.forgotIds.includes(cardId)
   return {
     ...next,
     forgotIds: uniq([cardId, ...next.forgotIds]),
     warmIds: next.warmIds.filter((id) => id !== cardId),
     strongIds: next.strongIds.filter((id) => id !== cardId),
+    reviewUnseenCount: isNew ? next.reviewUnseenCount + 1 : next.reviewUnseenCount,
   }
+}
+
+export function clearReviewUnseen(state: ProgressState): ProgressState {
+  if (state.reviewUnseenCount === 0) return state
+  return { ...state, reviewUnseenCount: 0 }
 }
 
 export function togglePin(state: ProgressState, cardId: string): ProgressState {

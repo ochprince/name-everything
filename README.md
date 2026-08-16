@@ -62,7 +62,7 @@ Card images and audio **hotlink the Baicizhan CDN** (`https://ali.bczcdn.com/r/�
 
 Manual smoke-check after `npm run dev` (stop the dev server when done):
 
-- [ ] **Practice** — image visible; countdown in the cue stage; word / sentence hidden until Find it; timeout does not reveal
+- [ ] **Practice** — image visible; countdown in the cue stage; word / sentence hidden until Find it; timeout shows the answer briefly then flies to 复习
 - [ ] Find it reveals word + sentence; Forgot / Got it apply immediately
 - [ ] A daily set of 10 practice Got its shows 今日已完成; Continue starts another set
 - [ ] **Review** — Forgot list updates; sheet opens already revealed
