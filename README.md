@@ -1,6 +1,8 @@
 # Name Everything
 
-**See a thing, say the English sentence.** Mobile-first practice loop: one image + one speakable English sentence, then Got it / Forgot.
+**See a thing, say the English sentence.** Mobile-first practice loop: one image, a short think timer, then Find it / Forgot / Got it.
+
+**Try it:** [https://ochprince.github.io/name-everything/](https://ochprince.github.io/name-everything/)
 
 **Try it:** [https://ochprince.github.io/name-everything/](https://ochprince.github.io/name-everything/)
 
@@ -27,7 +29,8 @@ npm run build    # production build
 
 ## Spec
 
-Design spec: [`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)
+Design spec: [`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)  
+Timed recall: [`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)
 
 ## Week-1 out of scope
 
@@ -59,9 +62,9 @@ Card images and audio **hotlink the Baicizhan CDN** (`https://ali.bczcdn.com/r/�
 
 Manual smoke-check after `npm run dev` (stop the dev server when done):
 
-- [ ] **Practice** — image visible; word / sentence hidden until expand; blank tap hides again
-- [ ] Sentence speaker plays CDN audio (TTS fallback if CDN fails)
-- [ ] Got it / Forgot advance the deck; the card survives refresh until one of them
-- [ ] **Review** — Forgot list updates after actions
-- [ ] **Me** — today count, streak, and settings persist
+- [ ] **Practice** — image visible; countdown in the cue stage; word / sentence hidden until Find it; timeout does not reveal
+- [ ] Find it reveals word + sentence; Forgot / Got it apply immediately
+- [ ] A daily set of 10 practice Got its shows 今日已完成; Continue starts another set
+- [ ] **Review** — Forgot list updates; sheet opens already revealed
+- [ ] **Me** — today count, streak, and 思考时长 persist
 - [ ] Mobile viewport usable (one column, large tap targets)

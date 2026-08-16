@@ -45,6 +45,13 @@ components:
     height: "56px"
     padding: "0 10px"
     typography: "{typography.cue}"
+  button-find-it:
+    backgroundColor: "{colors.day}"
+    textColor: "{colors.cyc}"
+    rounded: "{rounded.md}"
+    height: "56px"
+    padding: "0 10px"
+    typography: "{typography.cue}"
   button-forgot:
     backgroundColor: "{colors.cyc}"
     textColor: "{colors.day}"
@@ -73,7 +80,7 @@ components:
 
 The practice surface is a **cyclorama**: depthless night at the top, a cobalt horizon, rose gathering toward day-wash at the feet. The object photograph is an actor inset on that wash. The speakable English sentence sits on a rose horizon band. Word and 中文 are lighting cues you raise; **Got it** is day.
 
-This is Operate UI. Familiar tap targets, locked button copy (`Forgot` / `记录` / `Got it`), one-handed phone column. Expression lives in the wash, the cue type, and the three action materials — not in a cream flashcard shell.
+This is Operate UI. Familiar tap targets, locked button copy (`Find it` then `Forgot` / `Got it`), one-handed phone column. Expression lives in the wash, the cue type, and the action materials — not in a cream flashcard shell.
 
 ## Colors
 
@@ -93,7 +100,7 @@ One family: self-hosted **Big Shoulders Text** (latin) with **Noto Sans SC** for
 
 ## Layout
 
-Mobile-first single column, `max-w-md`, `px-4`. Photo keeps a 4:3 set-piece crop, slightly inset (`px-2`), capped at about `32vh` so the cue stage has room. The cue panel between photo and actions is a stable flex region (min ~12.5rem): closed eye and revealed word/sentence swap inside it without shoving Forgot / Got it. Stage chrome uses a fixed `h-dvh` column with `pb-28` for the tab bar; review overlay uses `sheet` chrome (no tab reserve). Safe-area padding on the top of each page.
+Mobile-first single column, `max-w-md`, `px-4`. Photo keeps a 4:3 set-piece crop, slightly inset (`px-2`), capped at about `32vh` so the cue stage has room. The cue panel between photo and actions is a stable flex region (min ~12.5rem): think countdown and revealed word/sentence swap inside it without shoving the action row. Stage chrome uses a fixed `h-dvh` column with `pb-28` for the tab bar; review overlay uses `sheet` chrome (no tab reserve). Safe-area padding on the top of each page.
 
 ## Elevation & Depth
 
@@ -107,18 +114,18 @@ Controls are `rounded-2xl` (16px). Fold cues and speaker marks are pills/circles
 
 - **Got it** — day-wash fill, cyc ink, primary.
 - **Forgot** — cyc fill, day outline.
-- **记录 / 已记录** — rose fill, cyc ink.
+- **Find it** — day-wash fill, same cue size as Got it; think phase only.
 - **Horizon sentence** — rose band + speaker.
-- **Reveal eye** — closed eye is a mark in the middle stage; the whole stage between photo and actions reveals. Blank cue / sentence band / Esc hides; the photo does not toggle hide. Speakers and language radios stay interactive.
+- **Think countdown** — large day numeral in the cue stage (not a tappable eye). Timeout flies the photo into 复习.
 - **BottomNav** — cyc bar, rose active, day/80 idle; hairline rose→cobalt.
 
-Motion is a lighting raise, not page choreography. Word and sentence lift ~480ms (`cubic-bezier(0.16, 1, 0.3, 1)`) with a short `translateY`, sentence 80ms later. Forgot recedes as a cobalt sheet right→left in linear time matching the hold; the front is three parallel day hairlines on one gentle S-curve, fill stopping at the middle line. Second Forgot skips, Got it cancels. Default hold 5s; 不停顿 skips the hold. `prefers-reduced-motion: reduce` drops raise and tide visuals; the timer stays.
+Motion is a lighting raise, not page choreography. Word and sentence lift ~480ms (`cubic-bezier(0.16, 1, 0.3, 1)`) with a short `translateY`, sentence 80ms later. Think time is 3s / 5s / 10s (default 5s). Timeout recedes the photo to the 复习 tab in the same 480ms curve. `prefers-reduced-motion: reduce` drops raise and fly visuals; the think timer stays.
 
 ## Do's and Don'ts
 
 **Do**
 
-- Lead with picture + sentence; keep word/zh folded unless settings hold them open.
+- Lead with the picture; keep word/sentence hidden until Find it (or review).
 - Put sentence ink on rose as `cyc`.
 - Treat empty Forgot / 记录 as rose cue bands with the spec copy.
 

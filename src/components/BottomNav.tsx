@@ -31,6 +31,7 @@ export function BottomNav() {
           >
             {({ isActive }) => (
               <span
+                id={tab.to === '/review' ? 'nav-review' : undefined}
                 className={
                   isActive
                     ? 'border-b-2 border-rose pb-0.5'

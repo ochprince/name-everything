@@ -1,6 +1,6 @@
 # Name Everything
 
-看见一个东西，说出那句英文。面向手机的练习循环：一张图 + 一句可说出口的英文，然后 Got it / Forgot。
+看见一个东西，说出那句英文。面向手机的练习循环：一张图、一段思考倒计时，然后 Find it / Forgot / Got it。
 
 **试用：** [https://ochprince.github.io/name-everything/](https://ochprince.github.io/name-everything/)
 
@@ -27,7 +27,8 @@ npm run build    # 生产构建
 
 ## 规格
 
-设计规格见：[`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)
+设计规格见：[`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)  
+限时回忆见：[`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)
 
 ## 第一周范围外
 
@@ -59,9 +60,9 @@ node scripts/build-t1-pack.mjs
 
 本地执行 `npm run dev` 后做冒烟检查（完成后关掉开发服）：
 
-- [ ] **练习** — 可见图片；展开前单词 / 句子隐藏；点空白可再次收起
-- [ ] 句子喇叭可播 CDN 音频（失败时回退 TTS）
-- [ ] Got it / Forgot 会切下一张；刷新后仍保留当前卡，直到点了其中之一
-- [ ] **复习** — Forgot 列表随操作更新
-- [ ] **我的** — 今日数量、连续天数、设置会持久化
+- [ ] **练习** — 可见图片；cue 区为倒计时；Find it 前单词 / 句子隐藏；超时不揭晓
+- [ ] Find it 后出单词和例句；Forgot / Got it 立即生效
+- [ ] 一组 10 次练习 Got it 后出现「今日已完成」；继续可再来一组
+- [ ] **复习** — Forgot 列表随操作更新；打开即出图+词+句
+- [ ] **我的** — 今日数量、连续天数、思考时长会持久化
 - [ ] 手机视口可用（单列、点击区域够大）

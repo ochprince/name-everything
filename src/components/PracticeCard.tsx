@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { playCardAudio, stopCardAudio } from '../lib/playAudio'
-import type { ForgetHoldMs, HintLang } from '../lib/storage'
+import type { HintLang, ThinkHoldMs } from '../lib/storage'
 import type { Card } from '../types/card'
 import { LangToggle } from './LangToggle'
 
@@ -10,18 +10,16 @@ export interface PracticeCardProps {
   card: Card
   hintLangDefault?: HintLang
   autoSpeak?: boolean
-  forgetHoldMs?: ForgetHoldMs
+  thinkHoldMs?: ThinkHoldMs
   onGotIt: () => void
   onForgot: () => void
-  todayCount?: number
+  onTimeout?: () => void
+  progressLabel?: string
   chrome?: 'stage' | 'sheet'
 }
 
 const cueButton =
   'inline-flex min-h-14 flex-1 items-center justify-center rounded-2xl px-2.5 text-center font-cue text-lg font-semibold tracking-[0.08em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'
-
-const iconButton =
-  'inline-flex size-14 items-center justify-center rounded-full border border-day/70 text-day pointer-events-none'
 
 function VolumeIcon({ className }: { className?: string }) {
   return (
@@ -37,25 +35,6 @@ function VolumeIcon({ className }: { className?: string }) {
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
       <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
       <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-    </svg>
-  )
-}
-
-function EyeOffIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
-      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
-      <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
-      <path d="m2 2 20 20" />
     </svg>
   )
 }
@@ -86,77 +65,29 @@ function CueSpeaker({
   )
 }
 
-const WAVE_W = 28
-const WAVE_H = 56
-const WAVE_MID = 14
-const WAVE_AMP = 5
-const WAVE_GAP = 3.5
-const WAVE_OVERLAP = 4
-
-function tideCurve(offset: number): string {
-  const x = WAVE_MID + offset
-  const right = x + WAVE_AMP
-  const left = x - WAVE_AMP
-  return `M${x} 0C${right} 14 ${right} 20 ${x} 28C${left} 36 ${left} 42 ${x} ${WAVE_H}`
-}
-
-const TIDE_WATER =
-  `M-${WAVE_OVERLAP} 0H${WAVE_MID}C${WAVE_MID + WAVE_AMP} 14 ${WAVE_MID + WAVE_AMP} 20 ${WAVE_MID} 28C${WAVE_MID - WAVE_AMP} 36 ${WAVE_MID - WAVE_AMP} 42 ${WAVE_MID} ${WAVE_H}H-${WAVE_OVERLAP}Z`
-const TIDE_LINE_LEFT = tideCurve(-WAVE_GAP)
-const TIDE_LINE_MID = tideCurve(0)
-const TIDE_LINE_RIGHT = tideCurve(WAVE_GAP)
-
-function ForgetTide({ durationMs }: { durationMs: number }) {
-  return (
-    <span className="forget-tide" aria-hidden="true">
-      <span
-        className="forget-tide-sheet"
-        style={{ animationDuration: `${durationMs}ms` }}
-      >
-        <span className="forget-tide-water" />
-        <svg
-          className="forget-tide-wave"
-          viewBox={`-${WAVE_OVERLAP} 0 ${WAVE_W + WAVE_OVERLAP} ${WAVE_H}`}
-          preserveAspectRatio="xMidYMid meet"
-        >
-          <path fill="#1e3a8a" d={TIDE_WATER} />
-          <g
-            fill="none"
-            stroke="#f4f1ea"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.5"
-          >
-            <path d={TIDE_LINE_LEFT} />
-            <path d={TIDE_LINE_MID} />
-            <path d={TIDE_LINE_RIGHT} />
-          </g>
-        </svg>
-      </span>
-    </span>
-  )
-}
-
 export function PracticeCard({
   card,
   hintLangDefault = 'en',
   autoSpeak = false,
-  forgetHoldMs = 5000,
+  thinkHoldMs = 5000,
   onGotIt,
   onForgot,
-  todayCount,
+  onTimeout,
+  progressLabel,
   chrome = 'stage',
 }: PracticeCardProps) {
   const [imageSrc, setImageSrc] = useState(card.image)
-  const [revealed, setRevealed] = useState(false)
+  const sheet = chrome === 'sheet'
+  const [revealed, setRevealed] = useState(sheet)
   const [hintLang, setHintLang] = useState<HintLang>(
     card.zh && hintLangDefault === 'zh' ? 'zh' : 'en',
   )
-  const [forgetting, setForgetting] = useState(false)
+  const [remaining, setRemaining] = useState(Math.round(thinkHoldMs / 1000))
   const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const forgetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const sheet = chrome === 'sheet'
+  const onTimeoutRef = useRef(onTimeout)
   const showZh = hintLang === 'zh' && Boolean(card.zh)
+
+  onTimeoutRef.current = onTimeout
 
   function clearAutoSpeak() {
     if (autoTimer.current !== null) {
@@ -164,12 +95,6 @@ export function PracticeCard({
       autoTimer.current = null
     }
     stopCardAudio()
-  }
-
-  function hideCues() {
-    if (forgetting) return
-    clearAutoSpeak()
-    setRevealed(false)
   }
 
   function startAutoSpeak() {
@@ -186,39 +111,12 @@ export function PracticeCard({
     startAutoSpeak()
   }
 
-  function clearForgetHold() {
-    if (forgetTimer.current !== null) {
-      clearTimeout(forgetTimer.current)
-      forgetTimer.current = null
-    }
-    setForgetting(false)
-  }
-
   function confirmForgot() {
-    if (forgetting) {
-      clearForgetHold()
-      clearAutoSpeak()
-      onForgot()
-      return
-    }
-    if (forgetHoldMs === 0) {
-      clearAutoSpeak()
-      onForgot()
-      return
-    }
-    const wasHidden = !revealed
-    setRevealed(true)
-    setForgetting(true)
-    if (wasHidden) startAutoSpeak()
-    forgetTimer.current = setTimeout(() => {
-      forgetTimer.current = null
-      clearAutoSpeak()
-      onForgot()
-    }, forgetHoldMs)
+    clearAutoSpeak()
+    onForgot()
   }
 
   function confirmGotIt() {
-    clearForgetHold()
     clearAutoSpeak()
     onGotIt()
   }
@@ -228,36 +126,53 @@ export function PracticeCard({
   }, [card.image])
 
   useEffect(() => {
-    setRevealed(false)
-    setForgetting(false)
+    setRevealed(sheet)
     setHintLang(card.zh && hintLangDefault === 'zh' ? 'zh' : 'en')
+    setRemaining(Math.round(thinkHoldMs / 1000))
     if (autoTimer.current !== null) {
       clearTimeout(autoTimer.current)
       autoTimer.current = null
     }
-    if (forgetTimer.current !== null) {
-      clearTimeout(forgetTimer.current)
-      forgetTimer.current = null
-    }
     stopCardAudio()
-  }, [card.id, card.zh, hintLangDefault])
+  }, [card.id, card.zh, hintLangDefault, sheet, thinkHoldMs])
+
+  useEffect(() => {
+    if (sheet || revealed) return
+    setRemaining(Math.round(thinkHoldMs / 1000))
+    const interval = setInterval(() => {
+      setRemaining((secs) => Math.max(0, secs - 1))
+    }, 1000)
+    const timeout = setTimeout(() => {
+      onTimeoutRef.current?.()
+    }, thinkHoldMs)
+    return () => {
+      clearInterval(interval)
+      clearTimeout(timeout)
+    }
+  }, [card.id, revealed, sheet, thinkHoldMs])
+
+  useEffect(() => {
+    if (!sheet || !autoSpeak) return
+    playCardAudio(card.wordAudio, card.word)
+    autoTimer.current = setTimeout(() => {
+      autoTimer.current = null
+      playCardAudio(card.sentenceAudio, card.sentence)
+    }, 3000)
+    return () => {
+      if (autoTimer.current !== null) {
+        clearTimeout(autoTimer.current)
+        autoTimer.current = null
+      }
+      stopCardAudio()
+    }
+  }, [autoSpeak, card.id, card.sentence, card.sentenceAudio, card.word, card.wordAudio, sheet])
 
   useEffect(() => {
     return () => {
       if (autoTimer.current !== null) clearTimeout(autoTimer.current)
-      if (forgetTimer.current !== null) clearTimeout(forgetTimer.current)
       stopCardAudio()
     }
   }, [])
-
-  useEffect(() => {
-    if (!revealed) return
-    function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') hideCues()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [revealed, forgetting])
 
   return (
     <article data-seed="af3fdd03" className="relative z-0 min-h-dvh overflow-x-clip font-cue">
@@ -273,9 +188,9 @@ export function PracticeCard({
             <p className="text-center text-sm font-semibold tracking-[0.22em] text-day">
               Name Everything
             </p>
-            {typeof todayCount === 'number' ? (
+            {progressLabel ? (
               <p className="justify-self-end rounded-xl bg-rose px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-cyc">
-                今日 {todayCount}
+                {progressLabel}
               </p>
             ) : (
               <span aria-hidden="true" />
@@ -298,8 +213,7 @@ export function PracticeCard({
 
         <div
           data-testid="cue-panel"
-          className="flex min-h-[12.5rem] flex-1 cursor-pointer flex-col overflow-y-auto overscroll-contain"
-          onClick={revealed ? hideCues : undefined}
+          className="flex min-h-[12.5rem] flex-1 flex-col overflow-y-auto overscroll-contain"
         >
           {revealed ? (
             <div className="flex min-h-full flex-col justify-center gap-3 py-2">
@@ -314,27 +228,19 @@ export function PracticeCard({
                   className="cue-raise flex min-h-11 w-full items-center justify-center gap-2 text-day"
                 >
                   {showZh ? (
-                    <p
-                      className="text-center text-3xl font-semibold tracking-[0.04em]"
-                      onClick={(event) => event.stopPropagation()}
-                    >
+                    <p className="text-center text-3xl font-semibold tracking-[0.04em]">
                       {card.zh}
                     </p>
                   ) : (
                     <>
-                      <h2
-                        className="text-center text-3xl font-semibold tracking-[0.04em]"
-                        onClick={(event) => event.stopPropagation()}
-                      >
+                      <h2 className="text-center text-3xl font-semibold tracking-[0.04em]">
                         {card.word}
                       </h2>
-                      <span onClick={(event) => event.stopPropagation()}>
-                        <CueSpeaker
-                          label="朗读单词"
-                          tone="onCyc"
-                          onPlay={() => playCardAudio(card.wordAudio, card.word)}
-                        />
-                      </span>
+                      <CueSpeaker
+                        label="朗读单词"
+                        tone="onCyc"
+                        onPlay={() => playCardAudio(card.wordAudio, card.word)}
+                      />
                     </>
                   )}
                 </div>
@@ -346,61 +252,65 @@ export function PracticeCard({
                 <p className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
                   {card.sentence}
                 </p>
-                <span onClick={(event) => event.stopPropagation()}>
-                  <CueSpeaker
-                    label="朗读句子"
-                    tone="onRose"
-                    onPlay={() =>
-                      playCardAudio(card.sentenceAudio, card.sentence)
-                    }
-                  />
-                </span>
+                <CueSpeaker
+                  label="朗读句子"
+                  tone="onRose"
+                  onPlay={() =>
+                    playCardAudio(card.sentenceAudio, card.sentence)
+                  }
+                />
               </div>
               <div
                 data-testid="lang-rail"
                 className="flex shrink-0 justify-center pb-1 pt-1"
               >
-                <span onClick={(event) => event.stopPropagation()}>
-                  <LangToggle
-                    value={hintLang}
-                    onChange={setHintLang}
-                    hasZh={Boolean(card.zh)}
-                  />
-                </span>
+                <LangToggle
+                  value={hintLang}
+                  onChange={setHintLang}
+                  hasZh={Boolean(card.zh)}
+                />
               </div>
             </div>
           ) : (
-            <button
-              type="button"
-              aria-label="显示提示"
-              aria-expanded="false"
-              aria-controls="card-cues"
-              onClick={revealCues}
-              className="flex min-h-full w-full flex-1 cursor-pointer flex-col items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-day"
-            >
-              <span className={iconButton} aria-hidden="true">
-                <EyeOffIcon className="size-6 stroke-[2.25]" />
-              </span>
-            </button>
+            <div className="flex min-h-full w-full flex-1 flex-col items-center justify-center">
+              <p
+                data-testid="think-countdown"
+                aria-live="polite"
+                className="text-center text-6xl font-semibold tabular-nums tracking-[0.04em] text-day"
+              >
+                {remaining}
+              </p>
+            </div>
           )}
         </div>
 
         <div className="mt-auto flex shrink-0 gap-2.5 pt-4">
-          <button
-            type="button"
-            onClick={confirmForgot}
-            className={`${cueButton} forgot-cue bg-cyc text-day hover:brightness-110`}
-          >
-            {forgetting ? <ForgetTide durationMs={forgetHoldMs} /> : null}
-            <span className="relative z-10">Forgot</span>
-          </button>
-          <button
-            type="button"
-            onClick={confirmGotIt}
-            className={`${cueButton} bg-day text-cyc hover:brightness-105`}
-          >
-            Got it
-          </button>
+          {revealed ? (
+            <>
+              <button
+                type="button"
+                onClick={confirmForgot}
+                className={`${cueButton} forgot-cue bg-cyc text-day hover:brightness-110`}
+              >
+                Forgot
+              </button>
+              <button
+                type="button"
+                onClick={confirmGotIt}
+                className={`${cueButton} bg-day text-cyc hover:brightness-105`}
+              >
+                Got it
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={revealCues}
+              className={`${cueButton} bg-day text-cyc hover:brightness-105`}
+            >
+              Find it
+            </button>
+          )}
         </div>
       </div>
     </article>

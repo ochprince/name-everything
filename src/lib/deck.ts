@@ -1,5 +1,5 @@
 import type { Card } from '../types/card'
-import { todayKey, type ProgressState } from './storage'
+import type { ProgressState } from './storage'
 
 function primaryTag(card: Card): string {
   return card.tags[0] ?? ''
@@ -12,31 +12,29 @@ export function pickNextCard(
   rng: () => number = Math.random,
 ): { card: Card; recentTag: string } | null {
   if (cards.length === 0) return null
-  const today = todayKey()
-  const got = new Set(progress.gotItToday[today] ?? [])
-  const forgotSet = new Set(progress.forgotIds)
 
-  const byId = new Map(cards.map((c) => [c.id, c]))
-  const forgotCards = progress.forgotIds
-    .map((id) => byId.get(id))
-    .filter((c): c is Card => Boolean(c))
+  const strong = new Set(progress.strongIds)
+  const warmSet = new Set(progress.warmIds)
+  const available = cards.filter((card) => !strong.has(card.id))
+  if (available.length === 0) return null
 
-  const fresh = cards.filter((c) => !got.has(c.id) && !forgotSet.has(c.id))
-  const gotCards = cards.filter((c) => got.has(c.id))
+  const cold = available.filter((card) => !warmSet.has(card.id))
+  const warm = available.filter((card) => warmSet.has(card.id))
+  const coldWeight = cold.length ? 5 : 0
+  const warmWeight = warm.length ? 2 : 0
+  const total = coldWeight + warmWeight
+  let pool = rng() * total < coldWeight ? cold : warm
+  if (pool.length === 0) pool = available
 
-  let pool: Card[] = []
-  if (forgotCards.length && rng() < 0.3) {
-    pool = forgotCards
-  } else if (fresh.length) {
-    pool = fresh
-  } else if (forgotCards.length) {
-    pool = forgotCards
-  } else {
-    pool = gotCards.length ? gotCards : cards
+  if (progress.currentCardId && pool.length > 1) {
+    const withoutCurrent = pool.filter(
+      (card) => card.id !== progress.currentCardId,
+    )
+    if (withoutCurrent.length) pool = withoutCurrent
   }
 
   const rotated = recentTag
-    ? pool.filter((c) => primaryTag(c) !== recentTag)
+    ? pool.filter((card) => primaryTag(card) !== recentTag)
     : pool
   const finalPool = rotated.length ? rotated : pool
   const card = finalPool[Math.floor(rng() * finalPool.length)]

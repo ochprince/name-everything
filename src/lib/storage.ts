@@ -2,28 +2,31 @@ const KEY = 'name-everything/progress/v1'
 
 export type HintLang = 'en' | 'zh'
 
-export const FORGET_HOLD_OPTIONS = [0, 3000, 5000, 10000, 15000] as const
-export type ForgetHoldMs = (typeof FORGET_HOLD_OPTIONS)[number]
+export const THINK_HOLD_OPTIONS = [3000, 5000, 10000] as const
+export type ThinkHoldMs = (typeof THINK_HOLD_OPTIONS)[number]
 
-export const FORGET_HOLD_LABELS: Record<ForgetHoldMs, string> = {
-  0: '不停顿',
+export const THINK_HOLD_LABELS: Record<ThinkHoldMs, string> = {
   3000: '3s',
   5000: '5s',
   10000: '10s',
-  15000: '15s',
 }
+
+export type WrapKind = 'none' | 'daily' | 'pack'
 
 export type ProgressState = {
   forgotIds: string[]
   pinnedIds: string[]
+  warmIds: string[]
+  strongIds: string[]
   gotItToday: Record<string, string[]>
+  dailyContinues: Record<string, number>
   currentCardId: string | null
   recentPracticeTag: string | null
   streaks: { lastActiveDate: string | null; count: number }
   settings: {
     hintLang: HintLang
     autoSpeak: boolean
-    forgetHoldMs: ForgetHoldMs
+    thinkHoldMs: ThinkHoldMs
   }
 }
 
@@ -38,30 +41,39 @@ export function defaultProgress(): ProgressState {
   return {
     forgotIds: [],
     pinnedIds: [],
+    warmIds: [],
+    strongIds: [],
     gotItToday: {},
+    dailyContinues: {},
     currentCardId: null,
     recentPracticeTag: null,
     streaks: { lastActiveDate: null, count: 0 },
-    settings: { hintLang: 'en', autoSpeak: false, forgetHoldMs: 5000 },
+    settings: { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000 },
   }
 }
 
-function isForgetHold(value: unknown): value is ForgetHoldMs {
-  return (FORGET_HOLD_OPTIONS as readonly number[]).includes(value as number)
+function isThinkHold(value: unknown): value is ThinkHoldMs {
+  return (THINK_HOLD_OPTIONS as readonly number[]).includes(value as number)
 }
 
-function normalizeSettings(raw: unknown): {
-  hintLang: HintLang
-  autoSpeak: boolean
-  forgetHoldMs: ForgetHoldMs
-} {
+function migrateThinkHold(raw: {
+  thinkHoldMs?: unknown
+  forgetHoldMs?: unknown
+}): ThinkHoldMs {
+  if (isThinkHold(raw.thinkHoldMs)) return raw.thinkHoldMs
+  if (isThinkHold(raw.forgetHoldMs)) return raw.forgetHoldMs
+  return 5000
+}
+
+function normalizeSettings(raw: unknown): ProgressState['settings'] {
   if (!raw || typeof raw !== 'object') {
-    return { hintLang: 'en', autoSpeak: false, forgetHoldMs: 5000 }
+    return { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000 }
   }
   const settings = raw as {
     hintLang?: unknown
     expandZh?: unknown
     autoSpeak?: unknown
+    thinkHoldMs?: unknown
     forgetHoldMs?: unknown
   }
   const hintLang: HintLang =
@@ -73,10 +85,33 @@ function normalizeSettings(raw: unknown): {
   return {
     hintLang,
     autoSpeak: settings.autoSpeak === true,
-    forgetHoldMs: isForgetHold(settings.forgetHoldMs)
-      ? settings.forgetHoldMs
-      : 5000,
+    thinkHoldMs: migrateThinkHold(settings),
   }
+}
+
+function asIdList(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((id): id is string => typeof id === 'string')
+}
+
+function asDayMap(value: unknown): Record<string, string[]> {
+  if (!value || typeof value !== 'object') return {}
+  const out: Record<string, string[]> = {}
+  for (const [key, ids] of Object.entries(value as Record<string, unknown>)) {
+    out[key] = asIdList(ids)
+  }
+  return out
+}
+
+function asContinueMap(value: unknown): Record<string, number> {
+  if (!value || typeof value !== 'object') return {}
+  const out: Record<string, number> = {}
+  for (const [key, count] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof count === 'number' && Number.isFinite(count) && count >= 0) {
+      out[key] = Math.floor(count)
+    }
+  }
+  return out
 }
 
 export function loadProgress(): ProgressState {
@@ -88,12 +123,31 @@ export function loadProgress(): ProgressState {
     return {
       ...base,
       ...parsed,
+      forgotIds: asIdList(parsed.forgotIds),
+      pinnedIds: asIdList(parsed.pinnedIds),
+      warmIds: asIdList(parsed.warmIds),
+      strongIds: asIdList(parsed.strongIds),
+      gotItToday: asDayMap(parsed.gotItToday),
+      dailyContinues: asContinueMap(parsed.dailyContinues),
       currentCardId:
         typeof parsed.currentCardId === 'string' ? parsed.currentCardId : null,
       recentPracticeTag:
         typeof parsed.recentPracticeTag === 'string'
           ? parsed.recentPracticeTag
           : null,
+      streaks:
+        parsed.streaks && typeof parsed.streaks === 'object'
+          ? {
+              lastActiveDate:
+                typeof parsed.streaks.lastActiveDate === 'string'
+                  ? parsed.streaks.lastActiveDate
+                  : null,
+              count:
+                typeof parsed.streaks.count === 'number'
+                  ? parsed.streaks.count
+                  : 0,
+            }
+          : base.streaks,
       settings: normalizeSettings(parsed.settings),
     }
   } catch {
@@ -109,10 +163,34 @@ function uniq(ids: string[]): string[] {
   return [...new Set(ids)]
 }
 
-export function markForgot(state: ProgressState, cardId: string): ProgressState {
+export function touchStreak(
+  state: ProgressState,
+  today: string,
+): ProgressState {
+  if (state.streaks.lastActiveDate === today) return state
+  const yesterday = new Date(`${today}T12:00:00`)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yKey = todayKey(yesterday)
   return {
     ...state,
-    forgotIds: uniq([cardId, ...state.forgotIds]),
+    streaks: {
+      lastActiveDate: today,
+      count: state.streaks.lastActiveDate === yKey ? state.streaks.count + 1 : 1,
+    },
+  }
+}
+
+export function markForgot(
+  state: ProgressState,
+  cardId: string,
+  today: string = todayKey(),
+): ProgressState {
+  const next = touchStreak(state, today)
+  return {
+    ...next,
+    forgotIds: uniq([cardId, ...next.forgotIds]),
+    warmIds: next.warmIds.filter((id) => id !== cardId),
+    strongIds: next.strongIds.filter((id) => id !== cardId),
   }
 }
 
@@ -143,21 +221,71 @@ export function markGotIt(
   cardId: string,
   today: string,
 ): ProgressState {
-  const dayList = uniq([...(state.gotItToday[today] ?? []), cardId])
-  let streaks = { ...state.streaks }
-  if (streaks.lastActiveDate !== today) {
-    const yesterday = new Date(`${today}T12:00:00`)
-    yesterday.setDate(yesterday.getDate() - 1)
-    const yKey = todayKey(yesterday)
-    streaks = {
-      lastActiveDate: today,
-      count: streaks.lastActiveDate === yKey ? streaks.count + 1 : 1,
+  const next = touchStreak(state, today)
+  const dayList = uniq([...(next.gotItToday[today] ?? []), cardId])
+  return {
+    ...next,
+    forgotIds: next.forgotIds.filter((id) => id !== cardId),
+    warmIds: next.warmIds.filter((id) => id !== cardId),
+    strongIds: uniq([cardId, ...next.strongIds]),
+    gotItToday: { ...next.gotItToday, [today]: dayList },
+  }
+}
+
+export function markReviewGotIt(
+  state: ProgressState,
+  cardId: string,
+  today: string,
+): ProgressState {
+  const next = touchStreak(state, today)
+  if (next.strongIds.includes(cardId)) {
+    return {
+      ...next,
+      forgotIds: next.forgotIds.filter((id) => id !== cardId),
     }
   }
   return {
-    ...state,
-    forgotIds: state.forgotIds.filter((id) => id !== cardId),
-    gotItToday: { ...state.gotItToday, [today]: dayList },
-    streaks,
+    ...next,
+    forgotIds: next.forgotIds.filter((id) => id !== cardId),
+    warmIds: uniq([cardId, ...next.warmIds]),
   }
+}
+
+export function ackDailyContinue(
+  state: ProgressState,
+  today: string,
+): ProgressState {
+  return {
+    ...state,
+    dailyContinues: {
+      ...state.dailyContinues,
+      [today]: (state.dailyContinues[today] ?? 0) + 1,
+    },
+  }
+}
+
+export function currentSetView(
+  state: ProgressState,
+  remainingCount: number,
+  today: string = todayKey(),
+): { gotInSet: number; denom: number; wrap: WrapKind } {
+  const gotToday = state.gotItToday[today] ?? []
+  const continues = state.dailyContinues[today] ?? 0
+  const gotInSet = Math.max(0, gotToday.length - continues * 10)
+  if (remainingCount <= 0) {
+    return { gotInSet, denom: Math.max(gotInSet, 0), wrap: 'pack' }
+  }
+  const denom = Math.min(10, gotInSet + remainingCount)
+  if (gotInSet >= 10) {
+    return { gotInSet: 10, denom: 10, wrap: 'daily' }
+  }
+  return { gotInSet, denom, wrap: 'none' }
+}
+
+export function remainingPracticeCount(
+  cards: { id: string }[],
+  state: ProgressState,
+): number {
+  const strong = new Set(state.strongIds)
+  return cards.filter((card) => !strong.has(card.id)).length
 }

@@ -2,9 +2,9 @@ import { LangToggle } from '../components/LangToggle'
 import { useProgress } from '../hooks/useProgress'
 import {
   todayKey,
-  FORGET_HOLD_LABELS,
-  FORGET_HOLD_OPTIONS,
-  type ForgetHoldMs,
+  THINK_HOLD_LABELS,
+  THINK_HOLD_OPTIONS,
+  type ThinkHoldMs,
   type HintLang,
 } from '../lib/storage'
 
@@ -58,10 +58,10 @@ export function MePage() {
     }))
   }
 
-  function setForgetHold(forgetHoldMs: ForgetHoldMs) {
+  function setThinkHold(thinkHoldMs: ThinkHoldMs) {
     update((p) => ({
       ...p,
-      settings: { ...p.settings, forgetHoldMs },
+      settings: { ...p.settings, thinkHoldMs },
     }))
   }
 
@@ -122,28 +122,28 @@ export function MePage() {
           />
           <div className="flex flex-col gap-3">
             <span className="text-lg font-medium tracking-[0.04em] text-day">
-              Forgot 停顿
+              思考时长
             </span>
             <div
               role="radiogroup"
-              aria-label="Forgot 停顿"
+              aria-label="思考时长"
               className="flex flex-wrap gap-1.5"
             >
-              {FORGET_HOLD_OPTIONS.map((ms) => (
+              {THINK_HOLD_OPTIONS.map((ms) => (
                 <button
                   key={ms}
                   type="button"
                   role="radio"
-                  aria-checked={progress.settings.forgetHoldMs === ms}
-                  aria-label={FORGET_HOLD_LABELS[ms]}
-                  onClick={() => setForgetHold(ms)}
+                  aria-checked={progress.settings.thinkHoldMs === ms}
+                  aria-label={THINK_HOLD_LABELS[ms]}
+                  onClick={() => setThinkHold(ms)}
                   className={`${holdChip} ${
-                    progress.settings.forgetHoldMs === ms
+                    progress.settings.thinkHoldMs === ms
                       ? 'bg-day text-cyc hover:brightness-105'
                       : 'border border-day/70 bg-transparent text-day/80 hover:border-day hover:text-day'
                   }`}
                 >
-                  {FORGET_HOLD_LABELS[ms]}
+                  {THINK_HOLD_LABELS[ms]}
                 </button>
               ))}
             </div>

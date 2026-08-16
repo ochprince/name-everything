@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loadCards } from '../content/loadCards'
-import { defaultProgress, saveProgress } from '../lib/storage'
+import { defaultProgress, loadProgress, saveProgress, todayKey } from '../lib/storage'
 import { ReviewPage } from './ReviewPage'
 
 beforeEach(() => {
@@ -55,5 +55,24 @@ describe('ReviewPage', () => {
       screen.queryByRole('button', { name: 'Got it' }),
     ).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: card.sentence })).toBeInTheDocument()
+  })
+
+  it('review Got it leaves the card in the practice pool as 有点记忆', async () => {
+    const user = userEvent.setup()
+    const card = loadCards()[0]
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: [card.id],
+    })
+    render(<ReviewPage />)
+
+    await user.click(screen.getByRole('button', { name: card.sentence }))
+    await user.click(screen.getByRole('button', { name: 'Got it' }))
+
+    const progress = loadProgress()
+    expect(progress.forgotIds).not.toContain(card.id)
+    expect(progress.warmIds).toContain(card.id)
+    expect(progress.strongIds).not.toContain(card.id)
+    expect(progress.gotItToday[todayKey()] ?? []).not.toContain(card.id)
   })
 })

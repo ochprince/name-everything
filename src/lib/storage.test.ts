@@ -4,8 +4,12 @@ import {
   saveProgress,
   markGotIt,
   markForgot,
+  markReviewGotIt,
   setPracticeCursor,
   todayKey,
+  currentSetView,
+  ackDailyContinue,
+  defaultProgress,
 } from './storage'
 
 beforeEach(() => {
@@ -72,7 +76,100 @@ describe('progress storage', () => {
     expect(loadProgress().settings).toEqual({
       hintLang: 'zh',
       autoSpeak: false,
-      forgetHoldMs: 5000,
+      thinkHoldMs: 5000,
     })
+  })
+
+  it('migrates forgetHoldMs 0 and 15000 to thinkHoldMs 5000, keeps 3s', () => {
+    localStorage.setItem(
+      'name-everything/progress/v1',
+      JSON.stringify({
+        ...defaultProgress(),
+        settings: { hintLang: 'en', autoSpeak: false, forgetHoldMs: 0 },
+      }),
+    )
+    expect(loadProgress().settings.thinkHoldMs).toBe(5000)
+
+    localStorage.setItem(
+      'name-everything/progress/v1',
+      JSON.stringify({
+        ...defaultProgress(),
+        settings: { hintLang: 'en', autoSpeak: false, forgetHoldMs: 15000 },
+      }),
+    )
+    expect(loadProgress().settings.thinkHoldMs).toBe(5000)
+
+    localStorage.setItem(
+      'name-everything/progress/v1',
+      JSON.stringify({
+        ...defaultProgress(),
+        settings: { hintLang: 'en', autoSpeak: false, forgetHoldMs: 3000 },
+      }),
+    )
+    expect(loadProgress().settings.thinkHoldMs).toBe(3000)
+  })
+
+  it('practice Got it graduates to strong and leaves forgot and warm', () => {
+    let s = loadProgress()
+    s = markForgot(s, 'cup')
+    s = markReviewGotIt(s, 'cup', todayKey())
+    expect(s.warmIds).toContain('cup')
+    s = markGotIt(s, 'cup', todayKey())
+    expect(s.strongIds).toContain('cup')
+    expect(s.warmIds).not.toContain('cup')
+    expect(s.forgotIds).not.toContain('cup')
+    expect(s.gotItToday[todayKey()]).toContain('cup')
+  })
+
+  it('review Got it moves to warm without counting the daily set', () => {
+    const today = todayKey()
+    let s = markForgot(loadProgress(), 'cup', today)
+    s = markReviewGotIt(s, 'cup', today)
+    expect(s.forgotIds).not.toContain('cup')
+    expect(s.warmIds).toContain('cup')
+    expect(s.strongIds).not.toContain('cup')
+    expect(s.gotItToday[today] ?? []).not.toContain('cup')
+  })
+
+  it('Forgot touches streak and demotes warm back to the review queue', () => {
+    const today = todayKey()
+    let s = markReviewGotIt(markForgot(loadProgress(), 'cup', today), 'cup', today)
+    expect(s.warmIds).toContain('cup')
+    s = { ...s, streaks: { lastActiveDate: null, count: 0 } }
+    s = markForgot(s, 'cup', today)
+    expect(s.forgotIds[0]).toBe('cup')
+    expect(s.warmIds).not.toContain('cup')
+    expect(s.streaks.lastActiveDate).toBe(today)
+    expect(s.streaks.count).toBe(1)
+  })
+
+  it('currentSetView uses remaining pool as denom when fewer than 10 left', () => {
+    const today = todayKey()
+    let s = defaultProgress()
+    s = markGotIt(s, 'a', today)
+    s = markGotIt(s, 'b', today)
+    const view = currentSetView(s, 2, today)
+    expect(view).toEqual({ gotInSet: 2, denom: 4, wrap: 'none' })
+  })
+
+  it('currentSetView wraps daily at 10 when the pool still has cards', () => {
+    const today = todayKey()
+    let s = defaultProgress()
+    for (const id of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']) {
+      s = markGotIt(s, id, today)
+    }
+    expect(currentSetView(s, 5, today).wrap).toBe('daily')
+    s = ackDailyContinue(s, today)
+    expect(currentSetView(s, 5, today)).toEqual({
+      gotInSet: 0,
+      denom: 5,
+      wrap: 'none',
+    })
+  })
+
+  it('currentSetView wraps pack when nothing remains to practice', () => {
+    const today = todayKey()
+    const s = markGotIt(defaultProgress(), 'a', today)
+    expect(currentSetView(s, 0, today).wrap).toBe('pack')
   })
 })

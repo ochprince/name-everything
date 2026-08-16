@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { PracticeCard } from '../components/PracticeCard'
 import { loadCards } from '../content/loadCards'
 import { useProgress } from '../hooks/useProgress'
-import { markForgot, markGotIt, todayKey } from '../lib/storage'
+import { markForgot, markReviewGotIt, todayKey } from '../lib/storage'
 import type { Card } from '../types/card'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
@@ -135,13 +135,13 @@ export function ReviewPage() {
             chrome="sheet"
             hintLangDefault={progress.settings.hintLang}
             autoSpeak={progress.settings.autoSpeak}
-            forgetHoldMs={progress.settings.forgetHoldMs}
+            thinkHoldMs={progress.settings.thinkHoldMs}
             onGotIt={() => {
-              update((p) => markGotIt(p, openCard.id, todayKey()))
+              update((p) => markReviewGotIt(p, openCard.id, todayKey()))
               closeSheet()
             }}
             onForgot={() => {
-              update((p) => markForgot(p, openCard.id))
+              update((p) => markForgot(p, openCard.id, todayKey()))
               closeSheet()
             }}
           />

@@ -43,7 +43,7 @@ describe('MePage', () => {
       expect(loadProgress().settings).toEqual({
         hintLang: 'zh',
         autoSpeak: false,
-        forgetHoldMs: 5000,
+        thinkHoldMs: 5000,
       })
     })
   })
@@ -61,18 +61,19 @@ describe('MePage', () => {
     })
   })
 
-  it('writes forgetHoldMs into progress.settings', async () => {
+  it('writes thinkHoldMs into progress.settings', async () => {
     const user = userEvent.setup()
     render(<MePage />)
 
     const five = screen.getByRole('radio', { name: '5s' })
     const three = screen.getByRole('radio', { name: '3s' })
     expect(five).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByText('思考时长')).toBeInTheDocument()
 
     await user.click(three)
     expect(three).toHaveAttribute('aria-checked', 'true')
     await waitFor(() => {
-      expect(loadProgress().settings.forgetHoldMs).toBe(3000)
+      expect(loadProgress().settings.thinkHoldMs).toBe(3000)
     })
   })
 })
