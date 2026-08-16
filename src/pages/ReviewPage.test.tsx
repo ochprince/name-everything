@@ -15,18 +15,7 @@ describe('ReviewPage', () => {
     expect(
       screen.getByText('暂时没有 Forgot，去练习里诚实点一下吧'),
     ).toBeInTheDocument()
-  })
-
-  it('shows empty 记录 copy after switching to the pin queue', async () => {
-    const user = userEvent.setup()
-    render(<ReviewPage />)
-    await user.click(screen.getByRole('tab', { name: '记录' }))
-    expect(
-      screen.getByText('点「记录」钉住想复习的卡片'),
-    ).toBeInTheDocument()
-    expect(
-      screen.queryByText('暂时没有 Forgot，去练习里诚实点一下吧'),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: '记录' })).not.toBeInTheDocument()
   })
 
   it('removes a forgot card from the list after Got it', async () => {
@@ -66,21 +55,5 @@ describe('ReviewPage', () => {
       screen.queryByRole('button', { name: 'Got it' }),
     ).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: card.sentence })).toBeInTheDocument()
-  })
-
-  it('keeps the overlay open when 记录 is toggled', async () => {
-    const user = userEvent.setup()
-    const card = loadCards()[0]
-    saveProgress({
-      ...defaultProgress(),
-      forgotIds: [card.id],
-    })
-    render(<ReviewPage />)
-
-    await user.click(screen.getByRole('button', { name: card.sentence }))
-    await user.click(screen.getByRole('button', { name: '记录' }))
-
-    expect(screen.getByRole('button', { name: '已记录' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument()
   })
 })

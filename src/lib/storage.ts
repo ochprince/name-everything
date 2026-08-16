@@ -17,6 +17,8 @@ export type ProgressState = {
   forgotIds: string[]
   pinnedIds: string[]
   gotItToday: Record<string, string[]>
+  currentCardId: string | null
+  recentPracticeTag: string | null
   streaks: { lastActiveDate: string | null; count: number }
   settings: {
     hintLang: HintLang
@@ -37,6 +39,8 @@ export function defaultProgress(): ProgressState {
     forgotIds: [],
     pinnedIds: [],
     gotItToday: {},
+    currentCardId: null,
+    recentPracticeTag: null,
     streaks: { lastActiveDate: null, count: 0 },
     settings: { hintLang: 'en', autoSpeak: false, forgetHoldMs: 5000 },
   }
@@ -80,9 +84,16 @@ export function loadProgress(): ProgressState {
     const raw = localStorage.getItem(KEY)
     if (!raw) return defaultProgress()
     const parsed = JSON.parse(raw) as Partial<ProgressState>
+    const base = defaultProgress()
     return {
-      ...defaultProgress(),
+      ...base,
       ...parsed,
+      currentCardId:
+        typeof parsed.currentCardId === 'string' ? parsed.currentCardId : null,
+      recentPracticeTag:
+        typeof parsed.recentPracticeTag === 'string'
+          ? parsed.recentPracticeTag
+          : null,
       settings: normalizeSettings(parsed.settings),
     }
   } catch {
@@ -112,6 +123,18 @@ export function togglePin(state: ProgressState, cardId: string): ProgressState {
     pinnedIds: has
       ? state.pinnedIds.filter((id) => id !== cardId)
       : uniq([cardId, ...state.pinnedIds]),
+  }
+}
+
+export function setPracticeCursor(
+  state: ProgressState,
+  cardId: string | null,
+  recentTag: string | null,
+): ProgressState {
+  return {
+    ...state,
+    currentCardId: cardId,
+    recentPracticeTag: recentTag,
   }
 }
 

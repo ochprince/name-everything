@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect } from 'react'
 import { PracticeCard } from '../components/PracticeCard'
 import { loadCards } from '../content/loadCards'
 import { useProgress } from '../hooks/useProgress'
@@ -6,32 +6,41 @@ import { pickNextCard } from '../lib/deck'
 import {
   markForgot,
   markGotIt,
+  setPracticeCursor,
   todayKey,
-  togglePin,
   type ProgressState,
 } from '../lib/storage'
 import type { Card } from '../types/card'
 
-function advanceFrom(
+function findCard(id: string | null): Card | null {
+  if (!id) return null
+  return loadCards().find((card) => card.id === id) ?? null
+}
+
+function pickAndCursor(
   progress: ProgressState,
-  recentTag: string | null,
-): { current: Card | null; recentTag: string | null } {
-  const picked = pickNextCard(loadCards(), progress, recentTag)
-  return {
-    current: picked?.card ?? null,
-    recentTag: picked?.recentTag ?? null,
-  }
+): ProgressState {
+  const picked = pickNextCard(
+    loadCards(),
+    progress,
+    progress.recentPracticeTag,
+  )
+  if (!picked) return setPracticeCursor(progress, null, null)
+  return setPracticeCursor(progress, picked.card.id, picked.recentTag)
 }
 
 export function PracticePage() {
   const { progress, update } = useProgress()
-  const [hand, setHand] = useState(() => advanceFrom(progress, null))
-  const { current, recentTag } = hand
-
+  const current = findCard(progress.currentCardId)
   const todayCount = progress.gotItToday[todayKey()]?.length ?? 0
 
-  function advance(nextProgress: ProgressState) {
-    setHand(advanceFrom(nextProgress, recentTag))
+  useLayoutEffect(() => {
+    if (current) return
+    update((p) => pickAndCursor(p))
+  }, [current, update])
+
+  function advanceAfter(mutate: (p: ProgressState) => ProgressState) {
+    update((p) => pickAndCursor(mutate(p)))
   }
 
   return (
@@ -41,28 +50,14 @@ export function PracticePage() {
           key={current.id}
           card={current}
           todayCount={todayCount}
-          pinned={progress.pinnedIds.includes(current.id)}
           hintLangDefault={progress.settings.hintLang}
           autoSpeak={progress.settings.autoSpeak}
           forgetHoldMs={progress.settings.forgetHoldMs}
           onGotIt={() => {
-            let next: ProgressState | undefined
-            update((p) => {
-              next = markGotIt(p, current.id, todayKey())
-              return next
-            })
-            if (next) advance(next)
+            advanceAfter((p) => markGotIt(p, current.id, todayKey()))
           }}
           onForgot={() => {
-            let next: ProgressState | undefined
-            update((p) => {
-              next = markForgot(p, current.id)
-              return next
-            })
-            if (next) advance(next)
-          }}
-          onTogglePin={() => {
-            update((p) => togglePin(p, current.id))
+            advanceAfter((p) => markForgot(p, current.id))
           }}
         />
       ) : (

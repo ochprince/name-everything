@@ -8,13 +8,11 @@ const FALLBACK_IMAGE = '/images/cards/fallback.svg'
 
 export interface PracticeCardProps {
   card: Card
-  pinned: boolean
   hintLangDefault?: HintLang
   autoSpeak?: boolean
   forgetHoldMs?: ForgetHoldMs
   onGotIt: () => void
   onForgot: () => void
-  onTogglePin: () => void
   todayCount?: number
   chrome?: 'stage' | 'sheet'
 }
@@ -141,13 +139,11 @@ function ForgetTide({ durationMs }: { durationMs: number }) {
 
 export function PracticeCard({
   card,
-  pinned,
   hintLangDefault = 'en',
   autoSpeak = false,
   forgetHoldMs = 5000,
   onGotIt,
   onForgot,
-  onTogglePin,
   todayCount,
   chrome = 'stage',
 }: PracticeCardProps) {
@@ -287,7 +283,13 @@ export function PracticeCard({
           </header>
         )}
 
-        <figure className={`px-2 ${sheet ? 'mt-4' : 'mt-8'}`}>
+        <figure
+          data-testid="card-photo"
+          className={`px-2 ${sheet ? 'mt-4' : 'mt-8'}${
+            revealed ? ' cursor-pointer' : ''
+          }`}
+          onClick={revealed ? hideCues : undefined}
+        >
           <img
             src={imageSrc}
             alt=""
@@ -304,13 +306,12 @@ export function PracticeCard({
                 data-testid="cue-stage"
                 aria-label="提示区"
                 className="flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center"
-                onClick={(event) => {
-                  if (event.target === event.currentTarget) hideCues()
-                }}
+                onClick={hideCues}
               >
                 <div
                   id="card-cues"
                   className="cue-raise flex min-h-11 w-full items-center justify-center gap-2 text-day"
+                  onClick={(event) => event.stopPropagation()}
                 >
                   {showZh ? (
                     <p className="text-center text-3xl font-semibold tracking-[0.04em]">
@@ -330,7 +331,10 @@ export function PracticeCard({
                   )}
                 </div>
               </div>
-              <div className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-rose px-3 py-3">
+              <div
+                className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-rose px-3 py-3"
+                onClick={(event) => event.stopPropagation()}
+              >
                 <p className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
                   {card.sentence}
                 </p>
@@ -340,7 +344,10 @@ export function PracticeCard({
                   onPlay={() => playCardAudio(card.sentenceAudio, card.sentence)}
                 />
               </div>
-              <div className="flex shrink-0 justify-center pb-1 pt-4">
+              <div
+                className="flex shrink-0 justify-center pb-1 pt-4"
+                onClick={(event) => event.stopPropagation()}
+              >
                 <LangToggle
                   value={hintLang}
                   onChange={setHintLang}
@@ -372,13 +379,6 @@ export function PracticeCard({
           >
             {forgetting ? <ForgetTide durationMs={forgetHoldMs} /> : null}
             <span className="relative z-10">Forgot</span>
-          </button>
-          <button
-            type="button"
-            onClick={onTogglePin}
-            className={`${cueButton} bg-rose text-cyc hover:brightness-105`}
-          >
-            {pinned ? '已记录' : '记录'}
           </button>
           <button
             type="button"

@@ -17,11 +17,9 @@ const card: Card = {
 
 const props = {
   card,
-  pinned: false,
   hintLangDefault: 'en' as const,
   onGotIt: () => {},
   onForgot: () => {},
-  onTogglePin: () => {},
 }
 
 function stubSpeech() {
@@ -96,6 +94,25 @@ describe('PracticeCard', () => {
     expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
   })
 
+  it('hides cues when the photo is clicked', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: '显示提示' }))
+    fireEvent.click(screen.getByTestId('card-photo'))
+
+    expect(screen.queryByText('This is a cup.')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
+  })
+
+  it('keeps cues open when the word row is clicked', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: '显示提示' }))
+    fireEvent.click(screen.getByRole('heading', { level: 2 }))
+
+    expect(screen.getByText('This is a cup.')).toBeInTheDocument()
+  })
+
   it('switches to zh and stays on en if en is tapped again', async () => {
     const user = userEvent.setup()
     render(<PracticeCard {...props} />)
@@ -142,24 +159,20 @@ describe('PracticeCard', () => {
     expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
   })
 
-  it('fires Got it and pin callbacks immediately', async () => {
+  it('fires Got it callback immediately', async () => {
     const user = userEvent.setup()
     const onGotIt = vi.fn()
-    const onTogglePin = vi.fn()
     render(
       <PracticeCard
         card={card}
-        pinned={false}
         hintLangDefault="en"
         onGotIt={onGotIt}
         onForgot={() => {}}
-        onTogglePin={onTogglePin}
       />,
     )
     await user.click(screen.getByRole('button', { name: 'Got it' }))
-    await user.click(screen.getByRole('button', { name: '记录' }))
     expect(onGotIt).toHaveBeenCalled()
-    expect(onTogglePin).toHaveBeenCalled()
+    expect(screen.queryByRole('button', { name: '记录' })).not.toBeInTheDocument()
   })
 
   it('reveals the answer then calls onForgot after the hold', () => {

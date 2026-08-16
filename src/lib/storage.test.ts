@@ -4,7 +4,7 @@ import {
   saveProgress,
   markGotIt,
   markForgot,
-  togglePin,
+  setPracticeCursor,
   todayKey,
 } from './storage'
 
@@ -38,31 +38,24 @@ describe('progress storage', () => {
     expect(s.forgotIds).toEqual(['door', 'bag', 'cup'])
   })
 
-  it('togglePin pins and unpins without touching forgot', () => {
+  it('setPracticeCursor stores the active card and recent tag', () => {
     let s = loadProgress()
-    s = markForgot(s, 'door')
-    s = togglePin(s, 'door')
-    expect(s.pinnedIds).toContain('door')
-    expect(s.forgotIds).toContain('door')
-    s = togglePin(s, 'door')
-    expect(s.pinnedIds).not.toContain('door')
-    expect(s.forgotIds).toContain('door')
+    s = setPracticeCursor(s, 'cup', 'home')
+    expect(s.currentCardId).toBe('cup')
+    expect(s.recentPracticeTag).toBe('home')
+    s = setPracticeCursor(s, null, null)
+    expect(s.currentCardId).toBeNull()
+    expect(s.recentPracticeTag).toBeNull()
   })
 
-  it('togglePin keeps newest ids first', () => {
+  it('defaults and persists currentCardId', () => {
+    expect(loadProgress().currentCardId).toBeNull()
     let s = loadProgress()
-    s = togglePin(s, 'cup')
-    s = togglePin(s, 'door')
-    expect(s.pinnedIds).toEqual(['door', 'cup'])
-  })
-
-  it('togglePin puts a re-pinned id at the front', () => {
-    let s = loadProgress()
-    s = togglePin(s, 'cup')
-    s = togglePin(s, 'door')
-    s = togglePin(s, 'cup')
-    s = togglePin(s, 'cup')
-    expect(s.pinnedIds).toEqual(['cup', 'door'])
+    s = setPracticeCursor(s, 'bag', 'travel')
+    saveProgress(s)
+    const again = loadProgress()
+    expect(again.currentCardId).toBe('bag')
+    expect(again.recentPracticeTag).toBe('travel')
   })
 
   it('migrates expandZh true to hintLang zh', () => {
@@ -81,13 +74,5 @@ describe('progress storage', () => {
       autoSpeak: false,
       forgetHoldMs: 5000,
     })
-  })
-
-  it('persists to localStorage', () => {
-    let s = loadProgress()
-    s = togglePin(s, 'bag')
-    saveProgress(s)
-    const again = loadProgress()
-    expect(again.pinnedIds).toContain('bag')
   })
 })

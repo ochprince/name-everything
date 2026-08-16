@@ -2,20 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { PracticeCard } from '../components/PracticeCard'
 import { loadCards } from '../content/loadCards'
 import { useProgress } from '../hooks/useProgress'
-import {
-  markForgot,
-  markGotIt,
-  todayKey,
-  togglePin,
-} from '../lib/storage'
+import { markForgot, markGotIt, todayKey } from '../lib/storage'
 import type { Card } from '../types/card'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
-
-type QueueTab = 'forgot' | 'pinned'
-
-const cueTab =
-  'inline-flex min-h-14 flex-1 items-center justify-center rounded-2xl px-2.5 font-cue text-lg font-semibold tracking-[0.08em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day'
 
 function CueThumb({ src }: { src: string }) {
   const [imageSrc, setImageSrc] = useState(src)
@@ -45,12 +35,10 @@ function cardsForIds(ids: string[]): Card[] {
 
 export function ReviewPage() {
   const { progress, update } = useProgress()
-  const [tab, setTab] = useState<QueueTab>('forgot')
   const [openId, setOpenId] = useState<string | null>(null)
 
   const sheetRef = useRef<HTMLDialogElement>(null)
-  const queueIds = tab === 'forgot' ? progress.forgotIds : progress.pinnedIds
-  const listed = cardsForIds(queueIds)
+  const listed = cardsForIds(progress.forgotIds)
   const openCard = openId
     ? loadCards().find((card) => card.id === openId) ?? null
     : null
@@ -65,100 +53,33 @@ export function ReviewPage() {
     }
   }, [openCard])
 
-  const emptyCopy =
-    tab === 'forgot'
-      ? '暂时没有 Forgot，去练习里诚实点一下吧'
-      : '点「记录」钉住想复习的卡片'
-
   function closeSheet() {
     setOpenId(null)
   }
 
   return (
     <main data-seed="af3fdd03" className="relative z-0 min-h-dvh overflow-x-clip bg-cyc font-cue">
-      {/* THESIS: Review is a cue sheet of honest queues on the cyclorama, not a cream flashcard list. OWN-WORLD: cyc/cobalt/rose/day; channel tabs; actor-inset thumbs; sentence on the wash. STORY: Scan Forgot or 记录, raise the same practice card, Got it is day. FIRST VIEWPORT: Phone column, cyc wash, 复习, two channels, thumb+sentence rows or rose-band empty cue. FORM: Cyclorama dawn, Operate, committed, seed af3fdd03. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md */}
+      {/* THESIS: Review is a cue sheet of the Forgot queue on the cyclorama. OWN-WORLD: cyc/cobalt/rose/day; actor-inset thumbs; sentence on the wash. STORY: Scan Forgot, raise the same practice card, Got it is day. FIRST VIEWPORT: Phone column, cyc wash, 复习, thumb+sentence rows or rose-band empty cue. FORM: Cyclorama dawn, Operate, committed, seed af3fdd03. */}
       <div className="cyc-wash pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-md px-4 pb-28">
         <h1 className="pt-[max(1.5rem,env(safe-area-inset-top))] text-center text-sm font-semibold tracking-[0.22em] text-day">
           复习
         </h1>
+        <p className="mt-3 text-center text-lg font-semibold tracking-[0.12em] text-rose">
+          Forgot
+          {progress.forgotIds.length > 0 ? (
+            <span aria-hidden="true" className="ml-2 text-base tracking-[0.06em] text-day/80">
+              {progress.forgotIds.length}
+            </span>
+          ) : null}
+        </p>
 
-        <div
-          role="tablist"
-          aria-label="复习队列"
-          className="mt-8 flex gap-2.5"
-          onKeyDown={(event) => {
-            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
-            event.preventDefault()
-            const next = tab === 'forgot' ? 'pinned' : 'forgot'
-            setTab(next)
-            requestAnimationFrame(() => {
-              document
-                .getElementById(
-                  next === 'forgot' ? 'review-tab-forgot' : 'review-tab-pinned',
-                )
-                ?.focus()
-            })
-          }}
-        >
-          <button
-            type="button"
-            role="tab"
-            id="review-tab-forgot"
-            aria-label="Forgot"
-            aria-selected={tab === 'forgot'}
-            aria-controls="review-queue"
-            tabIndex={tab === 'forgot' ? 0 : -1}
-            className={`${cueTab} ${
-              tab === 'forgot'
-                ? 'bg-day text-cyc hover:brightness-105'
-                : 'border border-day/75 bg-cyc text-day hover:border-day hover:brightness-110'
-            }`}
-            onClick={() => setTab('forgot')}
-          >
-            Forgot
-            {progress.forgotIds.length > 0 ? (
-              <span aria-hidden="true" className="ml-2 text-base tracking-[0.06em] opacity-80">
-                {progress.forgotIds.length}
-              </span>
-            ) : null}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            id="review-tab-pinned"
-            aria-label="记录"
-            aria-selected={tab === 'pinned'}
-            aria-controls="review-queue"
-            tabIndex={tab === 'pinned' ? 0 : -1}
-            className={`${cueTab} ${
-              tab === 'pinned'
-                ? 'bg-day text-cyc hover:brightness-105'
-                : 'border border-day/75 bg-cyc text-day hover:border-day hover:brightness-110'
-            }`}
-            onClick={() => setTab('pinned')}
-          >
-            记录
-            {progress.pinnedIds.length > 0 ? (
-              <span aria-hidden="true" className="ml-2 text-base tracking-[0.06em] opacity-80">
-                {progress.pinnedIds.length}
-              </span>
-            ) : null}
-          </button>
-        </div>
-
-        <div
-          role="tabpanel"
-          id="review-queue"
-          aria-labelledby={
-            tab === 'forgot' ? 'review-tab-forgot' : 'review-tab-pinned'
-          }
-        >
+        <div id="review-queue">
           {listed.length === 0 ? (
             <div className="mt-16 rounded-2xl bg-rose px-4 py-5">
               <p className="text-center text-lg font-medium leading-snug tracking-[0.01em] text-cyc">
-                {emptyCopy}
+                暂时没有 Forgot，去练习里诚实点一下吧
               </p>
             </div>
           ) : (
@@ -205,7 +126,6 @@ export function ReviewPage() {
             key={openCard.id}
             card={openCard}
             chrome="sheet"
-            pinned={progress.pinnedIds.includes(openCard.id)}
             hintLangDefault={progress.settings.hintLang}
             autoSpeak={progress.settings.autoSpeak}
             forgetHoldMs={progress.settings.forgetHoldMs}
@@ -216,9 +136,6 @@ export function ReviewPage() {
             onForgot={() => {
               update((p) => markForgot(p, openCard.id))
               closeSheet()
-            }}
-            onTogglePin={() => {
-              update((p) => togglePin(p, openCard.id))
             }}
           />
         </dialog>
