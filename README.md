@@ -64,7 +64,7 @@ Manual smoke-check after `npm run dev` (stop the dev server when done):
 
 - [ ] **Practice** — image visible; countdown in the cue stage; word / sentence hidden until Find it; timeout reveals the answer, increments the 复习 count, and waits for Next
 - [ ] Find it reveals word + sentence; Forgot / Got it apply immediately
-- [ ] A daily set of 10 practice Got its shows 今日已完成; Continue starts another set
+- [ ] A daily set of 10 practice Got its shows 今日已完成; Continue keeps the header at 10 / 10 and starts another set
 - [ ] **Review** — Forgot list updates; sheet opens already revealed
 - [ ] **Me** — today count, streak, and 思考时长 persist
 - [ ] Mobile viewport usable (one column, large tap targets)

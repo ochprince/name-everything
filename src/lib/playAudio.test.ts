@@ -1,10 +1,14 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { playCardAudio, stopCardAudio } from './playAudio'
+import { playCardAudio, stopCardAudio, unlockCardAudio } from './playAudio'
 
 function stubSpeech() {
   const speakFn = vi.fn()
   const cancelFn = vi.fn()
-  vi.stubGlobal('speechSynthesis', { speak: speakFn, cancel: cancelFn })
+  vi.stubGlobal('speechSynthesis', {
+    speak: speakFn,
+    cancel: cancelFn,
+    resume: vi.fn(),
+  })
   vi.stubGlobal(
     'SpeechSynthesisUtterance',
     class {
@@ -22,9 +26,10 @@ function stubAudio(playImpl: () => Promise<void> = () => Promise.resolve()) {
   const instances: FakeAudio[] = []
   class FakeAudio {
     src: string
+    currentTime = 0
     play = vi.fn(playImpl)
     pause = vi.fn()
-    constructor(src: string) {
+    constructor(src = '') {
       this.src = src
       instances.push(this)
     }
@@ -108,5 +113,18 @@ describe('playCardAudio', () => {
     stopCardAudio()
     expect(instances[0].pause).toHaveBeenCalledTimes(1)
     expect(cancelFn).toHaveBeenCalled()
+  })
+
+  it('unlocks a shared element that later card audio can reuse after a timer', async () => {
+    stubSpeech()
+    const { instances } = stubAudio()
+    unlockCardAudio()
+    expect(instances).toHaveLength(1)
+    expect(instances[0].play).toHaveBeenCalled()
+    await Promise.resolve()
+    playCardAudio('https://cdn.example/cup.mp3', 'cup')
+    expect(instances).toHaveLength(1)
+    expect(instances[0].src).toBe('https://cdn.example/cup.mp3')
+    expect(instances[0].play).toHaveBeenCalledTimes(2)
   })
 })

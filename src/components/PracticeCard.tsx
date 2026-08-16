@@ -88,9 +88,13 @@ export function PracticeCard({
   const [remaining, setRemaining] = useState(Math.round(thinkHoldMs / 1000))
   const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onTimeoutRef = useRef(onTimeout)
+  const autoSpeakRef = useRef(autoSpeak)
+  const cardRef = useRef(card)
   const showZh = hintLang === 'zh' && Boolean(card.zh)
 
   onTimeoutRef.current = onTimeout
+  autoSpeakRef.current = autoSpeak
+  cardRef.current = card
 
   function clearAutoSpeak() {
     if (autoTimer.current !== null) {
@@ -101,11 +105,12 @@ export function PracticeCard({
   }
 
   function startAutoSpeak() {
-    if (!autoSpeak) return
-    playCardAudio(card.wordAudio, card.word)
+    if (!autoSpeakRef.current) return
+    const next = cardRef.current
+    playCardAudio(next.wordAudio, next.word)
     autoTimer.current = setTimeout(() => {
       autoTimer.current = null
-      playCardAudio(card.sentenceAudio, card.sentence)
+      playCardAudio(next.sentenceAudio, next.sentence)
     }, 3000)
   }
 
@@ -154,14 +159,20 @@ export function PracticeCard({
     const timeout = setTimeout(() => {
       setRevealed(true)
       setTimeoutHold(true)
-      startAutoSpeak()
-      onTimeoutRef.current?.()
     }, thinkHoldMs)
     return () => {
       clearInterval(interval)
       clearTimeout(timeout)
     }
   }, [card.id, revealed, sheet, thinkHoldMs])
+
+  useEffect(() => {
+    if (!timeoutHold) return
+    startAutoSpeak()
+    onTimeoutRef.current?.()
+    // Speak + enqueue once per timeout-hold, using the current card.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeoutHold])
 
   useEffect(() => {
     if (!sheet || !autoSpeak) return

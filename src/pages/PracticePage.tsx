@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { PracticeCard } from '../components/PracticeCard'
 import { loadCards } from '../content/loadCards'
 import { useProgress } from '../hooks/useProgress'
@@ -72,6 +72,8 @@ export function PracticePage() {
   const remaining = remainingPracticeCount(catalog, progress)
   const today = todayKey()
   const view = currentSetView(progress, remaining, today)
+  const [heldCard, setHeldCard] = useState<Card | null>(null)
+  const shown = heldCard ?? current
 
   useLayoutEffect(() => {
     if (view.wrap !== 'none') return
@@ -110,25 +112,28 @@ export function PracticePage() {
 
   return (
     <main className="relative z-0 min-h-dvh bg-cyc">
-      {current && !progress.strongIds.includes(current.id) ? (
+      {shown && !progress.strongIds.includes(shown.id) ? (
         <PracticeCard
-          key={current.id}
-          card={current}
+          key={shown.id}
+          card={shown}
           progressLabel={`${view.gotInSet} / ${view.denom}`}
           hintLangDefault={progress.settings.hintLang}
           autoSpeak={progress.settings.autoSpeak}
           thinkHoldMs={progress.settings.thinkHoldMs}
           onGotIt={() => {
-            advanceAfter((p) => markGotIt(p, current.id, today))
+            setHeldCard(null)
+            advanceAfter((p) => markGotIt(p, shown.id, today))
           }}
           onForgot={() => {
-            advanceAfter((p) => markForgot(p, current.id, today))
+            setHeldCard(null)
+            advanceAfter((p) => markForgot(p, shown.id, today))
           }}
           onTimeout={() => {
-            update((p) => markForgot(p, current.id, today))
+            setHeldCard(shown)
+            update((p) => pickAndCursor(markForgot(p, shown.id, today)))
           }}
           onNext={() => {
-            advanceAfter((p) => p)
+            setHeldCard(null)
           }}
         />
       ) : (

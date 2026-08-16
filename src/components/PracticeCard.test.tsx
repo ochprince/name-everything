@@ -291,6 +291,23 @@ describe('PracticeCard', () => {
     expect(speakFn).toHaveBeenCalledTimes(1)
   })
 
+  it('auto-plays on timeout even if autoSpeak is turned on after think starts', () => {
+    vi.useFakeTimers()
+    const { speakFn } = stubSpeech()
+    stubAudio()
+    const { rerender } = render(
+      <PracticeCard {...props} autoSpeak={false} thinkHoldMs={3000} />,
+    )
+    rerender(<PracticeCard {...props} autoSpeak thinkHoldMs={3000} />)
+    act(() => {
+      vi.advanceTimersByTime(3000)
+    })
+    expect(speakFn).toHaveBeenCalledTimes(1)
+    expect((speakFn.mock.calls[0][0] as SpeechSynthesisUtterance).text).toBe(
+      'cup',
+    )
+  })
+
   it('auto-plays on timeout reveal when autoSpeak is on', () => {
     vi.useFakeTimers()
     const { speakFn } = stubSpeech()

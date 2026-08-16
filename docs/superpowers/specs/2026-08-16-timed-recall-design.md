@@ -22,16 +22,16 @@ Find it:
 2. Actions become **Forgot** | **Got it**. No Forgot hold / tide. Study as long as needed. Stay revealed until one action.
 
 Forgot (after Find it): enqueue Forgot, next card.  
-Timeout **Next**: advance only (Forgot already recorded).  
+Timeout **Next**: the cursor already moved on timeout; Next only dismisses the lingering card. Leaving practice (e.g. 复习) drops the linger so the next visit is the following card.  
 Got it: graduate to 较好记忆, count toward today’s set, next card (or a wrap screen).
 
 ## Daily set
 
 - Only **practice** Got it counts.
-- Header: `n / d` where `d = min(10, n + remaining pool)`.
+- Header: `n / d` where `n` is today’s practice Got it total (does not reset on Continue) and `d = max(n, min(10, n + remaining pool))`.
 - At 10 practice Got its with pool remaining: wrap **今日已完成** + **继续**.
 - Pool empty (no 毫无记忆 / 有点记忆 left): wrap **这一批都会了**, no continue. If the last Got it happens before 10, still this wrap — do not pad to 10.
-- Continue starts another set of up to 10 from the remaining pool.
+- Continue keeps the header at `10 / 10` (or `n / n` after more Got its) and starts another set from the remaining pool. The wrap repeats every additional 10.
 - Mid-set refresh restores the same card and count.
 
 ## Memory tiers (not SRS)

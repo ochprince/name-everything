@@ -287,14 +287,15 @@ export function currentSetView(
 ): { gotInSet: number; denom: number; wrap: WrapKind } {
   const gotToday = state.gotItToday[today] ?? []
   const continues = state.dailyContinues[today] ?? 0
-  const gotInSet = Math.max(0, gotToday.length - continues * 10)
+  const gotInSet = gotToday.length
   if (remainingCount <= 0) {
     return { gotInSet, denom: Math.max(gotInSet, 0), wrap: 'pack' }
   }
-  const denom = Math.min(10, gotInSet + remainingCount)
-  if (gotInSet >= 10) {
-    return { gotInSet: 10, denom: 10, wrap: 'daily' }
+  const target = (continues + 1) * 10
+  if (gotInSet >= target) {
+    return { gotInSet, denom: gotInSet, wrap: 'daily' }
   }
+  const denom = Math.max(gotInSet, Math.min(10, gotInSet + remainingCount))
   return { gotInSet, denom, wrap: 'none' }
 }
 

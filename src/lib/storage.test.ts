@@ -185,8 +185,14 @@ describe('progress storage', () => {
     expect(currentSetView(s, 5, today).wrap).toBe('daily')
     s = ackDailyContinue(s, today)
     expect(currentSetView(s, 5, today)).toEqual({
-      gotInSet: 0,
-      denom: 5,
+      gotInSet: 10,
+      denom: 10,
+      wrap: 'none',
+    })
+    s = markGotIt(s, 'k', today)
+    expect(currentSetView(s, 4, today)).toEqual({
+      gotInSet: 11,
+      denom: 11,
       wrap: 'none',
     })
   })

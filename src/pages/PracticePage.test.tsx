@@ -82,14 +82,28 @@ describe('PracticePage', () => {
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
     expect(loadProgress().forgotIds).toContain(id)
     expect(loadProgress().reviewUnseenCount).toBe(1)
-    expect(loadProgress().currentCardId).toBe(id)
     expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
     act(() => {
       vi.advanceTimersByTime(2000)
     })
-    expect(loadProgress().currentCardId).toBe(id)
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(loadProgress().currentCardId).not.toBe(id)
+    expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
+  })
+
+  it('does not restore a timeout card after leaving practice', () => {
+    vi.useFakeTimers()
+    const first = renderWithProgress(<PracticePage />)
+    const id = loadProgress().currentCardId
+    expect(id).toBeTruthy()
+    act(() => {
+      vi.advanceTimersByTime(5000)
+    })
+    expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
+    first.unmount()
+
+    renderWithProgress(<PracticePage />)
     expect(loadProgress().currentCardId).not.toBe(id)
     expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
   })
@@ -113,7 +127,7 @@ describe('PracticePage', () => {
     expect(screen.getByText('今日已完成')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Find it' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '继续' }))
-    expect(screen.getByText('0 / 10')).toBeInTheDocument()
+    expect(screen.getByText('10 / 10')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Find it' })).toBeInTheDocument()
   })
 
