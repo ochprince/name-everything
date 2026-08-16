@@ -1,23 +1,66 @@
-import { Volume2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { playCardAudio } from '../lib/playAudio'
+import { useEffect, useRef, useState } from 'react'
+import { playCardAudio, stopCardAudio } from '../lib/playAudio'
+import type { ForgetHoldMs, HintLang } from '../lib/storage'
 import type { Card } from '../types/card'
-import { FoldRow } from './FoldRow'
+import { LangToggle } from './LangToggle'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
 
 export interface PracticeCardProps {
   card: Card
   pinned: boolean
-  expandWordDefault: boolean
-  expandZhDefault: boolean
+  hintLangDefault?: HintLang
+  autoSpeak?: boolean
+  forgetHoldMs?: ForgetHoldMs
   onGotIt: () => void
   onForgot: () => void
   onTogglePin: () => void
+  todayCount?: number
+  chrome?: 'stage' | 'sheet'
 }
 
 const cueButton =
-  'min-h-14 flex-1 rounded-2xl px-2.5 font-cue text-lg font-semibold tracking-[0.08em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'
+  'inline-flex min-h-14 flex-1 items-center justify-center rounded-2xl px-2.5 text-center font-cue text-lg font-semibold tracking-[0.08em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'
+
+const iconButton =
+  'inline-flex size-14 items-center justify-center rounded-full border border-day/70 text-day pointer-events-none'
+
+function VolumeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  )
+}
+
+function EyeOffIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+      <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+      <path d="m2 2 20 20" />
+    </svg>
+  )
+}
 
 function CueSpeaker({
   label,
@@ -40,87 +83,295 @@ function CueSpeaker({
           : 'border-day/70 text-day focus-visible:outline-day'
       }`}
     >
-      <Volume2 aria-hidden="true" className="size-4 stroke-[2.25]" />
+      <VolumeIcon className="size-4 stroke-[2.25]" />
     </button>
+  )
+}
+
+const WAVE_W = 28
+const WAVE_H = 56
+const WAVE_MID = 14
+const WAVE_AMP = 5
+const WAVE_GAP = 3.5
+const WAVE_OVERLAP = 4
+
+function tideCurve(offset: number): string {
+  const x = WAVE_MID + offset
+  const right = x + WAVE_AMP
+  const left = x - WAVE_AMP
+  return `M${x} 0C${right} 14 ${right} 20 ${x} 28C${left} 36 ${left} 42 ${x} ${WAVE_H}`
+}
+
+const TIDE_WATER =
+  `M-${WAVE_OVERLAP} 0H${WAVE_MID}C${WAVE_MID + WAVE_AMP} 14 ${WAVE_MID + WAVE_AMP} 20 ${WAVE_MID} 28C${WAVE_MID - WAVE_AMP} 36 ${WAVE_MID - WAVE_AMP} 42 ${WAVE_MID} ${WAVE_H}H-${WAVE_OVERLAP}Z`
+const TIDE_LINE_LEFT = tideCurve(-WAVE_GAP)
+const TIDE_LINE_MID = tideCurve(0)
+const TIDE_LINE_RIGHT = tideCurve(WAVE_GAP)
+
+function ForgetTide({ durationMs }: { durationMs: number }) {
+  return (
+    <span className="forget-tide" aria-hidden="true">
+      <span
+        className="forget-tide-sheet"
+        style={{ animationDuration: `${durationMs}ms` }}
+      >
+        <span className="forget-tide-water" />
+        <svg
+          className="forget-tide-wave"
+          viewBox={`-${WAVE_OVERLAP} 0 ${WAVE_W + WAVE_OVERLAP} ${WAVE_H}`}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <path fill="#1e3a8a" d={TIDE_WATER} />
+          <g
+            fill="none"
+            stroke="#f4f1ea"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.5"
+          >
+            <path d={TIDE_LINE_LEFT} />
+            <path d={TIDE_LINE_MID} />
+            <path d={TIDE_LINE_RIGHT} />
+          </g>
+        </svg>
+      </span>
+    </span>
   )
 }
 
 export function PracticeCard({
   card,
   pinned,
-  expandWordDefault,
-  expandZhDefault,
+  hintLangDefault = 'en',
+  autoSpeak = false,
+  forgetHoldMs = 5000,
   onGotIt,
   onForgot,
   onTogglePin,
+  todayCount,
+  chrome = 'stage',
 }: PracticeCardProps) {
   const [imageSrc, setImageSrc] = useState(card.image)
+  const [revealed, setRevealed] = useState(false)
+  const [hintLang, setHintLang] = useState<HintLang>(
+    card.zh && hintLangDefault === 'zh' ? 'zh' : 'en',
+  )
+  const [forgetting, setForgetting] = useState(false)
+  const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const forgetTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const sheet = chrome === 'sheet'
+  const showZh = hintLang === 'zh' && Boolean(card.zh)
+
+  function clearAutoSpeak() {
+    if (autoTimer.current !== null) {
+      clearTimeout(autoTimer.current)
+      autoTimer.current = null
+    }
+    stopCardAudio()
+  }
+
+  function hideCues() {
+    if (forgetting) return
+    clearAutoSpeak()
+    setRevealed(false)
+  }
+
+  function startAutoSpeak() {
+    if (!autoSpeak) return
+    playCardAudio(card.wordAudio, card.word)
+    autoTimer.current = setTimeout(() => {
+      autoTimer.current = null
+      playCardAudio(card.sentenceAudio, card.sentence)
+    }, 3000)
+  }
+
+  function revealCues() {
+    setRevealed(true)
+    startAutoSpeak()
+  }
+
+  function clearForgetHold() {
+    if (forgetTimer.current !== null) {
+      clearTimeout(forgetTimer.current)
+      forgetTimer.current = null
+    }
+    setForgetting(false)
+  }
+
+  function confirmForgot() {
+    if (forgetting) {
+      clearForgetHold()
+      clearAutoSpeak()
+      onForgot()
+      return
+    }
+    if (forgetHoldMs === 0) {
+      clearAutoSpeak()
+      onForgot()
+      return
+    }
+    const wasHidden = !revealed
+    setRevealed(true)
+    setForgetting(true)
+    if (wasHidden) startAutoSpeak()
+    forgetTimer.current = setTimeout(() => {
+      forgetTimer.current = null
+      clearAutoSpeak()
+      onForgot()
+    }, forgetHoldMs)
+  }
+
+  function confirmGotIt() {
+    clearForgetHold()
+    clearAutoSpeak()
+    onGotIt()
+  }
 
   useEffect(() => {
     setImageSrc(card.image)
   }, [card.image])
 
-  return (
-    <article data-seed="af3fdd03" className="relative min-h-dvh overflow-x-hidden font-cue">
-      <div className="cyc-wash pointer-events-none absolute inset-0" />
-      <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-4 pb-28">
-        <p className="px-20 pt-6 text-center text-sm font-semibold tracking-[0.28em] text-day">
-          Name Everything
-        </p>
+  useEffect(() => {
+    setRevealed(false)
+    setForgetting(false)
+    setHintLang(card.zh && hintLangDefault === 'zh' ? 'zh' : 'en')
+    if (autoTimer.current !== null) {
+      clearTimeout(autoTimer.current)
+      autoTimer.current = null
+    }
+    if (forgetTimer.current !== null) {
+      clearTimeout(forgetTimer.current)
+      forgetTimer.current = null
+    }
+    stopCardAudio()
+  }, [card.id, card.zh, hintLangDefault])
 
-        <figure className="mt-8">
+  useEffect(() => {
+    return () => {
+      if (autoTimer.current !== null) clearTimeout(autoTimer.current)
+      if (forgetTimer.current !== null) clearTimeout(forgetTimer.current)
+      stopCardAudio()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!revealed) return
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') hideCues()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [revealed, forgetting])
+
+  return (
+    <article data-seed="af3fdd03" className="relative z-0 min-h-dvh overflow-x-clip font-cue">
+      <div className="cyc-wash pointer-events-none absolute inset-0" />
+      <div
+        className={`relative mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 ${
+          sheet ? 'pb-6 pt-16' : 'pb-28 pt-[max(1.25rem,env(safe-area-inset-top))]'
+        }`}
+      >
+        {sheet ? null : (
+          <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-2">
+            <span aria-hidden="true" />
+            <p className="text-center text-sm font-semibold tracking-[0.22em] text-day">
+              Name Everything
+            </p>
+            {typeof todayCount === 'number' ? (
+              <p className="justify-self-end rounded-xl bg-rose px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-cyc">
+                今日 {todayCount}
+              </p>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+          </header>
+        )}
+
+        <figure className={`px-2 ${sheet ? 'mt-4' : 'mt-8'}`}>
           <img
             src={imageSrc}
             alt=""
-            className="aspect-[4/3] w-full rounded-2xl object-cover shadow-[0_22px_44px_-14px_rgba(0,0,0,0.7)]"
+            decoding="async"
+            className="aspect-[4/3] w-full rounded-xl object-cover shadow-[0_22px_44px_-14px_rgba(0,0,0,0.7)]"
             onError={() => setImageSrc(FALLBACK_IMAGE)}
           />
         </figure>
 
-        <div className="mt-10 flex items-center gap-2 rounded-2xl bg-rose px-3 py-3">
-          <h2 className="min-w-0 flex-1 text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
-            {card.sentence}
-          </h2>
-          <CueSpeaker
-            label="朗读句子"
-            tone="onRose"
-            onPlay={() => playCardAudio(card.sentenceAudio, card.sentence)}
-          />
-        </div>
-
-        <div className="mt-7 flex gap-3">
-          <FoldRow
-            key={`${card.id}-word-${expandWordDefault}`}
-            label="Word"
-            defaultOpen={expandWordDefault}
-          >
-            <span className="inline-flex items-center justify-center gap-1">
-              <span>{card.word}</span>
-              <CueSpeaker
-                label="朗读单词"
-                tone="onCyc"
-                onPlay={() => playCardAudio(card.wordAudio, card.word)}
-              />
-            </span>
-          </FoldRow>
-          {card.zh ? (
-            <FoldRow
-              key={`${card.id}-zh-${expandZhDefault}`}
-              label="中文"
-              defaultOpen={expandZhDefault}
+        <div className="flex min-h-0 flex-1 flex-col">
+          {revealed ? (
+            <>
+              <div
+                data-testid="cue-stage"
+                aria-label="提示区"
+                className="flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center"
+                onClick={(event) => {
+                  if (event.target === event.currentTarget) hideCues()
+                }}
+              >
+                <div
+                  id="card-cues"
+                  className="cue-raise flex min-h-11 w-full items-center justify-center gap-2 text-day"
+                >
+                  {showZh ? (
+                    <p className="text-center text-3xl font-semibold tracking-[0.04em]">
+                      {card.zh}
+                    </p>
+                  ) : (
+                    <>
+                      <h2 className="text-center text-3xl font-semibold tracking-[0.04em]">
+                        {card.word}
+                      </h2>
+                      <CueSpeaker
+                        label="朗读单词"
+                        tone="onCyc"
+                        onPlay={() => playCardAudio(card.wordAudio, card.word)}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-rose px-3 py-3">
+                <p className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
+                  {card.sentence}
+                </p>
+                <CueSpeaker
+                  label="朗读句子"
+                  tone="onRose"
+                  onPlay={() => playCardAudio(card.sentenceAudio, card.sentence)}
+                />
+              </div>
+              <div className="flex shrink-0 justify-center pb-1 pt-4">
+                <LangToggle
+                  value={hintLang}
+                  onChange={setHintLang}
+                  hasZh={Boolean(card.zh)}
+                />
+              </div>
+            </>
+          ) : (
+            <button
+              type="button"
+              aria-label="显示提示"
+              aria-expanded="false"
+              aria-controls="card-cues"
+              onClick={revealCues}
+              className="flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-day"
             >
-              {card.zh}
-            </FoldRow>
-          ) : null}
+              <span className={iconButton} aria-hidden="true">
+                <EyeOffIcon className="size-6 stroke-[2.25]" />
+              </span>
+            </button>
+          )}
         </div>
 
-        <div className="mt-auto flex gap-2.5 pt-10">
+        <div className="mt-auto flex gap-2.5 pt-8">
           <button
             type="button"
-            onClick={onForgot}
-            className={`${cueButton} border border-day/75 bg-cyc text-day hover:border-day hover:brightness-110`}
+            onClick={confirmForgot}
+            className={`${cueButton} relative overflow-hidden border border-day/75 bg-cyc text-day hover:border-day hover:brightness-110`}
           >
-            Forgot
+            {forgetting ? <ForgetTide durationMs={forgetHoldMs} /> : null}
+            <span className="relative z-10">Forgot</span>
           </button>
           <button
             type="button"
@@ -131,7 +382,7 @@ export function PracticeCard({
           </button>
           <button
             type="button"
-            onClick={onGotIt}
+            onClick={confirmGotIt}
             className={`${cueButton} bg-day text-cyc hover:brightness-105`}
           >
             Got it

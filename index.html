@@ -5,6 +5,49 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Name Everything</title>
+    <style>
+      html, body, #root { margin: 0; min-height: 100%; background: #05060a; color: #f4f1ea; }
+      #ne-diag {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        overflow: auto;
+        padding: 1rem 1rem 2rem;
+        background: #05060a;
+        color: #f4f1ea;
+        font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        -webkit-text-size-adjust: 100%;
+      }
+      #ne-diag[data-open="1"] { display: block; }
+      #ne-diag h1 { margin: 0 0 0.5rem; font: 700 1.05rem/1.3 sans-serif; }
+      #ne-diag .ne-verdict {
+        margin: 0 0 0.75rem;
+        padding: 0.75rem;
+        border: 1px solid #e8a598;
+        color: #e8a598;
+        font: 600 0.95rem/1.4 sans-serif;
+      }
+      #ne-diag .ne-verdict[data-ok="1"] { border-color: #8fa37a; color: #8fa37a; }
+      #ne-diag .ne-btns { display: flex; gap: 0.5rem; margin: 0 0 0.75rem; }
+      #ne-diag button {
+        flex: 1;
+        min-height: 44px;
+        border: 0;
+        background: #1e3a8a;
+        color: #f4f1ea;
+        font: 700 0.9rem/1 sans-serif;
+      }
+      #ne-diag pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font: inherit;
+      }
+      #ne-diag .ok { color: #8fa37a; }
+      #ne-diag .bad { color: #e8a598; }
+      #ne-diag .wait { color: #8aa0c8; }
+    </style>
   </head>
   <body>
     <!--
@@ -16,6 +59,321 @@ FORM: Cyclorama dawn, Operate, committed color strategy, seed af3fdd03.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
     -->
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="ne-diag" aria-live="polite">
+      <h1>加载诊断</h1>
+      <p class="ne-verdict" id="ne-verdict">探测中…</p>
+      <div class="ne-btns">
+        <button type="button" id="ne-copy">复制全部</button>
+        <button type="button" id="ne-retry">重新探测</button>
+      </div>
+      <pre id="ne-log"></pre>
+    </div>
+    <script>
+      window.__NE_MOD = {}
+    </script>
+    <script nomodule>
+      window.__NE_MOD.nomodule = true
+    </script>
+    <script src="/dev-ping.js"></script>
+    <script>
+      (function () {
+        var t0 = Date.now()
+        var force = /(?:\?|&)debug=1(?:&|$)/.test(location.search)
+        var rows = []
+        var fetches = {}
+        var moduleError = ''
+        var copyMsg = ''
+        var panel = document.getElementById('ne-diag')
+        var verdictEl = document.getElementById('ne-verdict')
+        var logEl = document.getElementById('ne-log')
+
+        function row(kind, label, detail) {
+          rows.push({ kind: kind, label: label, detail: detail, t: Date.now() - t0 })
+        }
+
+        function upsert(kind, label, detail) {
+          for (var i = 0; i < rows.length; i++) {
+            if (rows[i].label === label) {
+              rows[i].kind = kind
+              rows[i].detail = detail
+              rows[i].t = Date.now() - t0
+              return
+            }
+          }
+          row(kind, label, detail)
+        }
+
+        function mounted() {
+          var root = document.getElementById('root')
+          return !!(root && root.childNodes.length)
+        }
+
+        function conclude() {
+          if (mounted()) return { ok: 1, text: '应用已挂载。加 ?debug=1 可保留本面板。' }
+          if (window.__NE_MOD && window.__NE_MOD.nomodule) {
+            return { ok: 0, text: '浏览器不支持 ES modules，Vite 开发页无法运行。换系统 Safari / Chrome。' }
+          }
+          if (!window.__NE_PING) {
+            return { ok: 0, text: '连 /dev-ping.js 都没执行。脚本被拦截（广告拦截 / 极速模式 / 企业策略）。' }
+          }
+          if (moduleError) {
+            return { ok: 0, text: '入口模块加载失败：' + moduleError + '。看下面 GET /src/boot.ts 的状态和 Content-Type。' }
+          }
+          if (fetches['/src/boot.ts'] && fetches['/src/boot.ts'].ok === false) {
+            return { ok: 0, text: '手机拿不到 /src/boot.ts。多半是防火墙、连错 IP，或 Vite 没在这个端口上。' }
+          }
+          if (window.__NE_BOOT) {
+            var steps = window.__NE_BOOT.steps || []
+            var mainOk = steps.some(function (s) { return s.msg.indexOf('main.tsx ok') === 0 })
+            var mainEval = steps.some(function (s) { return s.msg.indexOf('main.tsx evaluated') === 0 })
+            var mainTimeout = steps.some(function (s) { return s.msg.indexOf('main.tsx TIMEOUT') === 0 })
+            if (mainTimeout && !mainOk && !mainEval) {
+              return { ok: 0, text: 'main.tsx 依赖图超时。常见：/.vite/deps 被手机黑洞。看探针 /dev-deps/react.js 与 Resources 是否出现 /dev-deps/。' }
+            }
+            if (!mainOk && !mainEval) {
+              return { ok: 0, text: 'boot.ts 已执行，但 main.tsx 还没完成。卡在依赖图（常见：/.vite/deps 或某个 import 失败）。看 Boot 步骤与 /dev-deps 探针。' }
+            }
+            if (mainEval) {
+              return { ok: 0, text: 'React createRoot 已调用，但 #root 仍空。更像是渲染报错，看 window.error。' }
+            }
+          }
+          if (fetches['/dev-hmr.js'] && fetches['/dev-hmr.js'].ok === false) {
+            return { ok: 0, text: '拿不到 /dev-hmr.js。和 /dev-ping.js 对比：ping 通、hmr 不通就是拦截名单问题。' }
+          }
+          if (fetches['/src/boot.ts'] && fetches['/src/boot.ts'].ok) {
+            return { ok: 0, text: 'boot.ts 能下载，但模块没执行。常见于排在它前面的 /dev-hmr.js 还没完成。看 Resources。' }
+          }
+          return { ok: 0, text: 'HTML 到了，应用没挂上。把下面日志复制发我。' }
+        }
+
+        function resourceLines() {
+          if (!performance || !performance.getEntriesByType) return []
+          var list = performance.getEntriesByType('resource')
+          var out = []
+          for (var i = 0; i < list.length; i++) {
+            var r = list[i]
+            var name = r.name.replace(location.origin, '')
+            out.push(
+              Math.round(r.duration) + 'ms  ' +
+              (r.transferSize != null ? r.transferSize + 'b  ' : '') +
+              r.initiatorType + '  ' + name
+            )
+          }
+          return out
+        }
+
+        function dump() {
+          var lines = []
+          lines.push('href     ' + location.href)
+          lines.push('origin   ' + location.origin)
+          lines.push('elapsed  ' + (Date.now() - t0) + 'ms  mounted=' + mounted())
+          lines.push('online   ' + String(navigator.onLine))
+          lines.push('modules  ' + ('noModule' in HTMLScriptElement.prototype ? 'yes' : 'NO'))
+          lines.push('ping.js  ' + (window.__NE_PING ? 'ran @' + window.__NE_PING : 'DID NOT RUN'))
+          lines.push('ua       ' + navigator.userAgent)
+          if (copyMsg) lines.push('copy     ' + copyMsg)
+          lines.push('')
+          for (var i = 0; i < rows.length; i++) {
+            var r = rows[i]
+            var mark = r.kind === 'ok' ? 'OK ' : r.kind === 'bad' ? 'ERR' : '.. '
+            lines.push(mark + ' +' + r.t + 'ms  ' + r.label + (r.detail ? '  ' + r.detail : ''))
+          }
+          if (window.__NE_BOOT) {
+            lines.push('')
+            lines.push('--- Boot ---')
+            var steps = window.__NE_BOOT.steps || []
+            for (var j = 0; j < steps.length; j++) {
+              lines.push('+' + steps[j].t + 'ms  ' + steps[j].msg)
+            }
+            if (window.__NE_BOOT.error) lines.push('error  ' + window.__NE_BOOT.error)
+            if (!steps.length) lines.push('(boot 对象在，但还没有步骤)')
+          } else {
+            lines.push('')
+            lines.push('--- Boot ---')
+            lines.push('(window.__NE_BOOT 不存在：入口模块还没执行)')
+          }
+          var res = resourceLines()
+          lines.push('')
+          lines.push('--- Resources (' + res.length + ') ---')
+          if (!res.length) lines.push('(还没有 resource timing)')
+          for (var k = 0; k < res.length; k++) lines.push(res[k])
+          return lines.join('\n')
+        }
+
+        var lastHtml = ''
+        function paint() {
+          var shouldShow = force || !mounted()
+          panel.setAttribute('data-open', shouldShow ? '1' : '0')
+          if (!shouldShow) return
+          var v = conclude()
+          verdictEl.textContent = v.text
+          verdictEl.setAttribute('data-ok', v.ok ? '1' : '0')
+          var html = dump()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/^OK /gm, '<span class="ok">OK </span>')
+            .replace(/^ERR/gm, '<span class="bad">ERR</span>')
+            .replace(/^\.\. /gm, '<span class="wait">.. </span>')
+          if (html === lastHtml) return
+          lastHtml = html
+          var top = panel.scrollTop
+          logEl.innerHTML = html
+          panel.scrollTop = top
+        }
+
+        function probe(path) {
+          upsert('wait', path, 'fetching…')
+          paint()
+          var ctrl = typeof AbortController === 'function' ? new AbortController() : null
+          var timer = setTimeout(function () {
+            if (ctrl) ctrl.abort()
+          }, 2500)
+          var opts = { cache: 'no-store', credentials: 'same-origin' }
+          if (ctrl) opts.signal = ctrl.signal
+          return fetch(path, opts).then(function (res) {
+            return res.text().then(function (text) {
+              clearTimeout(timer)
+              var type = res.headers.get('content-type') || '?'
+              var head = text.slice(0, 60).replace(/\s+/g, ' ')
+              var info = res.status + '  ' + type + '  ' + text.length + 'b  ' + head
+              fetches[path] = { ok: res.ok, status: res.status, type: type }
+              upsert(res.ok ? 'ok' : 'bad', path, info)
+              if (/boot\.ts$/.test(path) && res.ok && !/javascript|ecmascript|typescript/i.test(type)) {
+                upsert('bad', path + ' MIME', 'Content-Type 不像 JS：' + type)
+              }
+            })
+          }).catch(function (err) {
+            clearTimeout(timer)
+            fetches[path] = { ok: false, error: String(err) }
+            upsert('bad', path, String(err && err.name === 'AbortError' ? 'timeout 2.5s' : err))
+          }).then(paint)
+        }
+
+        function runProbes() {
+          var paths = [
+            '/',
+            '/dev-ping.js',
+            '/dev-hmr.js',
+            '/vite.svg',
+            '/dev-deps/react.js',
+            '/node_modules/.vite/deps/react.js',
+          ]
+          var i = 0
+          function next() {
+            if (i >= paths.length) return
+            probe(paths[i++]).then(next)
+          }
+          next()
+        }
+
+        row('ok', 'inline-script', 'classic script ran')
+        row(
+          'noModule' in HTMLScriptElement.prototype ? 'ok' : 'bad',
+          'es-modules',
+          'noModule' in HTMLScriptElement.prototype ? 'supported' : 'NOT supported'
+        )
+        paint()
+
+        setTimeout(function () {
+          if (!mounted()) runProbes()
+        }, 2000)
+
+        window.addEventListener('error', function (event) {
+          var el = event.target
+          if (el && el.tagName === 'SCRIPT') {
+            moduleError = (el.src || '') + ' (script error)'
+            upsert('bad', 'script.onerror', moduleError)
+          } else {
+            upsert(
+              'bad',
+              'window.error',
+              (event.message || 'error') + '  ' + (event.filename || '') + ':' + event.lineno
+            )
+          }
+          paint()
+        }, true)
+
+        window.addEventListener('unhandledrejection', function (event) {
+          upsert('bad', 'unhandledrejection', String(event.reason))
+          paint()
+        })
+
+        document.getElementById('ne-copy').onclick = function () {
+          var text = dump()
+          function ok() {
+            copyMsg = 'copied'
+            paint()
+          }
+          function fail(err) {
+            copyMsg = 'copy failed: ' + err + ' — 请长按日志全选'
+            paint()
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(ok).catch(function () {
+              fallback()
+            })
+          } else {
+            fallback()
+          }
+          function fallback() {
+            var ta = document.createElement('textarea')
+            ta.value = text
+            ta.setAttribute('readonly', '')
+            ta.style.position = 'fixed'
+            ta.style.left = '0'
+            ta.style.top = '0'
+            ta.style.width = '100%'
+            ta.style.height = '40px'
+            document.body.appendChild(ta)
+            ta.focus()
+            ta.select()
+            ta.setSelectionRange(0, text.length)
+            try {
+              if (document.execCommand('copy')) ok()
+              else fail('execCommand')
+            } catch (err) {
+              fail(err)
+            }
+            document.body.removeChild(ta)
+          }
+        }
+
+        document.getElementById('ne-retry').onclick = function () {
+          t0 = Date.now()
+          rows = []
+          fetches = {}
+          copyMsg = ''
+          row('ok', 'inline-script', 're-probe')
+          runProbes()
+          paint()
+        }
+
+        window.__NE_DIAG_BIND = function (entry) {
+          entry.addEventListener('error', function () {
+            moduleError = (entry.getAttribute('src') || '') + ' onerror'
+            window.__NE_MOD.error = moduleError
+            upsert('bad', 'module-tag', moduleError)
+            paint()
+          })
+          entry.addEventListener('load', function () {
+            window.__NE_MOD.load = Date.now()
+            upsert('ok', 'module-tag', 'load event')
+            paint()
+          })
+        }
+
+        var tick = setInterval(function () {
+          paint()
+          if (mounted() && !force) clearInterval(tick)
+        }, 400)
+      })()
+    </script>
+    <script type="module" src="/src/boot.ts" id="ne-entry"></script>
+    <script>
+      if (window.__NE_DIAG_BIND) {
+        var neEntry = document.getElementById('ne-entry')
+        if (neEntry) window.__NE_DIAG_BIND(neEntry)
+      }
+    </script>
   </body>
 </html>

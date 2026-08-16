@@ -9,6 +9,15 @@ function cancelSpeech(): void {
   }
 }
 
+export function stopCardAudio(): void {
+  generation += 1
+  if (current) {
+    current.pause()
+    current = null
+  }
+  cancelSpeech()
+}
+
 export function playCardAudio(url: string | undefined, fallbackText: string): void {
   generation += 1
   const token = generation

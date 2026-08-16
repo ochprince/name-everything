@@ -15,7 +15,7 @@ const FALLBACK_IMAGE = '/images/cards/fallback.svg'
 type QueueTab = 'forgot' | 'pinned'
 
 const cueTab =
-  'min-h-14 flex-1 rounded-2xl px-2.5 font-cue text-lg font-semibold tracking-[0.08em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day'
+  'inline-flex min-h-14 flex-1 items-center justify-center rounded-2xl px-2.5 font-cue text-lg font-semibold tracking-[0.08em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day'
 
 function CueThumb({ src }: { src: string }) {
   const [imageSrc, setImageSrc] = useState(src)
@@ -29,6 +29,7 @@ function CueThumb({ src }: { src: string }) {
       src={imageSrc}
       alt=""
       className="aspect-[4/3] w-[5.5rem] shrink-0 rounded-xl object-cover shadow-[0_12px_24px_-10px_rgba(0,0,0,0.7)]"
+      loading="lazy"
       onError={() => setImageSrc(FALLBACK_IMAGE)}
     />
   )
@@ -74,12 +75,12 @@ export function ReviewPage() {
   }
 
   return (
-    <main data-seed="af3fdd03" className="relative min-h-dvh overflow-x-hidden bg-cyc font-cue">
+    <main data-seed="af3fdd03" className="relative z-0 min-h-dvh overflow-x-clip bg-cyc font-cue">
       {/* THESIS: Review is a cue sheet of honest queues on the cyclorama, not a cream flashcard list. OWN-WORLD: cyc/cobalt/rose/day; channel tabs; actor-inset thumbs; sentence on the wash. STORY: Scan Forgot or 记录, raise the same practice card, Got it is day. FIRST VIEWPORT: Phone column, cyc wash, 复习, two channels, thumb+sentence rows or rose-band empty cue. FORM: Cyclorama dawn, Operate, committed, seed af3fdd03. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md */}
       <div className="cyc-wash pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-md px-4 pb-28">
-        <h1 className="px-4 pt-6 text-center text-sm font-semibold tracking-[0.28em] text-day">
+        <h1 className="pt-[max(1.5rem,env(safe-area-inset-top))] text-center text-sm font-semibold tracking-[0.22em] text-day">
           复习
         </h1>
 
@@ -87,11 +88,25 @@ export function ReviewPage() {
           role="tablist"
           aria-label="复习队列"
           className="mt-8 flex gap-2.5"
+          onKeyDown={(event) => {
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+            event.preventDefault()
+            const next = tab === 'forgot' ? 'pinned' : 'forgot'
+            setTab(next)
+            requestAnimationFrame(() => {
+              document
+                .getElementById(
+                  next === 'forgot' ? 'review-tab-forgot' : 'review-tab-pinned',
+                )
+                ?.focus()
+            })
+          }}
         >
           <button
             type="button"
             role="tab"
             id="review-tab-forgot"
+            aria-label="Forgot"
             aria-selected={tab === 'forgot'}
             aria-controls="review-queue"
             tabIndex={tab === 'forgot' ? 0 : -1}
@@ -103,11 +118,17 @@ export function ReviewPage() {
             onClick={() => setTab('forgot')}
           >
             Forgot
+            {progress.forgotIds.length > 0 ? (
+              <span aria-hidden="true" className="ml-2 text-base tracking-[0.06em] opacity-80">
+                {progress.forgotIds.length}
+              </span>
+            ) : null}
           </button>
           <button
             type="button"
             role="tab"
             id="review-tab-pinned"
+            aria-label="记录"
             aria-selected={tab === 'pinned'}
             aria-controls="review-queue"
             tabIndex={tab === 'pinned' ? 0 : -1}
@@ -119,6 +140,11 @@ export function ReviewPage() {
             onClick={() => setTab('pinned')}
           >
             记录
+            {progress.pinnedIds.length > 0 ? (
+              <span aria-hidden="true" className="ml-2 text-base tracking-[0.06em] opacity-80">
+                {progress.pinnedIds.length}
+              </span>
+            ) : null}
           </button>
         </div>
 
@@ -171,16 +197,18 @@ export function ReviewPage() {
             type="button"
             aria-label="返回列表"
             onClick={closeSheet}
-            className="absolute left-4 top-5 z-40 min-h-11 rounded-2xl px-3 font-cue text-lg font-semibold tracking-[0.08em] text-day transition-[filter] duration-200 ease-out hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day"
+            className="absolute left-4 top-[max(1.25rem,env(safe-area-inset-top))] z-40 min-h-11 rounded-2xl border border-day/40 px-3 font-cue text-lg font-semibold tracking-[0.08em] text-day transition-[filter] duration-200 ease-out hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day"
           >
             返回
           </button>
           <PracticeCard
             key={openCard.id}
             card={openCard}
+            chrome="sheet"
             pinned={progress.pinnedIds.includes(openCard.id)}
-            expandWordDefault={progress.settings.expandWord}
-            expandZhDefault={progress.settings.expandZh}
+            hintLangDefault={progress.settings.hintLang}
+            autoSpeak={progress.settings.autoSpeak}
+            forgetHoldMs={progress.settings.forgetHoldMs}
             onGotIt={() => {
               update((p) => markGotIt(p, openCard.id, todayKey()))
               closeSheet()

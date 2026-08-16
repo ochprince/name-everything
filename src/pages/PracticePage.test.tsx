@@ -14,11 +14,12 @@ describe('PracticePage', () => {
     render(<PracticePage />)
 
     expect(screen.getByText('今日 0')).toBeInTheDocument()
-    const sentence = screen.getByRole('heading', { level: 2 }).textContent
-    expect(sentence).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: '显示提示' }))
+    const word = screen.getByRole('heading', { level: 2 }).textContent
+    expect(word).toBeTruthy()
 
     await user.click(screen.getByRole('button', { name: '记录' }))
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(sentence!)
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(word!)
     expect(screen.getByRole('button', { name: '已记录' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Got it' }))

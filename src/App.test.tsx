@@ -27,6 +27,15 @@ describe('app shell routes', () => {
     expect(screen.getByRole('link', { name: '我的' })).toHaveAttribute('href', '/me')
   })
 
+  it('keeps bottom nav on 我的', () => {
+    renderApp('/me')
+    expect(screen.getByRole('navigation', { name: '主导航' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '我的' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+
   it('marks 复习 current after navigating to /review', async () => {
     const user = userEvent.setup()
     renderApp()

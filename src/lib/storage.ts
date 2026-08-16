@@ -1,11 +1,28 @@
 const KEY = 'name-everything/progress/v1'
 
+export type HintLang = 'en' | 'zh'
+
+export const FORGET_HOLD_OPTIONS = [0, 3000, 5000, 10000, 15000] as const
+export type ForgetHoldMs = (typeof FORGET_HOLD_OPTIONS)[number]
+
+export const FORGET_HOLD_LABELS: Record<ForgetHoldMs, string> = {
+  0: '不停顿',
+  3000: '3s',
+  5000: '5s',
+  10000: '10s',
+  15000: '15s',
+}
+
 export type ProgressState = {
   forgotIds: string[]
   pinnedIds: string[]
   gotItToday: Record<string, string[]>
   streaks: { lastActiveDate: string | null; count: number }
-  settings: { expandWord: boolean; expandZh: boolean }
+  settings: {
+    hintLang: HintLang
+    autoSpeak: boolean
+    forgetHoldMs: ForgetHoldMs
+  }
 }
 
 export function todayKey(d = new Date()): string {
@@ -21,7 +38,40 @@ export function defaultProgress(): ProgressState {
     pinnedIds: [],
     gotItToday: {},
     streaks: { lastActiveDate: null, count: 0 },
-    settings: { expandWord: false, expandZh: false },
+    settings: { hintLang: 'en', autoSpeak: false, forgetHoldMs: 5000 },
+  }
+}
+
+function isForgetHold(value: unknown): value is ForgetHoldMs {
+  return (FORGET_HOLD_OPTIONS as readonly number[]).includes(value as number)
+}
+
+function normalizeSettings(raw: unknown): {
+  hintLang: HintLang
+  autoSpeak: boolean
+  forgetHoldMs: ForgetHoldMs
+} {
+  if (!raw || typeof raw !== 'object') {
+    return { hintLang: 'en', autoSpeak: false, forgetHoldMs: 5000 }
+  }
+  const settings = raw as {
+    hintLang?: unknown
+    expandZh?: unknown
+    autoSpeak?: unknown
+    forgetHoldMs?: unknown
+  }
+  const hintLang: HintLang =
+    settings.hintLang === 'en' || settings.hintLang === 'zh'
+      ? settings.hintLang
+      : settings.expandZh === true
+        ? 'zh'
+        : 'en'
+  return {
+    hintLang,
+    autoSpeak: settings.autoSpeak === true,
+    forgetHoldMs: isForgetHold(settings.forgetHoldMs)
+      ? settings.forgetHoldMs
+      : 5000,
   }
 }
 
@@ -29,7 +79,12 @@ export function loadProgress(): ProgressState {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return defaultProgress()
-    return { ...defaultProgress(), ...JSON.parse(raw) }
+    const parsed = JSON.parse(raw) as Partial<ProgressState>
+    return {
+      ...defaultProgress(),
+      ...parsed,
+      settings: normalizeSettings(parsed.settings),
+    }
   } catch {
     return defaultProgress()
   }
@@ -46,7 +101,7 @@ function uniq(ids: string[]): string[] {
 export function markForgot(state: ProgressState, cardId: string): ProgressState {
   return {
     ...state,
-    forgotIds: uniq([...state.forgotIds, cardId]),
+    forgotIds: uniq([cardId, ...state.forgotIds]),
   }
 }
 
@@ -56,7 +111,7 @@ export function togglePin(state: ProgressState, cardId: string): ProgressState {
     ...state,
     pinnedIds: has
       ? state.pinnedIds.filter((id) => id !== cardId)
-      : uniq([...state.pinnedIds, cardId]),
+      : uniq([cardId, ...state.pinnedIds]),
   }
 }
 

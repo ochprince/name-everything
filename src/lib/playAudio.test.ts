@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { playCardAudio } from './playAudio'
+import { playCardAudio, stopCardAudio } from './playAudio'
 
 function stubSpeech() {
   const speakFn = vi.fn()
@@ -99,5 +99,14 @@ describe('playCardAudio', () => {
     await Promise.resolve()
     await Promise.resolve()
     expect(speakFn).not.toHaveBeenCalled()
+  })
+
+  it('stopCardAudio pauses current audio and cancels speech', () => {
+    const { cancelFn } = stubSpeech()
+    const { instances } = stubAudio()
+    playCardAudio('https://cdn.example/a.mp3', 'a')
+    stopCardAudio()
+    expect(instances[0].pause).toHaveBeenCalledTimes(1)
+    expect(cancelFn).toHaveBeenCalled()
   })
 })

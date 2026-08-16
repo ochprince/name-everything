@@ -27,25 +27,52 @@ describe('MePage', () => {
     expect(screen.getByText('4')).toBeInTheDocument()
   })
 
-  it('writes expandWord and expandZh into progress.settings', async () => {
+  it('writes hintLang into progress.settings', async () => {
     const user = userEvent.setup()
     render(<MePage />)
 
-    const wordSwitch = screen.getByRole('switch', { name: '默认展开目标词' })
-    const zhSwitch = screen.getByRole('switch', { name: '默认展开中文' })
-    expect(wordSwitch).toHaveAttribute('aria-checked', 'false')
-    expect(zhSwitch).toHaveAttribute('aria-checked', 'false')
+    const en = screen.getByRole('radio', { name: 'EN' })
+    const zh = screen.getByRole('radio', { name: 'ZH' })
+    expect(en).toHaveAttribute('aria-checked', 'true')
+    expect(zh).toHaveAttribute('aria-checked', 'false')
 
-    await user.click(wordSwitch)
-    await user.click(zhSwitch)
+    await user.click(zh)
 
-    expect(wordSwitch).toHaveAttribute('aria-checked', 'true')
-    expect(zhSwitch).toHaveAttribute('aria-checked', 'true')
+    expect(zh).toHaveAttribute('aria-checked', 'true')
     await waitFor(() => {
       expect(loadProgress().settings).toEqual({
-        expandWord: true,
-        expandZh: true,
+        hintLang: 'zh',
+        autoSpeak: false,
+        forgetHoldMs: 5000,
       })
+    })
+  })
+
+  it('writes autoSpeak into progress.settings', async () => {
+    const user = userEvent.setup()
+    render(<MePage />)
+
+    const toggle = screen.getByRole('switch', { name: '自动发音' })
+    expect(toggle).toHaveAttribute('aria-checked', 'false')
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-checked', 'true')
+    await waitFor(() => {
+      expect(loadProgress().settings.autoSpeak).toBe(true)
+    })
+  })
+
+  it('writes forgetHoldMs into progress.settings', async () => {
+    const user = userEvent.setup()
+    render(<MePage />)
+
+    const five = screen.getByRole('radio', { name: '5s' })
+    const three = screen.getByRole('radio', { name: '3s' })
+    expect(five).toHaveAttribute('aria-checked', 'true')
+
+    await user.click(three)
+    expect(three).toHaveAttribute('aria-checked', 'true')
+    await waitFor(() => {
+      expect(loadProgress().settings.forgetHoldMs).toBe(3000)
     })
   })
 })

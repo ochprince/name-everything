@@ -35,17 +35,16 @@ export function PracticePage() {
   }
 
   return (
-    <main className="relative min-h-dvh bg-cyc">
-      <p className="pointer-events-none absolute right-4 top-6 z-10 font-cue text-sm font-semibold tracking-[0.2em] text-rose">
-        今日 {todayCount}
-      </p>
+    <main className="relative z-0 min-h-dvh bg-cyc">
       {current ? (
         <PracticeCard
           key={current.id}
           card={current}
+          todayCount={todayCount}
           pinned={progress.pinnedIds.includes(current.id)}
-          expandWordDefault={progress.settings.expandWord}
-          expandZhDefault={progress.settings.expandZh}
+          hintLangDefault={progress.settings.hintLang}
+          autoSpeak={progress.settings.autoSpeak}
+          forgetHoldMs={progress.settings.forgetHoldMs}
           onGotIt={() => {
             let next: ProgressState | undefined
             update((p) => {

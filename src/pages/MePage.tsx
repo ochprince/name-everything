@@ -1,8 +1,18 @@
+import { LangToggle } from '../components/LangToggle'
 import { useProgress } from '../hooks/useProgress'
-import { todayKey } from '../lib/storage'
+import {
+  todayKey,
+  FORGET_HOLD_LABELS,
+  FORGET_HOLD_OPTIONS,
+  type ForgetHoldMs,
+  type HintLang,
+} from '../lib/storage'
 
 const holdButton =
   'min-h-11 min-w-[4.75rem] rounded-2xl px-3 font-cue text-base font-semibold tracking-[0.14em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'
+
+const holdChip =
+  'inline-flex min-h-9 items-center justify-center rounded-full px-3 font-cue text-[0.7rem] font-semibold tracking-[0.14em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'
 
 function CueHold({
   label,
@@ -30,7 +40,7 @@ function CueHold({
             : 'border border-day/75 bg-cyc text-day hover:border-day hover:brightness-110'
         }`}
       >
-        {on ? 'HOLD' : 'OUT'}
+        {on ? '开' : '关'}
       </button>
     </div>
   )
@@ -41,16 +51,29 @@ export function MePage() {
   const todayCount = progress.gotItToday[todayKey()]?.length ?? 0
   const streak = progress.streaks.count
 
+  function setHintLang(hintLang: HintLang) {
+    update((p) => ({
+      ...p,
+      settings: { ...p.settings, hintLang },
+    }))
+  }
+
+  function setForgetHold(forgetHoldMs: ForgetHoldMs) {
+    update((p) => ({
+      ...p,
+      settings: { ...p.settings, forgetHoldMs },
+    }))
+  }
+
   return (
     <main
       data-seed="af3fdd03"
-      className="relative min-h-dvh overflow-x-hidden bg-cyc font-cue"
+      className="relative z-0 min-h-dvh overflow-x-clip bg-cyc font-cue"
     >
-      {/* THESIS: Me is a cue sheet of practice light, not a stats dashboard. OWN-WORLD: cyc/cobalt/rose/day; counts as plot levels; expand defaults as cue holds. STORY: Read today's work and streak, hold Word / 中文 open if that's how you practice. FIRST VIEWPORT: Phone column, cyc wash, 我的, two cue-sheet rows, two HOLD/OUT marks. FORM: Cyclorama dawn, Operate, committed, seed af3fdd03. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md */}
       <div className="cyc-wash pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-md px-4 pb-28">
-        <h1 className="px-4 pt-6 text-center text-sm font-semibold tracking-[0.28em] text-day">
+        <h1 className="pt-[max(1.5rem,env(safe-area-inset-top))] text-center text-sm font-semibold tracking-[0.22em] text-day">
           我的
         </h1>
 
@@ -74,32 +97,57 @@ export function MePage() {
         </ul>
 
         <div className="mt-14 flex flex-col gap-5">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-lg font-medium tracking-[0.04em] text-day">
+              默认提示
+            </span>
+            <LangToggle
+              value={progress.settings.hintLang}
+              onChange={setHintLang}
+              label="默认提示"
+            />
+          </div>
           <CueHold
-            label="默认展开目标词"
-            on={progress.settings.expandWord}
+            label="自动发音"
+            on={progress.settings.autoSpeak}
             onToggle={() =>
               update((p) => ({
                 ...p,
                 settings: {
                   ...p.settings,
-                  expandWord: !p.settings.expandWord,
+                  autoSpeak: !p.settings.autoSpeak,
                 },
               }))
             }
           />
-          <CueHold
-            label="默认展开中文"
-            on={progress.settings.expandZh}
-            onToggle={() =>
-              update((p) => ({
-                ...p,
-                settings: {
-                  ...p.settings,
-                  expandZh: !p.settings.expandZh,
-                },
-              }))
-            }
-          />
+          <div className="flex flex-col gap-3">
+            <span className="text-lg font-medium tracking-[0.04em] text-day">
+              Forgot 停顿
+            </span>
+            <div
+              role="radiogroup"
+              aria-label="Forgot 停顿"
+              className="flex flex-wrap gap-1.5"
+            >
+              {FORGET_HOLD_OPTIONS.map((ms) => (
+                <button
+                  key={ms}
+                  type="button"
+                  role="radio"
+                  aria-checked={progress.settings.forgetHoldMs === ms}
+                  aria-label={FORGET_HOLD_LABELS[ms]}
+                  onClick={() => setForgetHold(ms)}
+                  className={`${holdChip} ${
+                    progress.settings.forgetHoldMs === ms
+                      ? 'bg-day text-cyc hover:brightness-105'
+                      : 'border border-day/70 bg-transparent text-day/80 hover:border-day hover:text-day'
+                  }`}
+                >
+                  {FORGET_HOLD_LABELS[ms]}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </main>
