@@ -201,8 +201,16 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         }
 
         var lastHtml = ''
+        // Stay blank while the app boots — only surface diagnostics on
+        // ?debug=1, hard failures, or if mount still hasn't happened after grace.
+        var revealAfterMs = 3500
         function paint() {
-          var shouldShow = force || !mounted()
+          var hardFail = !!(
+            moduleError ||
+            (window.__NE_MOD && window.__NE_MOD.nomodule)
+          )
+          var timedOut = !mounted() && Date.now() - t0 >= revealAfterMs
+          var shouldShow = force || hardFail || timedOut
           panel.setAttribute('data-open', shouldShow ? '1' : '0')
           if (!shouldShow) return
           var v = conclude()
