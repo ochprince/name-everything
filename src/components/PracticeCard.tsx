@@ -299,60 +299,76 @@ export function PracticeCard({
           />
         </figure>
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div
+          className="flex min-h-0 flex-1 cursor-pointer flex-col"
+          onClick={revealed ? hideCues : undefined}
+        >
           {revealed ? (
             <>
               <div
                 data-testid="cue-stage"
                 aria-label="提示区"
-                className="flex min-h-0 w-full flex-1 cursor-pointer flex-col items-center justify-center"
-                onClick={hideCues}
+                className="flex min-h-0 w-full flex-1 flex-col items-center justify-center"
               >
                 <div
                   id="card-cues"
+                  data-testid="card-cues"
                   className="cue-raise flex min-h-11 w-full items-center justify-center gap-2 text-day"
-                  onClick={(event) => event.stopPropagation()}
                 >
                   {showZh ? (
-                    <p className="text-center text-3xl font-semibold tracking-[0.04em]">
+                    <p
+                      className="text-center text-3xl font-semibold tracking-[0.04em]"
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       {card.zh}
                     </p>
                   ) : (
                     <>
-                      <h2 className="text-center text-3xl font-semibold tracking-[0.04em]">
+                      <h2
+                        className="text-center text-3xl font-semibold tracking-[0.04em]"
+                        onClick={(event) => event.stopPropagation()}
+                      >
                         {card.word}
                       </h2>
-                      <CueSpeaker
-                        label="朗读单词"
-                        tone="onCyc"
-                        onPlay={() => playCardAudio(card.wordAudio, card.word)}
-                      />
+                      <span onClick={(event) => event.stopPropagation()}>
+                        <CueSpeaker
+                          label="朗读单词"
+                          tone="onCyc"
+                          onPlay={() => playCardAudio(card.wordAudio, card.word)}
+                        />
+                      </span>
                     </>
                   )}
                 </div>
               </div>
-              <div
-                className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-rose px-3 py-3"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <p className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
+              <div className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-rose px-3 py-3">
+                <p
+                  className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   {card.sentence}
                 </p>
-                <CueSpeaker
-                  label="朗读句子"
-                  tone="onRose"
-                  onPlay={() => playCardAudio(card.sentenceAudio, card.sentence)}
-                />
+                <span onClick={(event) => event.stopPropagation()}>
+                  <CueSpeaker
+                    label="朗读句子"
+                    tone="onRose"
+                    onPlay={() =>
+                      playCardAudio(card.sentenceAudio, card.sentence)
+                    }
+                  />
+                </span>
               </div>
               <div
+                data-testid="lang-rail"
                 className="flex shrink-0 justify-center pb-1 pt-4"
-                onClick={(event) => event.stopPropagation()}
               >
-                <LangToggle
-                  value={hintLang}
-                  onChange={setHintLang}
-                  hasZh={Boolean(card.zh)}
-                />
+                <span onClick={(event) => event.stopPropagation()}>
+                  <LangToggle
+                    value={hintLang}
+                    onChange={setHintLang}
+                    hasZh={Boolean(card.zh)}
+                  />
+                </span>
               </div>
             </>
           ) : (

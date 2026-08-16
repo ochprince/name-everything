@@ -94,6 +94,26 @@ describe('PracticeCard', () => {
     expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
   })
 
+  it('hides cues when blank space in the word row is clicked', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: '显示提示' }))
+    fireEvent.click(screen.getByTestId('card-cues'))
+
+    expect(screen.queryByText('This is a cup.')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
+  })
+
+  it('hides cues when blank space around the language toggle is clicked', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: '显示提示' }))
+    fireEvent.click(screen.getByTestId('lang-rail'))
+
+    expect(screen.queryByText('This is a cup.')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
+  })
+
   it('hides cues when the photo is clicked', async () => {
     const user = userEvent.setup()
     render(<PracticeCard {...props} />)
@@ -104,12 +124,22 @@ describe('PracticeCard', () => {
     expect(screen.getByRole('button', { name: '显示提示' })).toBeInTheDocument()
   })
 
-  it('keeps cues open when the word row is clicked', async () => {
+  it('keeps cues open when the word is clicked', async () => {
     const user = userEvent.setup()
     render(<PracticeCard {...props} />)
     await user.click(screen.getByRole('button', { name: '显示提示' }))
     fireEvent.click(screen.getByRole('heading', { level: 2 }))
 
+    expect(screen.getByText('This is a cup.')).toBeInTheDocument()
+  })
+
+  it('keeps cues open when a language radio is clicked', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: '显示提示' }))
+    await user.click(screen.getByRole('radio', { name: 'ZH' }))
+
+    expect(screen.getByText('杯子')).toBeInTheDocument()
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
   })
 
