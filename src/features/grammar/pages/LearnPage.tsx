@@ -10,7 +10,7 @@ import {
   pointById,
   spansForSentence,
 } from '../content/pack'
-import type { GrammarPoint } from '../content/pack'
+import type { GrammarPoint, SentenceSpan } from '../content/pack'
 import { useGrammarProgress } from '../lib/storage'
 import { highScoreFor, isLevelUnlocked, thresholdFor } from '../lib/unlock'
 import {
@@ -58,7 +58,10 @@ export function LearnPage() {
         />
       }
     >
-      <div className="flex flex-1 flex-col gap-6 px-2 pt-8">
+      <div
+        className="flex flex-1 flex-col gap-6 px-2 pt-8"
+        onClick={() => setActiveRange(null)}
+      >
         <p className="text-2xl font-medium leading-snug tracking-[0.01em] text-day">
           <ClickableSentence
             en={anchor.en}
@@ -79,6 +82,7 @@ export function LearnPage() {
                   ? 'max-h-[min(40vh,20rem)] overflow-y-auto pr-1'
                   : ''
               }`}
+              onClick={(event) => event.stopPropagation()}
             >
               {activePoints.map((point) => (
                 <GrammarPointCard key={point.id} point={point} levelId={level.id} />
@@ -135,9 +139,9 @@ function ClickableSentence({
   onPick,
 }: {
   en: string
-  spans: { id: string; start: number; end: number }[]
+  spans: SentenceSpan[]
   activeRange: SpanRange | null
-  onPick: (range: SpanRange) => void
+  onPick: (range: SpanRange | null) => void
 }) {
   const pieces = buildClickablePieces(en, spans)
 
@@ -148,7 +152,11 @@ function ClickableSentence({
           <button
             key={piece.key}
             type="button"
-            onClick={() => onPick(piece.range!)}
+            onClick={(event) => {
+              event.stopPropagation()
+              const range = piece.range!
+              onPick(rangesEqual(activeRange, range) ? null : range)
+            }}
             className={`rounded-md px-0.5 transition-colors duration-200 ease-out ${
               rangesEqual(activeRange, piece.range)
                 ? 'bg-rose text-cyc'
