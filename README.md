@@ -32,12 +32,13 @@ npm run build    # production build
 ## Spec
 
 Design spec: [`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)  
-Timed recall: [`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)
+Timed recall: [`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)  
+Grammar Everything: [`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)
 
 ## Roadmap
 
 - [x] **Name Everything** — one tap: 1 image + 1 word + 1 speakable sentence. A countdown adds just enough pressure; review trains a scene → word reflex.
-- [ ] **Grammar Everything** — a layered grammar mini-game. Each rule is anchored to one short, vivid example sentence, then practiced in three steps: *identify* (see the structure), *substitute* (same skeleton, new words), *restructure* (same meaning, new frame). The point is to own the rule, not memorize one line. Sketch: [`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md).
+- [ ] **Grammar Everything** — a layered grammar mini-game. Each rule is anchored to one short, vivid example sentence, then practiced in three steps: *identify* (see the structure), *substitute* (same skeleton, new words), *restructure* (same meaning, new frame). The point is to own the rule, not memorize one line. Spec: [`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md). Sketch: [`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md).
 - [ ] **Listen & Repeat** — turn “what you just said” or the scene example into shadowing + recording, then pack those clips into timed recap playlists. You hear your own effort and progress; mouth and mind work together.
 - [ ] **Live Small Moments** — 60-second challenges tied to real scenes (waking up, commute, meals, walking around). AI asks what you’re doing now and builds a 60s dialogue from the answer — closer to daily life, more interactive, more pressure.
 

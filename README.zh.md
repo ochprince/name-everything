@@ -32,12 +32,13 @@ npm run build    # 生产构建
 ## 规格
 
 设计规格见：[`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)  
-限时回忆见：[`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)
+限时回忆见：[`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)  
+Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)
 
 ## 路线图
 
 - [x] **Name Everything** — 点一下：1 幅图 + 1 个词 + 1 句可说的话。倒计时给予适当压力，配合复习形成从场景到词汇的思维惯性。
-- [ ] **Grammar Everything** — 层层递进的语法学习小游戏。每条语法配 1 句短而典型的标杆句，再走三步：*识别*（看清结构）、*替换*（骨架不动、换词造新句）、*重组*（同一意思换框架）。目标是吃透规则，而不是只会背那一行字。草稿：[`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md)。
+- [ ] **Grammar Everything** — 层层递进的语法学习小游戏。每条语法配 1 句短而典型的标杆句，再走三步：*识别*（看清结构）、*替换*（骨架不动、换词造新句）、*重组*（同一意思换框架）。目标是吃透规则，而不是只会背那一行字。规格：[`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)。草稿：[`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md)。
 - [ ] **Listen & Repeat** — 把「你刚说的」或场景例句做成跟读 + 录音，再编成锦集定时推送播放。直观感受到自己的努力和进步，嘴脑联动。
 - [ ] **Live Small Moments** — 按场景触发：起床、通勤、吃饭、逛街的 60 秒挑战。AI 询问当前正在做什么，根据回答生成 60 秒场景对话挑战——更贴合生活实际，也更有互动感和压力感。
 
