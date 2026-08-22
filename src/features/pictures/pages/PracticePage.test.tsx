@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { screen, act, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { renderWithProgress } from '../test/renderWithProgress'
+import { renderWithProgress } from '../../../test/renderWithProgress'
 import { loadCards } from '../content/loadCards'
 import {
   defaultProgress,

@@ -1,4 +1,4 @@
-import type { Card } from '../types/card'
+import type { Card } from '../../../types/card'
 import type { ProgressState } from './storage'
 
 function primaryTag(card: Card): string {

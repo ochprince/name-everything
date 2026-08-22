@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 import { afterEach, vi } from 'vitest'
-import { resetCardAudioGate } from '../lib/playAudio'
+import { resetCardAudioGate } from '../features/pictures/lib/playAudio'
 
 Object.defineProperty(HTMLMediaElement.prototype, 'play', {
   configurable: true,

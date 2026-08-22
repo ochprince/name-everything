@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { pickNextCard } from './deck'
-import type { Card } from '../types/card'
+import type { Card } from '../../../types/card'
 import {
   defaultProgress,
   markForgot,

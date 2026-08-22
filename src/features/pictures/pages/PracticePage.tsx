@@ -3,8 +3,8 @@ import { PracticeCard } from '../components/PracticeCard'
 import { loadCards } from '../content/loadCards'
 import { useProgress } from '../hooks/useProgress'
 import { pickNextCard } from '../lib/deck'
-import { StageShell } from '../shared/StageShell'
-import { StageHeader } from '../shared/StageHeader'
+import { StageShell } from '../../../shared/StageShell'
+import { StageHeader } from '../../../shared/StageHeader'
 import {
   ackDailyContinue,
   currentSetView,
@@ -15,7 +15,7 @@ import {
   todayKey,
   type ProgressState,
 } from '../lib/storage'
-import type { Card } from '../types/card'
+import type { Card } from '../../../types/card'
 
 function findCard(id: string | null): Card | null {
   if (!id) return null

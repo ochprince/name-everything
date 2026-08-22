@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProgress } from '../test/renderWithProgress'
-import { loadCards } from '../content/loadCards'
-import { defaultProgress, loadProgress, saveProgress, todayKey } from '../lib/storage'
+import { loadCards } from '../features/pictures/content/loadCards'
+import { defaultProgress, loadProgress, saveProgress, todayKey } from '../features/pictures/lib/storage'
 import { ReviewPage } from './ReviewPage'
 
 beforeEach(() => {

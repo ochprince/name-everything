@@ -3,7 +3,7 @@ import { join } from 'node:path'
 
 const CDN = 'https://ali.bczcdn.com/r/'
 const SOURCE_DIR = 'E:/Workspace-Web/my_app/assets/data/words/cet4-all'
-const OUTPUT = 'src/content/t1-cards.json'
+const OUTPUT = 'src/features/pictures/content/t1-cards.json'
 
 const TAGS_BY_ID = {
   ladder: ['home'],

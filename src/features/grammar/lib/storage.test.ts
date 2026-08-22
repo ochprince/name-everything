@@ -8,7 +8,7 @@ import {
   defaultGrammarProgress,
   loadReports,
 } from './storage'
-import { defaultProgress, loadProgress, saveProgress } from '../../../lib/storage'
+import { defaultProgress, loadProgress, saveProgress } from '../../pictures/lib/storage'
 
 beforeEach(() => {
   localStorage.clear()
@@ -18,7 +18,7 @@ describe('grammar storage', () => {
   it('uses separate keys from pictures progress', () => {
     saveProgress({
       ...defaultProgress(),
-      streaks: { count: 7, lastDate: '2026-08-22' },
+      streaks: { count: 7, lastActiveDate: '2026-08-22' },
     })
     saveGrammarProgress({
       ...defaultGrammarProgress(),

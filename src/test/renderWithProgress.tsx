@@ -1,7 +1,7 @@
 import { render, type RenderOptions } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { ProgressProvider } from '../hooks/useProgress'
+import { ProgressProvider } from '../features/pictures/hooks/useProgress'
 
 export function renderWithProgress(
   ui: ReactElement,

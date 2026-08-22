@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { PracticeCard } from './PracticeCard'
-import type { Card } from '../types/card'
+import type { Card } from '../../../types/card'
 
 const card: Card = {
   id: 'cup',

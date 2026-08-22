@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { useProgress } from '../hooks/useProgress'
+import { useProgress } from '../features/pictures/hooks/useProgress'
 
 const tabs = [
   { to: '/', label: '练习' },

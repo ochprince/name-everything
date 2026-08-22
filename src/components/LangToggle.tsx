@@ -1,4 +1,4 @@
-import type { HintLang } from '../lib/storage'
+import type { HintLang } from '../features/pictures/lib/storage'
 
 const mark =
   'inline-flex size-9 items-center justify-center rounded-full font-cue text-[0.7rem] font-semibold tracking-[0.18em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'

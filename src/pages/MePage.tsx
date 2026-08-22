@@ -1,13 +1,13 @@
 import { LangToggle } from '../components/LangToggle'
 import { exportReports, clearReports, useGrammarReports } from '../features/grammar'
-import { useProgress } from '../hooks/useProgress'
+import { useProgress } from '../features/pictures/hooks/useProgress'
 import {
   todayKey,
   THINK_HOLD_LABELS,
   THINK_HOLD_OPTIONS,
   type ThinkHoldMs,
   type HintLang,
-} from '../lib/storage'
+} from '../features/pictures/lib/storage'
 
 const holdButton =
   'min-h-11 min-w-[4.75rem] rounded-2xl px-3 font-cue text-base font-semibold tracking-[0.14em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'

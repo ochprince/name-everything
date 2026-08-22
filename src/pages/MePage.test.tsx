@@ -7,7 +7,7 @@ import {
   loadProgress,
   saveProgress,
   todayKey,
-} from '../lib/storage'
+} from '../features/pictures/lib/storage'
 import { MePage } from './MePage'
 
 beforeEach(() => {

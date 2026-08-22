@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { playCardAudio, stopCardAudio } from '../lib/playAudio'
 import type { HintLang, ThinkHoldMs } from '../lib/storage'
-import type { Card } from '../types/card'
-import { StageHeader } from '../shared/StageHeader'
-import { LangToggle } from './LangToggle'
+import type { Card } from '../../../types/card'
+import { StageHeader } from '../../../shared/StageHeader'
+import { LangToggle } from '../../../components/LangToggle'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
 
