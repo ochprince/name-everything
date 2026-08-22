@@ -40,6 +40,11 @@
     "body_zh": "及物动词后直接跟宾语，没有间接宾语。主语 + 谓语 + 宾语。"
   },
   {
+    "id": "gp-sv",
+    "title_zh": "主谓 S+V",
+    "body_zh": "不及物动词作谓语，后面不接宾语。主语 + 谓语即可成句。"
+  },
+  {
     "id": "gp-modal",
     "title_zh": "情态动词",
     "body_zh": "must / can / will 等表达语气。动词不一定都是谓语，情态动词不能单独作谓语。"
@@ -68,5 +73,15 @@
     "id": "gp-spc",
     "title_zh": "主系表 S+V+C",
     "body_zh": "主语 + 系动词 + 表语。表语是形容词或名词，说明主语状态。"
+  },
+  {
+    "id": "gp-oc",
+    "title_zh": "宾语补足语 OC",
+    "body_zh": "及物动词（make / find / call）后，补充说明宾语：happy / sad / Tom。"
+  },
+  {
+    "id": "gp-svoc",
+    "title_zh": "主谓宾补 S+V+O+OC",
+    "body_zh": "主语 + 谓语 + 宾语 + 宾补。宾补说明宾语变成什么或处于什么状态。"
   }
 ]

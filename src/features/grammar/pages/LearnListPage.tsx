@@ -10,7 +10,7 @@ import {
   pointById,
 } from '../content/pack'
 import { useGrammarProgress } from '../lib/storage'
-import { highScoreFor, isLevelPassed, isLevelUnlocked, thresholdFor } from '../lib/unlock'
+import { highScoreFor, isLevelPassed, isLevelUnlocked, levelUnlockHint, thresholdFor } from '../lib/unlock'
 
 export function LearnListPage() {
   const progress = useGrammarProgress()
@@ -51,7 +51,7 @@ export function LearnListPage() {
                         <li key={level.id}>
                           <LockedLevelTile
                             title={title}
-                            onBlocked={() => showHint('先过上一关')}
+                            onBlocked={() => showHint(levelUnlockHint(level, progress))}
                           />
                         </li>
                       )

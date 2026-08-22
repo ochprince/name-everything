@@ -18,6 +18,18 @@
     "grammar_point_id": "gp-spc"
   },
   {
+    "id": "sv-1",
+    "chapter_id": "simple",
+    "sort_order": 4,
+    "grammar_point_id": "gp-sv"
+  },
+  {
+    "id": "svoc-1",
+    "chapter_id": "simple",
+    "sort_order": 5,
+    "grammar_point_id": "gp-svoc"
+  },
+  {
     "id": "modal-1",
     "chapter_id": "predicate",
     "sort_order": 1,

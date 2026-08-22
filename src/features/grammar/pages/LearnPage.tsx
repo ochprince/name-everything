@@ -160,7 +160,7 @@ function ClickableSentence({
             className={`rounded-md px-0.5 transition-colors duration-200 ease-out ${
               rangesEqual(activeRange, piece.range)
                 ? 'bg-rose text-cyc'
-                : 'underline decoration-rose/80 decoration-2 underline-offset-4'
+                : 'underline decoration-rose/80 decoration-2 underline-offset-4 decoration-skip-ink-none'
             }`}
           >
             {piece.text}

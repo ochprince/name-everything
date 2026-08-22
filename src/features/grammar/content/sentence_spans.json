@@ -138,5 +138,68 @@
     "grammar_point_id": "gp-spc",
     "start": 0,
     "end": 13
+  },
+  {
+    "id": "sp-sv-s",
+    "sentence_id": "s-sv-anchor",
+    "grammar_point_id": "gp-s",
+    "start": 0,
+    "end": 3
+  },
+  {
+    "id": "sp-sv-v",
+    "sentence_id": "s-sv-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 4,
+    "end": 8
+  },
+  {
+    "id": "sp-sv-all",
+    "sentence_id": "s-sv-anchor",
+    "grammar_point_id": "gp-sv",
+    "start": 0,
+    "end": 9
+  },
+  {
+    "id": "sp-svoc-s",
+    "sentence_id": "s-svoc-anchor",
+    "grammar_point_id": "gp-s",
+    "start": 0,
+    "end": 4
+  },
+  {
+    "id": "sp-svoc-v",
+    "sentence_id": "s-svoc-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 5,
+    "end": 9
+  },
+  {
+    "id": "sp-svoc-past",
+    "sentence_id": "s-svoc-anchor",
+    "grammar_point_id": "gp-past",
+    "start": 5,
+    "end": 9
+  },
+  {
+    "id": "sp-svoc-o",
+    "sentence_id": "s-svoc-anchor",
+    "grammar_point_id": "gp-o",
+    "start": 10,
+    "end": 12
+  },
+  {
+    "id": "sp-svoc-oc",
+    "sentence_id": "s-svoc-anchor",
+    "grammar_point_id": "gp-oc",
+    "start": 13,
+    "end": 19
+  },
+  {
+    "id": "sp-svoc-all",
+    "sentence_id": "s-svoc-anchor",
+    "grammar_point_id": "gp-svoc",
+    "start": 0,
+    "end": 19
   }
 ]

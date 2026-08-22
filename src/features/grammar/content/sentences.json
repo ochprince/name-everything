@@ -142,5 +142,77 @@
     "zh": "我很好。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-sv-anchor",
+    "level_id": "sv-1",
+    "kind": "anchor",
+    "en": "She runs.",
+    "zh": "她跑步。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-sv-p1",
+    "level_id": "sv-1",
+    "kind": "playable",
+    "en": "He sleeps.",
+    "zh": "他睡觉。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-sv-p2",
+    "level_id": "sv-1",
+    "kind": "playable",
+    "en": "They laugh.",
+    "zh": "他们笑。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-sv-p3",
+    "level_id": "sv-1",
+    "kind": "playable",
+    "en": "I go.",
+    "zh": "我去。",
+    "prompt_kind": "zh",
+    "sort_order": 3
+  },
+  {
+    "id": "s-svoc-anchor",
+    "level_id": "svoc-1",
+    "kind": "anchor",
+    "en": "They made me happy.",
+    "zh": "他们让我很开心。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-svoc-p1",
+    "level_id": "svoc-1",
+    "kind": "playable",
+    "en": "She made him sad.",
+    "zh": "她让他很难过。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-svoc-p2",
+    "level_id": "svoc-1",
+    "kind": "playable",
+    "en": "We made her tired.",
+    "zh": "我们让她很累。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-svoc-p3",
+    "level_id": "svoc-1",
+    "kind": "playable",
+    "en": "He made us angry.",
+    "zh": "他让我们很生气。",
+    "prompt_kind": "zh",
+    "sort_order": 3
   }
 ]
