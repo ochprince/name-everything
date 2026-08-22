@@ -1632,5 +1632,149 @@
       "my aim",
       "goal"
     ]
+  },
+  {
+    "id": "s-nf3-anchor-slot-0",
+    "sentence_id": "s-nf3-anchor",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "She",
+    "distractors": [
+      "Her",
+      "He",
+      "It"
+    ]
+  },
+  {
+    "id": "s-nf3-anchor-slot-1",
+    "sentence_id": "s-nf3-anchor",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "wants",
+    "distractors": [
+      "want",
+      "wanting",
+      "wanted"
+    ]
+  },
+  {
+    "id": "s-nf3-anchor-slot-2",
+    "sentence_id": "s-nf3-anchor",
+    "slot_index": 2,
+    "role": "INF",
+    "correct": "to buy",
+    "distractors": [
+      "buy",
+      "buys",
+      "buying"
+    ]
+  },
+  {
+    "id": "s-nf3-p1-slot-0",
+    "sentence_id": "s-nf3-p1",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "He",
+    "distractors": [
+      "Him",
+      "She",
+      "His"
+    ]
+  },
+  {
+    "id": "s-nf3-p1-slot-1",
+    "sentence_id": "s-nf3-p1",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "likes",
+    "distractors": [
+      "like",
+      "liking",
+      "liked"
+    ]
+  },
+  {
+    "id": "s-nf3-p1-slot-2",
+    "sentence_id": "s-nf3-p1",
+    "slot_index": 2,
+    "role": "INF",
+    "correct": "to play",
+    "distractors": [
+      "play",
+      "plays",
+      "playing"
+    ]
+  },
+  {
+    "id": "s-nf3-p2-slot-0",
+    "sentence_id": "s-nf3-p2",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "They",
+    "distractors": [
+      "Them",
+      "We",
+      "She"
+    ]
+  },
+  {
+    "id": "s-nf3-p2-slot-1",
+    "sentence_id": "s-nf3-p2",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "plan",
+    "distractors": [
+      "plans",
+      "planning",
+      "planned"
+    ]
+  },
+  {
+    "id": "s-nf3-p2-slot-2",
+    "sentence_id": "s-nf3-p2",
+    "slot_index": 2,
+    "role": "INF",
+    "correct": "to visit",
+    "distractors": [
+      "visit",
+      "visits",
+      "visiting"
+    ]
+  },
+  {
+    "id": "s-nf3-p3-slot-0",
+    "sentence_id": "s-nf3-p3",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "We",
+    "distractors": [
+      "Us",
+      "They",
+      "I"
+    ]
+  },
+  {
+    "id": "s-nf3-p3-slot-1",
+    "sentence_id": "s-nf3-p3",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "want",
+    "distractors": [
+      "wants",
+      "wanting",
+      "wanted"
+    ]
+  },
+  {
+    "id": "s-nf3-p3-slot-2",
+    "sentence_id": "s-nf3-p3",
+    "slot_index": 2,
+    "role": "INF",
+    "correct": "to learn",
+    "distractors": [
+      "learn",
+      "learns",
+      "learning"
+    ]
   }
 ]

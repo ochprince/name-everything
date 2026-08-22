@@ -358,5 +358,41 @@
     "zh": "帮助别人是我的目标。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-nf3-anchor",
+    "level_id": "nonfinite-3",
+    "kind": "anchor",
+    "en": "She wants to buy a new phone.",
+    "zh": "她想买一部新手机。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-nf3-p1",
+    "level_id": "nonfinite-3",
+    "kind": "playable",
+    "en": "He likes to play basketball.",
+    "zh": "他喜欢打篮球。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-nf3-p2",
+    "level_id": "nonfinite-3",
+    "kind": "playable",
+    "en": "They plan to visit the museum.",
+    "zh": "他们计划参观博物馆。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-nf3-p3",
+    "level_id": "nonfinite-3",
+    "kind": "playable",
+    "en": "We want to learn English.",
+    "zh": "我们想学英语。",
+    "prompt_kind": "zh",
+    "sort_order": 3
   }
 ]

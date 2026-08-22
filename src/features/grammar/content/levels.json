@@ -58,5 +58,11 @@
     "chapter_id": "nonfinite",
     "sort_order": 2,
     "grammar_point_id": "gp-nonfinite-subject"
+  },
+  {
+    "id": "nonfinite-3",
+    "chapter_id": "nonfinite",
+    "sort_order": 3,
+    "grammar_point_id": "gp-inf-recognition"
   }
 ]

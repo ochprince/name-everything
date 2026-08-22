@@ -334,5 +334,33 @@
     "grammar_point_id": "gp-c",
     "start": 24,
     "end": 35
+  },
+  {
+    "id": "sp-nf3-s",
+    "sentence_id": "s-nf3-anchor",
+    "grammar_point_id": "gp-s",
+    "start": 0,
+    "end": 3
+  },
+  {
+    "id": "sp-nf3-v",
+    "sentence_id": "s-nf3-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 4,
+    "end": 9
+  },
+  {
+    "id": "sp-nf3-inf",
+    "sentence_id": "s-nf3-anchor",
+    "grammar_point_id": "gp-inf-recognition",
+    "start": 10,
+    "end": 16
+  },
+  {
+    "id": "sp-nf3-o",
+    "sentence_id": "s-nf3-anchor",
+    "grammar_point_id": "gp-o",
+    "start": 17,
+    "end": 28
   }
 ]

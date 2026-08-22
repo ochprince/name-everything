@@ -143,5 +143,10 @@
     "id": "gp-inf-subject",
     "title_zh": "不定式作主语",
     "body_zh": "to do 作主语，常表具体的、将来的动作：To help others is my goal."
+  },
+  {
+    "id": "gp-inf-recognition",
+    "title_zh": "用 to 识别非谓语",
+    "body_zh": "判断动词是谓语还是非谓语，看它前面有没有 to：to + 动词原形一定是非谓语（不定式）。"
   }
 ]
