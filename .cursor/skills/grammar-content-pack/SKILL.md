@@ -32,6 +32,21 @@ Append to these six files (never replace whole files):
 
 Do **not** put lesson text in `game_tuning.json`.
 
+### Step 2b — Merge vs new level (decision rule, 2026-08-23)
+
+**Not every knowledge point deserves its own level.** Decide before authoring:
+
+- **Merge into an existing level** (add playable sentences, no new level): the point is an **application / variant / recognition trick / supplementary angle** of an existing level's theme and fits its skeleton — e.g. "to + base verb is always nonfinite" merged into the "three forms" level.
+- **New level**: only when the point introduces a **new grammatical function/structure** (a different syntactic slot, e.g. subject vs adverbial vs object-complement).
+
+**Merging is not just adding sentences.** A genuinely new knowledge point being merged must still be fully recorded:
+
+1. **Author the `grammar_point`(s)** — the knowledge itself is content, not just examples.
+2. **Link it to the level's anchor via `sentence_spans`** on the corresponding constituent(s) — the point must be clickable from the benchmark sentence's relevant spans.
+3. **Add the example sentences** as playables (with full-coverage slots).
+
+So a merge = new grammar_points + anchor spans + example sentences, without a new level row. Reuse existing `grammar_point` ids when they already cover the point.
+
 ## Workflow
 
 Copy this checklist and track progress:
@@ -129,10 +144,16 @@ node .cursor/skills/grammar-content-pack/scripts/span-offset.mjs "<en>" "<substr
 Every sentence (anchor + playables):
 
 - Continuous `slot_index` from `0`
-- `role`: reuse `S` `V` `O` `IO` `DO` `A`; add `PP-A` / `PP-P` for participles; `INF` for infinitives
+- `role`: reuse `S` `V` `O` `IO` `DO` `A`; add `PP-A` / `PP-P` for participles; `INF` for infinitives; `GER` for gerunds; `CONJ` for conjunctions
 - `correct`: exact substring of `en`
 - `distractors`: 3–4 items teaching **boundaries** (e.g. `was canceled` vs `canceled`, `pushing` vs `pushed`, `seen` vs `seeing`)
 - Slot order follows natural left-to-right reading where possible
+
+**Full-sentence coverage (hard requirement, 2026-08-23):** every word of `en` — from the first letter to the last — must be covered by at least one slot's `correct` (word-boundary match). No omissions: conjunctions (`and`), function words (`the`, `a`, `to`, `please`), and subjects are slots too.
+
+- **Reuse before create:** if a word/phrase already has a slot elsewhere (e.g. `He`, `She`, `and`), copy that slot's `correct` + `distractors` and generate a new id. Common words are authored once and reused everywhere.
+- **Create only when no reusable item exists** — then design teaching distractors for the boundary.
+- Verify with `check-coverage.mjs` (Step 9): it must report 100%.
 
 ### Step 8 — Append JSON
 
@@ -146,9 +167,13 @@ From repo root:
 
 ```bash
 node .cursor/skills/grammar-content-pack/scripts/validate-pack.mjs
+node .cursor/skills/grammar-content-pack/scripts/check-coverage.mjs
 ```
 
-Fix all errors before claiming done. The script validates the **entire** pack; pre-existing errors must be fixed too.
+Fix all errors before claiming done. The scripts validate the **entire** pack; pre-existing errors must be fixed too.
+
+- `validate-pack.mjs` — structural invariants (unique ids, FKs, anchor/playables/slots/spans, span offsets)
+- `check-coverage.mjs` — **full-sentence coverage**: every word of every `en` must be covered by a slot. Must report `100.0%` / `0 uncovered`. Run it every time content changes, not just on new levels.
 
 ### Step 10 — Tests
 
