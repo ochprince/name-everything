@@ -369,5 +369,19 @@
     "grammar_point_id": "gp-inf-recognition",
     "start": 19,
     "end": 27
+  },
+  {
+    "id": "sp-nf2-gerund",
+    "sentence_id": "s-nf2-anchor",
+    "grammar_point_id": "gp-gerund-vs-participle",
+    "start": 0,
+    "end": 20
+  },
+  {
+    "id": "sp-nf4-pp",
+    "sentence_id": "s-nf4-anchor",
+    "grammar_point_id": "gp-gerund-vs-participle",
+    "start": 0,
+    "end": 17
   }
 ]

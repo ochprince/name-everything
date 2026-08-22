@@ -1920,5 +1920,149 @@
       "goes",
       "going"
     ]
+  },
+  {
+    "id": "s-nf2-p4-slot-0",
+    "sentence_id": "s-nf2-p4",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "She",
+    "distractors": [
+      "Her",
+      "He",
+      "It"
+    ]
+  },
+  {
+    "id": "s-nf2-p4-slot-1",
+    "sentence_id": "s-nf2-p4",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "enjoys",
+    "distractors": [
+      "enjoy",
+      "enjoying",
+      "enjoyed"
+    ]
+  },
+  {
+    "id": "s-nf2-p4-slot-2",
+    "sentence_id": "s-nf2-p4",
+    "slot_index": 2,
+    "role": "GER",
+    "correct": "reading books",
+    "distractors": [
+      "read books",
+      "reads books",
+      "to read books"
+    ]
+  },
+  {
+    "id": "s-nf2-p5-slot-0",
+    "sentence_id": "s-nf2-p5",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "My hobby",
+    "distractors": [
+      "My hobbies",
+      "My habit",
+      "My job"
+    ]
+  },
+  {
+    "id": "s-nf2-p5-slot-1",
+    "sentence_id": "s-nf2-p5",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "is",
+    "distractors": [
+      "are",
+      "am",
+      "be"
+    ]
+  },
+  {
+    "id": "s-nf2-p5-slot-2",
+    "sentence_id": "s-nf2-p5",
+    "slot_index": 2,
+    "role": "GER",
+    "correct": "collecting stamps",
+    "distractors": [
+      "collect stamps",
+      "collects stamps",
+      "to collect stamps"
+    ]
+  },
+  {
+    "id": "s-nf4-p4-slot-0",
+    "sentence_id": "s-nf4-p4",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "The girl",
+    "distractors": [
+      "The girls",
+      "A girl",
+      "The boy"
+    ]
+  },
+  {
+    "id": "s-nf4-p4-slot-1",
+    "sentence_id": "s-nf4-p4",
+    "slot_index": 1,
+    "role": "PP-A",
+    "correct": "singing on the stage",
+    "distractors": [
+      "sing on the stage",
+      "sings on the stage",
+      "to sing on the stage"
+    ]
+  },
+  {
+    "id": "s-nf4-p4-slot-2",
+    "sentence_id": "s-nf4-p4",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "my sister",
+    "distractors": [
+      "my sisters",
+      "my brother",
+      "my aunt"
+    ]
+  },
+  {
+    "id": "s-nf4-p5-slot-0",
+    "sentence_id": "s-nf4-p5",
+    "slot_index": 0,
+    "role": "V",
+    "correct": "saw",
+    "distractors": [
+      "see",
+      "sees",
+      "seen"
+    ]
+  },
+  {
+    "id": "s-nf4-p5-slot-1",
+    "sentence_id": "s-nf4-p5",
+    "slot_index": 1,
+    "role": "O",
+    "correct": "him",
+    "distractors": [
+      "he",
+      "his",
+      "her"
+    ]
+  },
+  {
+    "id": "s-nf4-p5-slot-2",
+    "sentence_id": "s-nf4-p5",
+    "slot_index": 2,
+    "role": "PP-A",
+    "correct": "crossing the street",
+    "distractors": [
+      "cross the street",
+      "crosses the street",
+      "to cross the street"
+    ]
   }
 ]

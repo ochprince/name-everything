@@ -153,5 +153,10 @@
     "id": "gp-participle-adverbial",
     "title_zh": "分词作状语",
     "body_zh": "完整分句可降级为状语：谓语变 doing、删掉分句主语（分句主语需与主句主语一致）。Seeing his mother, the kid cried. = the kid saw his mother."
+  },
+  {
+    "id": "gp-gerund-vs-participle",
+    "title_zh": "动名词 vs 现在分词",
+    "body_zh": "doing 作名词性成分（主语/宾语/表语）叫动名词；作修饰性成分（定语/状语/宾补）叫现在分词。形式相同，身份看句法位置。"
   }
 ]

@@ -430,5 +430,41 @@
     "zh": "感到累了，他们上床睡觉了。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-nf2-p4",
+    "level_id": "nonfinite-2",
+    "kind": "playable",
+    "en": "She enjoys reading books.",
+    "zh": "她喜欢读书。",
+    "prompt_kind": "zh",
+    "sort_order": 4
+  },
+  {
+    "id": "s-nf2-p5",
+    "level_id": "nonfinite-2",
+    "kind": "playable",
+    "en": "My hobby is collecting stamps.",
+    "zh": "我的爱好是集邮。",
+    "prompt_kind": "zh",
+    "sort_order": 5
+  },
+  {
+    "id": "s-nf4-p4",
+    "level_id": "nonfinite-4",
+    "kind": "playable",
+    "en": "The girl singing on the stage is my sister.",
+    "zh": "在台上唱歌的女孩是我妹妹。",
+    "prompt_kind": "zh",
+    "sort_order": 4
+  },
+  {
+    "id": "s-nf4-p5",
+    "level_id": "nonfinite-4",
+    "kind": "playable",
+    "en": "I saw him crossing the street.",
+    "zh": "我看见他正在过马路。",
+    "prompt_kind": "zh",
+    "sort_order": 5
   }
 ]
