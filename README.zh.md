@@ -33,12 +33,25 @@ npm run build    # 生产构建
 
 设计规格见：[`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)  
 限时回忆见：[`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)  
-Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)
+Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)  
+实现计划：[`docs/superpowers/plans/2026-08-22-grammar-everything.md`](docs/superpowers/plans/2026-08-22-grammar-everything.md)
+
+## 练习 Home
+
+**练习** Tab 在 `/` 打开模块选择（进入具体模块前不会开始倒计时）：
+
+| 磁贴 | 路由 | 说明 |
+|------|------|------|
+| 词汇记忆 | `/practice/pictures` | 看图限时回忆（Name Everything） |
+| 语法学习 | `/practice/grammar/learn` | 章节 → 关卡 → 学习页 → 下落填槽 |
+| 语法游戏 | `/practice/grammar/play` | 仅混合已过关关卡的 playable 句 |
+
+语法课程内容在 `src/features/grammar/content/*.json`；手感数字在 `game_tuning.json`。语法报错可在 **我的** 导出。
 
 ## 路线图
 
 - [x] **Name Everything** — 点一下：1 幅图 + 1 个词 + 1 句可说的话。倒计时给予适当压力，配合复习形成从场景到词汇的思维惯性。
-- [ ] **Grammar Everything** — 层层递进的语法学习小游戏。每条语法配 1 句短而典型的标杆句，再走三步：*识别*（看清结构）、*替换*（骨架不动、换词造新句）、*重组*（同一意思换框架）。目标是吃透规则，而不是只会背那一行字。规格：[`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)。草稿：[`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md)。
+- [x] **Grammar Everything（替换）** — 学习页 + 限时下落填槽 + 已过关混合局；仓库内第一章可玩。*识别* 与 *重组* 仍在路线图。规格：[`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)。计划：[`docs/superpowers/plans/2026-08-22-grammar-everything.md`](docs/superpowers/plans/2026-08-22-grammar-everything.md)。草稿：[`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md)。
 - [ ] **Listen & Repeat** — 把「你刚说的」或场景例句做成跟读 + 录音，再编成锦集定时推送播放。直观感受到自己的努力和进步，嘴脑联动。
 - [ ] **Live Small Moments** — 按场景触发：起床、通勤、吃饭、逛街的 60 秒挑战。AI 询问当前正在做什么，根据回答生成 60 秒场景对话挑战——更贴合生活实际，也更有互动感和压力感。
 
@@ -62,7 +75,7 @@ Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-desi
 node scripts/build-t1-pack.mjs
 ```
 
-会写入 `src/content/t1-cards.json`（图片与音频为 CDN 地址）。
+会写入 `src/features/pictures/content/t1-cards.json`（图片与音频为 CDN 地址）。
 
 ## 媒体说明
 
@@ -72,9 +85,12 @@ node scripts/build-t1-pack.mjs
 
 本地执行 `npm run dev` 后做冒烟检查（完成后关掉开发服）：
 
-- [ ] **练习** — 可见图片；cue 区为倒计时；Aha! 前单词 / 句子隐藏；超时亮答案、复习计数 +1，等 Next 再切下一张
+- [ ] **Home** — 三个磁贴；`/` 无倒计时；未过关时语法游戏置灰，点击有提示
+- [ ] **词汇记忆**（`/practice/pictures`）— 可见图片；cue 区为倒计时；Aha! 前单词 / 句子隐藏；超时亮答案、复习计数 +1，等 Next 再切下一张
 - [ ] Aha! 后出单词和例句；Forgot / Got it 立即生效
 - [ ] 一组 10 次练习 Got it 后出现「今日已完成」；继续后计数保持 10 / 10，可再来一组
+- [ ] **语法学习** — 章列表；线性解锁；学习页可点 span；开始下落填槽；达门槛解锁下一关
+- [ ] **语法游戏** — 仅混合 playable；Hub 页有历史得分
 - [ ] **复习** — Forgot 列表随操作更新；打开即出图+词+句
-- [ ] **我的** — 今日数量、连续天数、思考时长会持久化
+- [ ] **我的** — 今日数量、连续天数、思考时长持久化；可导出语法报错 JSON
 - [ ] 手机视口可用（单列、点击区域够大）

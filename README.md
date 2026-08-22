@@ -33,12 +33,25 @@ npm run build    # production build
 
 Design spec: [`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)  
 Timed recall: [`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)  
-Grammar Everything: [`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)
+Grammar Everything: [`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)  
+Implementation plan: [`docs/superpowers/plans/2026-08-22-grammar-everything.md`](docs/superpowers/plans/2026-08-22-grammar-everything.md)
+
+## Practice Home
+
+The **练习** tab opens a module picker at `/` (no countdown until you enter a module):
+
+| Tile | Route | Notes |
+|------|-------|-------|
+| 词汇记忆 | `/practice/pictures` | Timed picture recall (Name Everything) |
+| 语法学习 | `/practice/grammar/learn` | Chapters → levels → learn page → falling-fill |
+| 语法游戏 | `/practice/grammar/play` | Mixed playable sentences from passed levels only |
+
+Grammar content lives in `src/features/grammar/content/*.json`; game tuning in `game_tuning.json`. Export grammar reports from **我的**.
 
 ## Roadmap
 
 - [x] **Name Everything** — one tap: 1 image + 1 word + 1 speakable sentence. A countdown adds just enough pressure; review trains a scene → word reflex.
-- [ ] **Grammar Everything** — a layered grammar mini-game. Each rule is anchored to one short, vivid example sentence, then practiced in three steps: *identify* (see the structure), *substitute* (same skeleton, new words), *restructure* (same meaning, new frame). The point is to own the rule, not memorize one line. Spec: [`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md). Sketch: [`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md).
+- [x] **Grammar Everything (substitute)** — learn page + timed falling-fill for passed levels; chapter 1 playable in repo. *Identify* and *restructure* remain on the roadmap. Spec: [`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md). Plan: [`docs/superpowers/plans/2026-08-22-grammar-everything.md`](docs/superpowers/plans/2026-08-22-grammar-everything.md). Sketch: [`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md).
 - [ ] **Listen & Repeat** — turn “what you just said” or the scene example into shadowing + recording, then pack those clips into timed recap playlists. You hear your own effort and progress; mouth and mind work together.
 - [ ] **Live Small Moments** — 60-second challenges tied to real scenes (waking up, commute, meals, walking around). AI asks what you’re doing now and builds a 60s dialogue from the answer — closer to daily life, more interactive, more pressure.
 
@@ -62,7 +75,7 @@ From the repo root (requires a sibling `my_app` checkout with `assets/data/words
 node scripts/build-t1-pack.mjs
 ```
 
-Writes `src/content/t1-cards.json` with CDN URLs for images and audio.
+Writes `src/features/pictures/content/t1-cards.json` with CDN URLs for images and audio.
 
 ## Media notes
 
@@ -72,9 +85,12 @@ Card images and audio **hotlink the Baicizhan CDN** (`https://ali.bczcdn.com/r/�
 
 Manual smoke-check after `npm run dev` (stop the dev server when done):
 
-- [ ] **Practice** — image visible; countdown in the cue stage; word / sentence hidden until Aha!; timeout reveals the answer, increments the 复习 count, and waits for Next
+- [ ] **Home** — three tiles; no countdown on `/`; 语法游戏 disabled until one level passed; click shows hint
+- [ ] **词汇记忆** (`/practice/pictures`) — image visible; countdown in the cue stage; word / sentence hidden until Aha!; timeout reveals the answer, increments the 复习 count, and waits for Next
 - [ ] Aha! reveals word + sentence; Forgot / Got it apply immediately
 - [ ] A daily set of 10 practice Got its shows 今日已完成; Continue keeps the header at 10 / 10 and starts another set
+- [ ] **语法学习** — chapter list; linear unlock; learn page spans; start falling-fill; pass threshold unlocks next level
+- [ ] **语法游戏** — mixed playable only; arcade history on hub page
 - [ ] **Review** — Forgot list updates; sheet opens already revealed
-- [ ] **Me** — today count, streak, and 思考时长 persist
+- [ ] **Me** — today count, streak, 思考时长 persist; export grammar reports JSON
 - [ ] Mobile viewport usable (one column, large tap targets)
