@@ -118,6 +118,7 @@
 | `fall_duration_ms` | 8000 | 从出现到落地的基准时长 |
 | `wrong_speed_factor` | 0.7 | 选错后剩余时间系数 |
 | `min_fall_duration_ms` | 2500 | 加速后剩余时间下限 |
+| `correct_bounce_factor` | 0.28 | 选对一槽后剩余时间回弹比例（占 `fall_duration_ms`） |
 
 关卡可覆盖 `lives`、`fall_duration_ms`、`pass_threshold`。以后按难度微调只改配置或 JSON，不改引擎公式入口。
 
