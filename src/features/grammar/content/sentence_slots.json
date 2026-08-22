@@ -1776,5 +1776,149 @@
       "learns",
       "learning"
     ]
+  },
+  {
+    "id": "s-nf4-anchor-slot-0",
+    "sentence_id": "s-nf4-anchor",
+    "slot_index": 0,
+    "role": "PP-A",
+    "correct": "Seeing",
+    "distractors": [
+      "Saw",
+      "See",
+      "Seen"
+    ]
+  },
+  {
+    "id": "s-nf4-anchor-slot-1",
+    "sentence_id": "s-nf4-anchor",
+    "slot_index": 1,
+    "role": "S",
+    "correct": "the kid",
+    "distractors": [
+      "the kids",
+      "a kid",
+      "kids"
+    ]
+  },
+  {
+    "id": "s-nf4-anchor-slot-2",
+    "sentence_id": "s-nf4-anchor",
+    "slot_index": 2,
+    "role": "V",
+    "correct": "cried",
+    "distractors": [
+      "cry",
+      "cries",
+      "crying"
+    ]
+  },
+  {
+    "id": "s-nf4-p1-slot-0",
+    "sentence_id": "s-nf4-p1",
+    "slot_index": 0,
+    "role": "PP-A",
+    "correct": "Hearing",
+    "distractors": [
+      "Heard",
+      "Hear",
+      "Hears"
+    ]
+  },
+  {
+    "id": "s-nf4-p1-slot-1",
+    "sentence_id": "s-nf4-p1",
+    "slot_index": 1,
+    "role": "S",
+    "correct": "she",
+    "distractors": [
+      "her",
+      "he",
+      "it"
+    ]
+  },
+  {
+    "id": "s-nf4-p1-slot-2",
+    "sentence_id": "s-nf4-p1",
+    "slot_index": 2,
+    "role": "V",
+    "correct": "smiled",
+    "distractors": [
+      "smile",
+      "smiles",
+      "smiling"
+    ]
+  },
+  {
+    "id": "s-nf4-p2-slot-0",
+    "sentence_id": "s-nf4-p2",
+    "slot_index": 0,
+    "role": "PP-A",
+    "correct": "Opening",
+    "distractors": [
+      "Opened",
+      "Open",
+      "Opens"
+    ]
+  },
+  {
+    "id": "s-nf4-p2-slot-1",
+    "sentence_id": "s-nf4-p2",
+    "slot_index": 1,
+    "role": "S",
+    "correct": "he",
+    "distractors": [
+      "him",
+      "she",
+      "his"
+    ]
+  },
+  {
+    "id": "s-nf4-p2-slot-2",
+    "sentence_id": "s-nf4-p2",
+    "slot_index": 2,
+    "role": "V",
+    "correct": "entered",
+    "distractors": [
+      "enter",
+      "enters",
+      "entering"
+    ]
+  },
+  {
+    "id": "s-nf4-p3-slot-0",
+    "sentence_id": "s-nf4-p3",
+    "slot_index": 0,
+    "role": "PP-A",
+    "correct": "Feeling",
+    "distractors": [
+      "Felt",
+      "Feel",
+      "Feels"
+    ]
+  },
+  {
+    "id": "s-nf4-p3-slot-1",
+    "sentence_id": "s-nf4-p3",
+    "slot_index": 1,
+    "role": "S",
+    "correct": "they",
+    "distractors": [
+      "them",
+      "we",
+      "she"
+    ]
+  },
+  {
+    "id": "s-nf4-p3-slot-2",
+    "sentence_id": "s-nf4-p3",
+    "slot_index": 2,
+    "role": "V",
+    "correct": "went",
+    "distractors": [
+      "go",
+      "goes",
+      "going"
+    ]
   }
 ]

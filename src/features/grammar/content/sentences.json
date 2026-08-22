@@ -394,5 +394,41 @@
     "zh": "我们想学英语。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-nf4-anchor",
+    "level_id": "nonfinite-4",
+    "kind": "anchor",
+    "en": "Seeing his mother, the kid cried.",
+    "zh": "看到妈妈，那个孩子哭了。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-nf4-p1",
+    "level_id": "nonfinite-4",
+    "kind": "playable",
+    "en": "Hearing the news, she smiled.",
+    "zh": "听到消息，她笑了。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-nf4-p2",
+    "level_id": "nonfinite-4",
+    "kind": "playable",
+    "en": "Opening the door, he entered the room.",
+    "zh": "打开门，他进了房间。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-nf4-p3",
+    "level_id": "nonfinite-4",
+    "kind": "playable",
+    "en": "Feeling tired, they went to bed.",
+    "zh": "感到累了，他们上床睡觉了。",
+    "prompt_kind": "zh",
+    "sort_order": 3
   }
 ]
