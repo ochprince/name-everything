@@ -51,19 +51,6 @@ describe('LearnListPage scroll restoration', () => {
     expect(scrollTo).not.toHaveBeenCalled()
   })
 
-  it('saves the current scroll position on unmount', () => {
-    const { unmount } = renderWithProgress(<LearnListPage />)
-
-    Object.defineProperty(window, 'scrollY', {
-      configurable: true,
-      writable: true,
-      value: 777,
-    })
-    unmount()
-
-    expect(sessionStorage.getItem(SCROLL_KEY)).toBe('777')
-  })
-
   it('clears stale position and scrolls to top on a fresh entry (from home)', async () => {
     sessionStorage.setItem(SCROLL_KEY, '420')
     const scrollTo = vi.fn()
@@ -83,8 +70,6 @@ describe('LearnListPage scroll restoration', () => {
     window.scrollTo = scrollTo
     const user = userEvent.setup()
 
-    // Enter the list from home, simulate having scrolled down, click a level
-    // (marks a pending return), then come back via the page's back link.
     renderApp('/')
     await user.click(screen.getByRole('link', { name: /语法学习/ }))
     Object.defineProperty(window, 'scrollY', {
@@ -93,6 +78,34 @@ describe('LearnListPage scroll restoration', () => {
       value: 420,
     })
     await user.click(screen.getByRole('link', { name: /主谓 S\+V/ }))
+    await user.click(screen.getByRole('link', { name: '返回' }))
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+
+    expect(screen.getByText('简单句')).toBeInTheDocument()
+    expect(scrollTo).toHaveBeenCalledWith(0, 420)
+  })
+
+  it('keeps the click-time position even if scrollY is clamped to 0 on unmount', async () => {
+    const scrollTo = vi.fn()
+    window.scrollTo = scrollTo
+    const user = userEvent.setup()
+
+    // In a real browser the level page's shorter DOM clamps window.scrollY
+    // to 0 before the list unmounts; the position captured at click time
+    // must survive that clamp.
+    renderApp('/')
+    await user.click(screen.getByRole('link', { name: /语法学习/ }))
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      writable: true,
+      value: 420,
+    })
+    await user.click(screen.getByRole('link', { name: /主谓 S\+V/ }))
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      writable: true,
+      value: 0,
+    })
     await user.click(screen.getByRole('link', { name: '返回' }))
     await new Promise((resolve) => requestAnimationFrame(resolve))
 

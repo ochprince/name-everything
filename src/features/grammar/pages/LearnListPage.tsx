@@ -23,13 +23,13 @@ export function LearnListPage() {
   const chapters = chaptersInOrder()
   const { hint, showHint } = useStageHint()
 
-  // Scroll restoration for the learn list. Clicking a level marks a pending
-  // return (PENDING_KEY); the page's back link is a regular <Link>, i.e. a
-  // PUSH navigation, so useNavigationType cannot tell "coming back" from
-  // "entering fresh" — the marker can.
-  // - Pending return: restore the saved scroll position, then consume it.
-  // - Fresh entry (e.g. from home): start at the top, forget stale state.
-  // - Unmount: save the current position so the return can restore it.
+  // Scroll restoration for the learn list. Clicking a level captures the
+  // current scroll position and marks a pending return; the page's back link
+  // is a regular <Link> (PUSH navigation), so the marker tells "coming back"
+  // from "entering fresh".
+  // Note: the position is captured in onClick, not in the unmount cleanup —
+  // by the time the cleanup runs, the new page's DOM has replaced the list
+  // and the browser has clamped scrollY to the shorter page (i.e. 0).
   useEffect(() => {
     const pending = sessionStorage.getItem(PENDING_KEY) === '1'
     sessionStorage.removeItem(PENDING_KEY)
@@ -41,9 +41,6 @@ export function LearnListPage() {
     } else {
       sessionStorage.removeItem(SCROLL_KEY)
       window.scrollTo(0, 0)
-    }
-    return () => {
-      sessionStorage.setItem(SCROLL_KEY, String(window.scrollY))
     }
   }, [])
 
@@ -92,6 +89,13 @@ export function LearnListPage() {
                           to={`/practice/grammar/learn/${level.id}`}
                           onClick={() => {
                             playUiTap()
+                            // Capture the position before navigation starts:
+                            // once the level page's shorter DOM replaces the
+                            // list, the browser clamps scrollY to 0.
+                            sessionStorage.setItem(
+                              SCROLL_KEY,
+                              String(window.scrollY),
+                            )
                             sessionStorage.setItem(PENDING_KEY, '1')
                           }}
                           className={`flex ${levelTileMinClass} items-center gap-3 rounded-2xl bg-rose px-4 py-4 text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyc active:brightness-95`}
