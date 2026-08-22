@@ -528,5 +528,149 @@
       "lateness",
       "late"
     ]
+  },
+  {
+    "id": "s-spc-anchor-slot-0",
+    "sentence_id": "s-spc-anchor",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "She",
+    "distractors": [
+      "He",
+      "Her",
+      "It"
+    ]
+  },
+  {
+    "id": "s-spc-anchor-slot-1",
+    "sentence_id": "s-spc-anchor",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "is",
+    "distractors": [
+      "are",
+      "am",
+      "was"
+    ]
+  },
+  {
+    "id": "s-spc-anchor-slot-2",
+    "sentence_id": "s-spc-anchor",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "happy",
+    "distractors": [
+      "happily",
+      "happiness",
+      "sad"
+    ]
+  },
+  {
+    "id": "s-spc-p1-slot-0",
+    "sentence_id": "s-spc-p1",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "He",
+    "distractors": [
+      "Him",
+      "She",
+      "They"
+    ]
+  },
+  {
+    "id": "s-spc-p1-slot-1",
+    "sentence_id": "s-spc-p1",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "is",
+    "distractors": [
+      "are",
+      "am",
+      "was"
+    ]
+  },
+  {
+    "id": "s-spc-p1-slot-2",
+    "sentence_id": "s-spc-p1",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "sad",
+    "distractors": [
+      "sadly",
+      "sadness",
+      "happy"
+    ]
+  },
+  {
+    "id": "s-spc-p2-slot-0",
+    "sentence_id": "s-spc-p2",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "They",
+    "distractors": [
+      "Them",
+      "We",
+      "She"
+    ]
+  },
+  {
+    "id": "s-spc-p2-slot-1",
+    "sentence_id": "s-spc-p2",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "are",
+    "distractors": [
+      "is",
+      "am",
+      "were"
+    ]
+  },
+  {
+    "id": "s-spc-p2-slot-2",
+    "sentence_id": "s-spc-p2",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "tired",
+    "distractors": [
+      "tiredly",
+      "tire",
+      "tiring"
+    ]
+  },
+  {
+    "id": "s-spc-p3-slot-0",
+    "sentence_id": "s-spc-p3",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "I",
+    "distractors": [
+      "Me",
+      "He",
+      "My"
+    ]
+  },
+  {
+    "id": "s-spc-p3-slot-1",
+    "sentence_id": "s-spc-p3",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "am",
+    "distractors": [
+      "is",
+      "are",
+      "was"
+    ]
+  },
+  {
+    "id": "s-spc-p3-slot-2",
+    "sentence_id": "s-spc-p3",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "fine",
+    "distractors": [
+      "finely",
+      "fines",
+      "good"
+    ]
   }
 ]

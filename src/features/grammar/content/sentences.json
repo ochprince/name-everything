@@ -106,5 +106,41 @@
     "zh": "我一定非常晚了。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-spc-anchor",
+    "level_id": "spc-1",
+    "kind": "anchor",
+    "en": "She is happy.",
+    "zh": "她很开心。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-spc-p1",
+    "level_id": "spc-1",
+    "kind": "playable",
+    "en": "He is sad.",
+    "zh": "他很难过。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-spc-p2",
+    "level_id": "spc-1",
+    "kind": "playable",
+    "en": "They are tired.",
+    "zh": "他们很累。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-spc-p3",
+    "level_id": "spc-1",
+    "kind": "playable",
+    "en": "I am fine.",
+    "zh": "我很好。",
+    "prompt_kind": "zh",
+    "sort_order": 3
   }
 ]

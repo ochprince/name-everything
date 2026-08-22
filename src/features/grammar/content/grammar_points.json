@@ -58,5 +58,15 @@
     "id": "gp-c",
     "title_zh": "表语 C",
     "body_zh": "系动词 be 后面的形容词或名词，说明主语状态：very beautiful / very tired。"
+  },
+  {
+    "id": "gp-link",
+    "title_zh": "系动词",
+    "body_zh": "be（is / am / are）连接主语和表语，说明主语是什么或怎么样。"
+  },
+  {
+    "id": "gp-spc",
+    "title_zh": "主系表 S+V+C",
+    "body_zh": "主语 + 系动词 + 表语。表语是形容词或名词，说明主语状态。"
   }
 ]

@@ -103,5 +103,40 @@
     "grammar_point_id": "gp-c",
     "start": 12,
     "end": 26
+  },
+  {
+    "id": "sp-spc-s",
+    "sentence_id": "s-spc-anchor",
+    "grammar_point_id": "gp-s",
+    "start": 0,
+    "end": 3
+  },
+  {
+    "id": "sp-spc-link",
+    "sentence_id": "s-spc-anchor",
+    "grammar_point_id": "gp-link",
+    "start": 4,
+    "end": 6
+  },
+  {
+    "id": "sp-spc-v",
+    "sentence_id": "s-spc-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 4,
+    "end": 6
+  },
+  {
+    "id": "sp-spc-c",
+    "sentence_id": "s-spc-anchor",
+    "grammar_point_id": "gp-c",
+    "start": 7,
+    "end": 13
+  },
+  {
+    "id": "sp-spc-all",
+    "sentence_id": "s-spc-anchor",
+    "grammar_point_id": "gp-spc",
+    "start": 0,
+    "end": 13
   }
 ]

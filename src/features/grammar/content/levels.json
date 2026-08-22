@@ -12,6 +12,12 @@
     "grammar_point_id": "gp-svo"
   },
   {
+    "id": "spc-1",
+    "chapter_id": "simple",
+    "sort_order": 3,
+    "grammar_point_id": "gp-spc"
+  },
+  {
     "id": "modal-1",
     "chapter_id": "predicate",
     "sort_order": 1,
