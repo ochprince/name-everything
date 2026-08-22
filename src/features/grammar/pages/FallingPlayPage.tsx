@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { StageShell } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
 import { ReportDialog } from '../components/ReportDialog'
+import { LivesHearts } from '../components/LivesHearts'
 import {
   anchorForLevel,
   levelById,
@@ -39,6 +40,7 @@ import {
 } from '../lib/fallingMotion'
 import gsap from 'gsap'
 import { fallDurationFor, isLevelUnlocked, livesFor, nextLevelAfter, thresholdFor } from '../lib/unlock'
+import { gameTuning } from '../content/tuning'
 
 type SentenceOutcome = 'cleared' | 'failed'
 
@@ -239,6 +241,7 @@ function FallingBoard({
   }
 
   const round = state
+  const maxLives = lives ?? gameTuning.lives
   const fallT =
     round.fallDurationMs <= 0
       ? 1
@@ -297,6 +300,7 @@ function FallingBoard({
         outcome={sentenceResult.outcome}
         sentence={resultSentence}
         lives={state.lives}
+        maxLives={maxLives}
         gameOver={state.status === 'over'}
         showSettlement={state.status === 'over' || allQueueCleared}
         onNext={continueAfterSentence}
@@ -318,7 +322,7 @@ function FallingBoard({
       >
         <div className="flex flex-1 flex-col items-center justify-center gap-6">
           <p className="text-3xl font-semibold tracking-[0.04em] text-day">
-            消除 {state.score} 句
+            完成 {state.score} 句
           </p>
           {mode === 'level' ? (
             <>
@@ -326,9 +330,7 @@ function FallingBoard({
                 {passed ? '过关了' : `还差，过关要 ${threshold} 句`}
               </p>
               {passed ? (
-                <p className="text-base font-medium tracking-[0.02em] text-day/75">
-                  还剩 {state.lives} 命
-                </p>
+                <LivesHearts count={state.lives} max={maxLives} size="md" />
               ) : null}
             </>
           ) : null}
@@ -363,7 +365,7 @@ function FallingBoard({
         <StageHeader
           backTo={backTo}
           title={`还剩 ${sentencesLeft} 句`}
-          trailing={<Lives count={state.lives} />}
+          trailing={<LivesHearts count={state.lives} max={maxLives} size="sm" />}
         />
       }
     >
@@ -416,6 +418,7 @@ function SentenceResultScreen({
   outcome,
   sentence,
   lives,
+  maxLives,
   gameOver,
   showSettlement,
   onNext,
@@ -424,6 +427,7 @@ function SentenceResultScreen({
   outcome: SentenceOutcome
   sentence: Sentence
   lives: number
+  maxLives: number
   gameOver: boolean
   showSettlement: boolean
   onNext: () => void
@@ -465,9 +469,9 @@ function SentenceResultScreen({
           </p>
         </div>
         {!cleared && !gameOver ? (
-          <p className="text-center text-base font-medium tracking-[0.02em] text-day/75">
-            还剩 {lives} 命
-          </p>
+          <div className="flex justify-center">
+            <LivesHearts count={lives} max={maxLives} size="md" />
+          </div>
         ) : null}
         <button
           type="button"
@@ -478,20 +482,5 @@ function SentenceResultScreen({
         </button>
       </div>
     </StageShell>
-  )
-}
-
-function Lives({ count }: { count: number }) {
-  return (
-    <p aria-label={`剩余 ${count} 命`} className="flex gap-1">
-      {Array.from({ length: 3 }, (_, index) => (
-        <span
-          key={index}
-          className={`size-2.5 rounded-full ${
-            index < count ? 'bg-day' : 'bg-day/25'
-          }`}
-        />
-      ))}
-    </p>
   )
 }
