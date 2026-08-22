@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { applyWrong, land, startRound, tick, applyCorrectBounce, isQueueFullyCleared, nextSentenceId } from './engine'
+import { applyWrong, land, startRound, tick, applyCorrectBounce, isQueueFullyCleared, nextSentenceId, buildQueue } from './engine'
 import { gameTuning } from '../content/tuning'
+import { anchorForLevel, playablesForLevel, grammarPack } from '../content/pack'
 
 describe('falling engine', () => {
   it('speeds up on wrong pick without jumping remaining time upward', () => {
@@ -70,5 +71,28 @@ describe('falling engine', () => {
     const queue = ['a', 'b', 'c']
     expect(isQueueFullyCleared(queue, new Set(['a']))).toBe(false)
     expect(isQueueFullyCleared(queue, new Set(['a', 'b', 'c']))).toBe(true)
+  })
+
+  it('level queue starts with anchor then shuffled playables', () => {
+    const levelId = 'dative-1'
+    const anchor = anchorForLevel(levelId)!
+    const playables = playablesForLevel(levelId)
+    const queue = buildQueue('level', anchor, playables)
+    expect(queue[0]).toBe(anchor.id)
+    expect(queue.slice(1).sort()).toEqual(playables.map((p) => p.id).sort())
+  })
+
+  it('arcade queue excludes anchors and only uses passed-level playables', () => {
+    const passedIds = new Set(['dative-1'])
+    const pool = grammarPack.sentences.filter(
+      (s) => s.kind === 'playable' && passedIds.has(s.level_id),
+    )
+    const queue = buildQueue('arcade', undefined, pool)
+    expect(queue.every((id) => pool.some((p) => p.id === id))).toBe(true)
+    expect(
+      queue.some(
+        (id) => grammarPack.sentences.find((s) => s.id === id)?.kind === 'anchor',
+      ),
+    ).toBe(false)
   })
 })

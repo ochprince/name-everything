@@ -1,0 +1,62 @@
+import { describe, expect, it, beforeEach } from 'vitest'
+import {
+  saveGrammarProgress,
+  loadGrammarProgress,
+  addReport,
+  exportReports,
+  clearReports,
+  defaultGrammarProgress,
+  loadReports,
+} from './storage'
+import { defaultProgress, loadProgress, saveProgress } from '../../../lib/storage'
+
+beforeEach(() => {
+  localStorage.clear()
+})
+
+describe('grammar storage', () => {
+  it('uses separate keys from pictures progress', () => {
+    saveProgress({
+      ...defaultProgress(),
+      streaks: { count: 7, lastDate: '2026-08-22' },
+    })
+    saveGrammarProgress({
+      ...defaultGrammarProgress(),
+      passedLevelIds: ['dative-1'],
+    })
+    expect(loadProgress().streaks.count).toBe(7)
+    expect(loadGrammarProgress().passedLevelIds).toEqual(['dative-1'])
+    localStorage.removeItem('grammar/progress/v1')
+    expect(loadProgress().streaks.count).toBe(7)
+  })
+
+  it('exportReports returns asset_reports shape and clearReports empties list', () => {
+    addReport({
+      asset_type: 'sentence',
+      asset_id: 's-d1-anchor',
+      level_id: 'dative-1',
+      note: 'typo',
+    })
+    const parsed = JSON.parse(exportReports()) as Array<Record<string, unknown>>
+    expect(parsed).toHaveLength(1)
+    expect(parsed[0]).toMatchObject({
+      asset_type: 'sentence',
+      asset_id: 's-d1-anchor',
+      level_id: 'dative-1',
+      note: 'typo',
+    })
+    expect(typeof parsed[0]!.created_at).toBe('string')
+    clearReports()
+    expect(JSON.parse(exportReports())).toHaveLength(0)
+  })
+
+  it('addReport ignores empty note', () => {
+    addReport({
+      asset_type: 'grammar_point',
+      asset_id: 'gp-s',
+      level_id: null,
+      note: '  ',
+    })
+    expect(loadReports()).toHaveLength(0)
+  })
+})
