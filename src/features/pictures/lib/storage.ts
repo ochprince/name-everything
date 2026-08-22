@@ -29,6 +29,7 @@ export type ProgressState = {
     hintLang: HintLang
     autoSpeak: boolean
     thinkHoldMs: ThinkHoldMs
+    uiSound: boolean
   }
 }
 
@@ -51,7 +52,7 @@ export function defaultProgress(): ProgressState {
     currentCardId: null,
     recentPracticeTag: null,
     streaks: { lastActiveDate: null, count: 0 },
-    settings: { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000 },
+    settings: { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000, uiSound: true },
   }
 }
 
@@ -70,7 +71,7 @@ function migrateThinkHold(raw: {
 
 function normalizeSettings(raw: unknown): ProgressState['settings'] {
   if (!raw || typeof raw !== 'object') {
-    return { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000 }
+    return { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000, uiSound: true }
   }
   const settings = raw as {
     hintLang?: unknown
@@ -78,6 +79,7 @@ function normalizeSettings(raw: unknown): ProgressState['settings'] {
     autoSpeak?: unknown
     thinkHoldMs?: unknown
     forgetHoldMs?: unknown
+    uiSound?: unknown
   }
   const hintLang: HintLang =
     settings.hintLang === 'en' || settings.hintLang === 'zh'
@@ -89,6 +91,7 @@ function normalizeSettings(raw: unknown): ProgressState['settings'] {
     hintLang,
     autoSpeak: settings.autoSpeak === true,
     thinkHoldMs: migrateThinkHold(settings),
+    uiSound: settings.uiSound !== false,
   }
 }
 

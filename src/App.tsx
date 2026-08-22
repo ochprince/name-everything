@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import { BottomNav } from './components/BottomNav'
 import { ProgressProvider } from './features/pictures/hooks/useProgress'
 import { unlockCardAudio } from './features/pictures/lib/playAudio'
+import { unlockUiSound } from './shared/uiSound'
 import { MePage } from './pages/MePage'
 import { PracticePage } from './features/pictures/pages/PracticePage'
 import { ReviewPage } from './pages/ReviewPage'
@@ -14,7 +15,10 @@ import { ArcadePage } from './features/grammar/pages/ArcadePage'
 
 export default function App() {
   useEffect(() => {
-    const unlock = () => unlockCardAudio()
+    const unlock = () => {
+      unlockCardAudio()
+      unlockUiSound()
+    }
     window.addEventListener('pointerdown', unlock)
     return () => window.removeEventListener('pointerdown', unlock)
   }, [])

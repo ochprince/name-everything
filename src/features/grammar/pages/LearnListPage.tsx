@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import { StageShell } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
 import { StageHint, useStageHint } from '../../../shared/StageHint'
+import { playUiTap } from '../../../shared/uiSound'
+import { LevelPassTrophy } from '../components/LevelPassTrophy'
 import { LockPlaceholder, LockedLevelTile, levelTileMinClass } from '../../../shared/LockPlaceholder'
 import {
   anchorForLevel,
@@ -61,21 +63,25 @@ export function LearnListPage() {
                       <li key={level.id}>
                         <Link
                           to={`/practice/grammar/learn/${level.id}`}
-                          className={`block ${levelTileMinClass} rounded-2xl bg-rose px-4 py-4 text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyc active:brightness-95`}
+                          onClick={() => playUiTap()}
+                          className={`flex ${levelTileMinClass} items-center gap-3 rounded-2xl bg-rose px-4 py-4 text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyc active:brightness-95`}
                         >
-                          <span className="text-lg font-semibold tracking-[0.04em]">
-                            {title}
-                          </span>
-                          {anchor ? (
-                            <span className="mt-1 block text-base font-medium tracking-[0.01em] text-cyc/60">
-                              {anchor.en}
+                          <div className="min-w-0 flex-1">
+                            <span className="text-lg font-semibold tracking-[0.04em]">
+                              {title}
                             </span>
-                          ) : null}
-                          <span className="mt-1 block text-base font-medium tracking-[0.02em] text-cyc/70">
-                            {passed
-                              ? `最高 ${score} · 已过关`
-                              : `最高 ${score} / ${need}`}
-                          </span>
+                            {anchor ? (
+                              <span className="mt-1 block text-base font-medium tracking-[0.01em] text-cyc/60">
+                                {anchor.en}
+                              </span>
+                            ) : null}
+                            <span className="mt-1 block text-base font-medium tracking-[0.02em] text-cyc/70">
+                              {passed
+                                ? `最高 ${score} · 已过关`
+                                : `最高 ${score} / ${need}`}
+                            </span>
+                          </div>
+                          {passed ? <LevelPassTrophy /> : null}
                         </Link>
                       </li>
                     )

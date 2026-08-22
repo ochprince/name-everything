@@ -78,6 +78,7 @@ describe('progress storage', () => {
       hintLang: 'zh',
       autoSpeak: false,
       thinkHoldMs: 5000,
+      uiSound: true,
     })
   })
 

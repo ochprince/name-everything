@@ -41,6 +41,7 @@ import {
 import gsap from 'gsap'
 import { fallDurationFor, isLevelUnlocked, livesFor, nextLevelAfter, thresholdFor } from '../lib/unlock'
 import { gameTuning } from '../content/tuning'
+import { playUiCorrect, playUiFail, playUiSuccess, playUiTap, unlockUiSound } from '../../../shared/uiSound'
 
 type SentenceOutcome = 'cleared' | 'failed'
 
@@ -248,8 +249,10 @@ function FallingBoard({
       : 1 - Math.max(0, round.remainingMs) / round.fallDurationMs
 
   function pick(option: string) {
+    unlockUiSound()
     if (!slot || round.status !== 'playing' || sentenceResult) return
     if (option !== slot.correct) {
+      playUiFail()
       if (sentenceRef.current) gsap.killTweensOf(sentenceRef.current)
       setState((current) => (current ? applyWrong(current) : current))
       return
@@ -260,11 +263,13 @@ function FallingBoard({
       if (next.score > current.score && current.sentenceId) {
         bottomHandledRef.current = true
         setClearedIds((prev) => new Set(prev).add(current.sentenceId!))
+        playUiSuccess()
         setSentenceResult({ outcome: 'cleared', sentenceId: current.sentenceId })
         return next
       }
       const bounced = applyCorrectBounce(next)
       bottomHandledRef.current = false
+      playUiCorrect()
       if (sentenceRef.current) bounceSentenceUp(sentenceRef.current)
       return bounced
     })
@@ -272,6 +277,7 @@ function FallingBoard({
 
   function continueAfterSentence() {
     if (!state || !sentenceResult) return
+    playUiTap()
     setSentenceResult(null)
 
     if (state.status === 'over') return
@@ -338,6 +344,7 @@ function FallingBoard({
             {nextLevel ? (
               <Link
                 to={`/practice/grammar/learn/${nextLevel.id}`}
+                onClick={() => playUiTap()}
                 className="inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
               >
                 下一关：{nextTopic?.title_zh ?? nextLevel.id}
@@ -434,6 +441,11 @@ function SentenceResultScreen({
   backTo: string
 }) {
   const cleared = outcome === 'cleared'
+
+  useEffect(() => {
+    if (outcome !== 'failed') return
+    playUiFail()
+  }, [outcome, sentence.id])
 
   return (
     <StageShell

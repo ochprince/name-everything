@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { StageShell } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
+import { playUiTap } from '../../../shared/uiSound'
 import { ReportDialog } from '../components/ReportDialog'
 import { ScoreBadge } from '../components/ScoreBadge'
 import {
@@ -97,6 +98,7 @@ export function LearnPage() {
 
         <Link
           to={`/practice/grammar/learn/${level.id}/play`}
+          onClick={() => playUiTap()}
           className="mt-auto mb-4 inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 font-cue text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
         >
           开始游戏
@@ -155,7 +157,9 @@ function ClickableSentence({
             onClick={(event) => {
               event.stopPropagation()
               const range = piece.range!
-              onPick(rangesEqual(activeRange, range) ? null : range)
+              const next = rangesEqual(activeRange, range) ? null : range
+              if (next) playUiTap()
+              onPick(next)
             }}
             className={`rounded-md px-0.5 transition-colors duration-200 ease-out ${
               rangesEqual(activeRange, piece.range)

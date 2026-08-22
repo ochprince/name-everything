@@ -41,11 +41,25 @@ describe('MePage', () => {
 
     expect(zh).toHaveAttribute('aria-checked', 'true')
     await waitFor(() => {
-      expect(loadProgress().settings).toEqual({
-        hintLang: 'zh',
-        autoSpeak: false,
-        thinkHoldMs: 5000,
-      })
+    expect(loadProgress().settings).toEqual({
+      hintLang: 'zh',
+      autoSpeak: false,
+      thinkHoldMs: 5000,
+      uiSound: true,
+    })
+    })
+  })
+
+  it('writes uiSound into progress.settings', async () => {
+    const user = userEvent.setup()
+    renderWithProgress(<MePage />)
+
+    const toggle = screen.getByRole('switch', { name: '音效' })
+    expect(toggle).toHaveAttribute('aria-checked', 'true')
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-checked', 'false')
+    await waitFor(() => {
+      expect(loadProgress().settings.uiSound).toBe(false)
     })
   })
 

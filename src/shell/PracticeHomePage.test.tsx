@@ -67,7 +67,7 @@ describe('practice home', () => {
     })
     renderHome()
     expect(screen.getByText('从例句开始学语法')).toBeInTheDocument()
-    expect(screen.getByText('双宾 S+V+IO+DO')).toBeInTheDocument()
+    expect(screen.getByText('主谓双宾 S+V+IO+DO')).toBeInTheDocument()
   })
 
   it('shows last played level even when that level is not passed yet', () => {

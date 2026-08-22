@@ -169,6 +169,19 @@ export function MePage() {
               }))
             }
           />
+          <CueHold
+            label="音效"
+            on={progress.settings.uiSound}
+            onToggle={() =>
+              update((p) => ({
+                ...p,
+                settings: {
+                  ...p.settings,
+                  uiSound: !p.settings.uiSound,
+                },
+              }))
+            }
+          />
           <div className="flex flex-col gap-3">
             <span className="text-lg font-medium tracking-[0.04em] text-day">
               思考时长
