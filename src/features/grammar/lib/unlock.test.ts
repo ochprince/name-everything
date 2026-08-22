@@ -14,7 +14,7 @@ import {
   defaultGrammarProgress,
   saveGrammarProgress,
 } from './storage'
-import { levelById, levelsForChapter } from '../content/pack'
+import { levelsForChapter } from '../content/pack'
 
 describe('level unlock', () => {
   const simpleLevels = levelsForChapter('simple')

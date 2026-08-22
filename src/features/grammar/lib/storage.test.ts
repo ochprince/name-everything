@@ -6,7 +6,6 @@ import {
   exportReports,
   clearReports,
   defaultGrammarProgress,
-  loadReports,
   recordLevelScore,
 } from './storage'
 import { defaultProgress, loadProgress, saveProgress } from '../../pictures/lib/storage'
