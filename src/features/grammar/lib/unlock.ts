@@ -1,6 +1,6 @@
 import { gameTuning } from '../content/tuning'
 import type { Level } from '../content/pack'
-import { chaptersInOrder, levelById, levelsForChapter } from '../content/pack'
+import { chaptersInOrder, levelById, levelsForChapter, sentencesForLevel } from '../content/pack'
 import type { GrammarProgress } from './storage'
 import { levelThreshold } from './storage'
 
@@ -46,6 +46,36 @@ export function highScoreFor(levelId: string, progress: GrammarProgress): number
 
 export function isLevelPassed(levelId: string, progress: GrammarProgress): boolean {
   return progress.passedLevelIds.includes(levelId)
+}
+
+export function sentenceCountForLevel(levelId: string): number {
+  return sentencesForLevel(levelId).length
+}
+
+function passedSentenceBaseline(levelId: string, progress: GrammarProgress): number {
+  return progress.passedSentenceCounts[levelId] ?? sentenceCountForLevel(levelId)
+}
+
+/** True when a passed level gained new sentences since the user last cleared it. */
+export function hasLevelContentUpdate(
+  levelId: string,
+  progress: GrammarProgress,
+): boolean {
+  if (!isLevelPassed(levelId, progress)) return false
+  return sentenceCountForLevel(levelId) > passedSentenceBaseline(levelId, progress)
+}
+
+export function levelListScoreLabel(level: Level, progress: GrammarProgress): string {
+  const score = highScoreFor(level.id, progress)
+  const need = thresholdFor(level)
+  const passed = isLevelPassed(level.id, progress)
+  const total = sentenceCountForLevel(level.id)
+
+  if (!passed) return `最高 ${score} / ${need}`
+  if (hasLevelContentUpdate(level.id, progress)) {
+    return `最高 ${score}/${total} · 有更新`
+  }
+  return `最高 ${score} · 已过关`
 }
 
 export function livesFor(level: Level): number {

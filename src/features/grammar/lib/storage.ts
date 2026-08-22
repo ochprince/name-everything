@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { gameTuning } from '../content/tuning'
+import { sentencesForLevel } from '../content/pack'
 
 export type ArcadeRecord = {
   id: string
@@ -19,6 +20,8 @@ export type AssetReport = {
 export type GrammarProgress = {
   highScores: Record<string, number>
   passedLevelIds: string[]
+  /** Sentence count in the level when the user last passed it. */
+  passedSentenceCounts: Record<string, number>
   lastPlayedLevelId: string | null
   arcadeHistory: ArcadeRecord[]
 }
@@ -39,6 +42,7 @@ function newId(): string {
 const EMPTY_PROGRESS: GrammarProgress = {
   highScores: {},
   passedLevelIds: [],
+  passedSentenceCounts: {},
   lastPlayedLevelId: null,
   arcadeHistory: [],
 }
@@ -55,6 +59,7 @@ function parseProgress(raw: string | null): GrammarProgress {
     return {
       highScores: value.highScores ?? {},
       passedLevelIds: value.passedLevelIds ?? [],
+      passedSentenceCounts: value.passedSentenceCounts ?? {},
       lastPlayedLevelId: value.lastPlayedLevelId ?? null,
       arcadeHistory: value.arcadeHistory ?? [],
     }
@@ -144,15 +149,21 @@ export function recordLevelScore(levelId: string, score: number, threshold: numb
   const current = loadGrammarProgress()
   const prev = current.highScores[levelId] ?? 0
   const highScores = { ...current.highScores, [levelId]: Math.max(prev, score) }
+  const passed = highScores[levelId]! >= threshold
   const passedLevelIds = current.passedLevelIds.includes(levelId)
     ? current.passedLevelIds
-    : highScores[levelId] >= threshold
+    : passed
       ? [...current.passedLevelIds, levelId]
       : current.passedLevelIds
+  const passedSentenceCounts = { ...current.passedSentenceCounts }
+  if (passed && score >= threshold) {
+    passedSentenceCounts[levelId] = sentencesForLevel(levelId).length
+  }
   saveGrammarProgress({
     ...current,
     highScores,
     passedLevelIds,
+    passedSentenceCounts,
     lastPlayedLevelId: levelId,
   })
 }

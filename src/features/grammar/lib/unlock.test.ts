@@ -1,8 +1,20 @@
 import { describe, expect, it, beforeEach } from 'vitest'
-import { isLevelUnlocked, levelUnlockHint, nextLevelAfter, thresholdFor } from './unlock'
-import { recordLevelScore, loadGrammarProgress, defaultGrammarProgress } from './storage'
-import { levelsForChapter } from '../content/pack'
-import type { Level } from '../content/pack'
+import {
+  hasLevelContentUpdate,
+  isLevelUnlocked,
+  levelListScoreLabel,
+  levelUnlockHint,
+  nextLevelAfter,
+  sentenceCountForLevel,
+  thresholdFor,
+} from './unlock'
+import {
+  recordLevelScore,
+  loadGrammarProgress,
+  defaultGrammarProgress,
+  saveGrammarProgress,
+} from './storage'
+import { levelById, levelsForChapter } from '../content/pack'
 
 describe('level unlock', () => {
   const simpleLevels = levelsForChapter('simple')
@@ -19,7 +31,7 @@ describe('level unlock', () => {
 
   it('second level locked until first is passed', () => {
     expect(isLevelUnlocked(second!, defaultGrammarProgress())).toBe(false)
-    recordLevelScore(first!.id, thresholdFor(first as Level), thresholdFor(first as Level))
+    recordLevelScore(first!.id, thresholdFor(first!), thresholdFor(first!))
     expect(isLevelUnlocked(second!, loadGrammarProgress())).toBe(true)
   })
 
@@ -27,7 +39,7 @@ describe('level unlock', () => {
     expect(isLevelUnlocked(predicateFirst!, defaultGrammarProgress())).toBe(false)
     expect(levelUnlockHint(predicateFirst!, defaultGrammarProgress())).toBe('先完成上一章')
 
-    recordLevelScore(first!.id, thresholdFor(first as Level), thresholdFor(first as Level))
+    recordLevelScore(first!.id, thresholdFor(first!), thresholdFor(first!))
     expect(isLevelUnlocked(predicateFirst!, loadGrammarProgress())).toBe(false)
 
     for (const level of simpleLevels) {
@@ -47,5 +59,29 @@ describe('level unlock', () => {
     if (lastPredicate) {
       expect(nextLevelAfter(lastPredicate.id)).toBeNull()
     }
+  })
+
+  it('shows 有更新 when sentence count grows after a pass', () => {
+    const level = first!
+    const total = sentenceCountForLevel(level.id)
+    saveGrammarProgress({
+      ...defaultGrammarProgress(),
+      passedLevelIds: [level.id],
+      highScores: { [level.id]: 4 },
+      passedSentenceCounts: { [level.id]: total - 1 },
+    })
+    const progress = loadGrammarProgress()
+
+    expect(hasLevelContentUpdate(level.id, progress)).toBe(true)
+    expect(levelListScoreLabel(level, progress)).toBe(
+      `最高 4/${total} · 有更新`,
+    )
+  })
+
+  it('clears 有更新 after passing again on expanded content', () => {
+    const level = first!
+    recordLevelScore(level.id, thresholdFor(level), thresholdFor(level))
+    expect(hasLevelContentUpdate(level.id, loadGrammarProgress())).toBe(false)
+    expect(levelListScoreLabel(level, loadGrammarProgress())).toMatch(/已过关$/)
   })
 })

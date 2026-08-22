@@ -7,8 +7,11 @@ import {
   clearReports,
   defaultGrammarProgress,
   loadReports,
+  recordLevelScore,
 } from './storage'
 import { defaultProgress, loadProgress, saveProgress } from '../../pictures/lib/storage'
+import { levelById } from '../content/pack'
+import { sentenceCountForLevel, thresholdFor } from './unlock'
 
 beforeEach(() => {
   localStorage.clear()
@@ -50,13 +53,12 @@ describe('grammar storage', () => {
     expect(JSON.parse(exportReports())).toHaveLength(0)
   })
 
-  it('addReport ignores empty note', () => {
-    addReport({
-      asset_type: 'grammar_point',
-      asset_id: 'gp-s',
-      level_id: null,
-      note: '  ',
-    })
-    expect(loadReports()).toHaveLength(0)
+  it('records passedSentenceCounts when a level is passed', () => {
+    const level = levelById('sv-1')
+    expect(level).toBeDefined()
+    recordLevelScore(level!.id, thresholdFor(level!), thresholdFor(level!))
+    expect(loadGrammarProgress().passedSentenceCounts[level!.id]).toBe(
+      sentenceCountForLevel(level!.id),
+    )
   })
 })

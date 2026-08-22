@@ -12,7 +12,7 @@ import {
   pointById,
 } from '../content/pack'
 import { useGrammarProgress } from '../lib/storage'
-import { highScoreFor, isLevelPassed, isLevelUnlocked, levelUnlockHint, thresholdFor } from '../lib/unlock'
+import { isLevelPassed, isLevelUnlocked, levelListScoreLabel, levelUnlockHint } from '../lib/unlock'
 
 export function LearnListPage() {
   const progress = useGrammarProgress()
@@ -44,8 +44,7 @@ export function LearnListPage() {
                     const topic = pointById(level.grammar_point_id)
                     const unlocked = isLevelUnlocked(level, progress)
                     const passed = isLevelPassed(level.id, progress)
-                    const score = highScoreFor(level.id, progress)
-                    const need = thresholdFor(level)
+                    const scoreLabel = levelListScoreLabel(level, progress)
                     const title = `${index + 1}. ${topic?.title_zh ?? level.id}`
 
                     if (!unlocked) {
@@ -76,9 +75,7 @@ export function LearnListPage() {
                               </span>
                             ) : null}
                             <span className="mt-1 block text-base font-medium tracking-[0.02em] text-cyc/70">
-                              {passed
-                                ? `最高 ${score} · 已过关`
-                                : `最高 ${score} / ${need}`}
+                              {scoreLabel}
                             </span>
                           </div>
                           {passed ? <LevelPassTrophy /> : null}

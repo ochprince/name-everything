@@ -40,7 +40,7 @@ Copy this checklist and track progress:
 - [ ] 1. Read existing pack JSON + classify chapter
 - [ ] 2. Draft grammar_points (reuse shared points when possible)
 - [ ] 3. Plan level id + 4+ sentences (1 anchor + 3 playables minimum)
-- [ ] 4. Write simple-vocab EN + zh prompts
+- [ ] 4. Write EN + zh prompts
 - [ ] 5. Assign stable ids (no collisions)
 - [ ] 6. Build anchor spans (half-open [start, end) on en)
 - [ ] 7. Build slots + teaching distractors
@@ -90,8 +90,7 @@ Level `grammar_point_id`: umbrella point (e.g. `gp-participle`).
 
 ### Step 4 — Sentence writing rules
 
-- **Simple words only**: common verbs (go, see, push, leave), short clauses, no rare nouns.
-- **Anchor** = most typical short example of the rule; carries **识别** (learn-page spans).
+- **Anchor** = most typical example of the rule; carries **识别** (learn-page spans).
 - **Playables** = **替换** same skeleton (换主语/宾语/动词/分词), not new grammar; **slots only**, no spans.
 - Every sentence needs matching `zh` for falling-fill prompt.
 - `prompt_kind`: always `"zh"` for now.
