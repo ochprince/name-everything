@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { BottomNav } from './components/BottomNav'
 import { ProgressProvider } from './features/pictures/hooks/useProgress'
@@ -20,7 +20,10 @@ const SCROLL_EXEMPT_PATHS = new Set(['/practice/grammar/learn'])
 
 function ScrollToTop() {
   const { pathname } = useLocation()
-  useEffect(() => {
+  // useLayoutEffect so the reset happens before paint: an async effect would
+  // let the browser paint one frame at the old scrollY and let scroll
+  // anchoring fight the reset.
+  useLayoutEffect(() => {
     if (SCROLL_EXEMPT_PATHS.has(pathname)) return
     window.scrollTo(0, 0)
   }, [pathname])
