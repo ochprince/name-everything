@@ -1634,8 +1634,8 @@
     ]
   },
   {
-    "id": "s-nf3-anchor-slot-0",
-    "sentence_id": "s-nf3-anchor",
+    "id": "s-nf1-panchor-slot-0",
+    "sentence_id": "s-nf1-p4",
     "slot_index": 0,
     "role": "S",
     "correct": "She",
@@ -1646,8 +1646,8 @@
     ]
   },
   {
-    "id": "s-nf3-anchor-slot-1",
-    "sentence_id": "s-nf3-anchor",
+    "id": "s-nf1-panchor-slot-1",
+    "sentence_id": "s-nf1-p4",
     "slot_index": 1,
     "role": "V",
     "correct": "wants",
@@ -1658,8 +1658,8 @@
     ]
   },
   {
-    "id": "s-nf3-anchor-slot-2",
-    "sentence_id": "s-nf3-anchor",
+    "id": "s-nf1-panchor-slot-2",
+    "sentence_id": "s-nf1-p4",
     "slot_index": 2,
     "role": "INF",
     "correct": "to buy",
@@ -1670,8 +1670,8 @@
     ]
   },
   {
-    "id": "s-nf3-p1-slot-0",
-    "sentence_id": "s-nf3-p1",
+    "id": "s-nf1-pp1-slot-0",
+    "sentence_id": "s-nf1-p5",
     "slot_index": 0,
     "role": "S",
     "correct": "He",
@@ -1682,8 +1682,8 @@
     ]
   },
   {
-    "id": "s-nf3-p1-slot-1",
-    "sentence_id": "s-nf3-p1",
+    "id": "s-nf1-pp1-slot-1",
+    "sentence_id": "s-nf1-p5",
     "slot_index": 1,
     "role": "V",
     "correct": "likes",
@@ -1694,8 +1694,8 @@
     ]
   },
   {
-    "id": "s-nf3-p1-slot-2",
-    "sentence_id": "s-nf3-p1",
+    "id": "s-nf1-pp1-slot-2",
+    "sentence_id": "s-nf1-p5",
     "slot_index": 2,
     "role": "INF",
     "correct": "to play",
@@ -1706,8 +1706,8 @@
     ]
   },
   {
-    "id": "s-nf3-p2-slot-0",
-    "sentence_id": "s-nf3-p2",
+    "id": "s-nf1-pp2-slot-0",
+    "sentence_id": "s-nf1-p6",
     "slot_index": 0,
     "role": "S",
     "correct": "They",
@@ -1718,8 +1718,8 @@
     ]
   },
   {
-    "id": "s-nf3-p2-slot-1",
-    "sentence_id": "s-nf3-p2",
+    "id": "s-nf1-pp2-slot-1",
+    "sentence_id": "s-nf1-p6",
     "slot_index": 1,
     "role": "V",
     "correct": "plan",
@@ -1730,8 +1730,8 @@
     ]
   },
   {
-    "id": "s-nf3-p2-slot-2",
-    "sentence_id": "s-nf3-p2",
+    "id": "s-nf1-pp2-slot-2",
+    "sentence_id": "s-nf1-p6",
     "slot_index": 2,
     "role": "INF",
     "correct": "to visit",
@@ -1742,8 +1742,8 @@
     ]
   },
   {
-    "id": "s-nf3-p3-slot-0",
-    "sentence_id": "s-nf3-p3",
+    "id": "s-nf1-pp3-slot-0",
+    "sentence_id": "s-nf1-p7",
     "slot_index": 0,
     "role": "S",
     "correct": "We",
@@ -1754,8 +1754,8 @@
     ]
   },
   {
-    "id": "s-nf3-p3-slot-1",
-    "sentence_id": "s-nf3-p3",
+    "id": "s-nf1-pp3-slot-1",
+    "sentence_id": "s-nf1-p7",
     "slot_index": 1,
     "role": "V",
     "correct": "want",
@@ -1766,8 +1766,8 @@
     ]
   },
   {
-    "id": "s-nf3-p3-slot-2",
-    "sentence_id": "s-nf3-p3",
+    "id": "s-nf1-pp3-slot-2",
+    "sentence_id": "s-nf1-p7",
     "slot_index": 2,
     "role": "INF",
     "correct": "to learn",

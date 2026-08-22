@@ -48,7 +48,7 @@ describe('level unlock', () => {
     expect(isLevelUnlocked(predicateFirst!, loadGrammarProgress())).toBe(true)
   })
 
-  it('nextLevelAfter walks chapter order and skips unreleased chapters', () => {
+  it('nextLevelAfter walks chapter order across chapters', () => {
     expect(nextLevelAfter(first!.id)?.id).toBe(second!.id)
     expect(nextLevelAfter(simpleLevels[simpleLevels.length - 1]!.id)?.id).toBe(
       predicateFirst!.id,
@@ -57,7 +57,11 @@ describe('level unlock', () => {
     const predicateLevels = levelsForChapter('predicate')
     const lastPredicate = predicateLevels[predicateLevels.length - 1]
     if (lastPredicate) {
-      expect(nextLevelAfter(lastPredicate.id)).toBeNull()
+      const nonfiniteFirst = levelsForChapter('nonfinite')[0]
+      // Crosses into the next released chapter; null only if no next chapter.
+      expect(nextLevelAfter(lastPredicate.id)?.id ?? null).toBe(
+        nonfiniteFirst?.id ?? null,
+      )
     }
   })
 

@@ -360,40 +360,40 @@
     "sort_order": 3
   },
   {
-    "id": "s-nf3-anchor",
-    "level_id": "nonfinite-3",
-    "kind": "anchor",
+    "id": "s-nf1-p4",
+    "level_id": "nonfinite-1",
+    "kind": "playable",
     "en": "She wants to buy a new phone.",
     "zh": "她想买一部新手机。",
     "prompt_kind": "zh",
-    "sort_order": 0
+    "sort_order": 4
   },
   {
-    "id": "s-nf3-p1",
-    "level_id": "nonfinite-3",
+    "id": "s-nf1-p5",
+    "level_id": "nonfinite-1",
     "kind": "playable",
     "en": "He likes to play basketball.",
     "zh": "他喜欢打篮球。",
     "prompt_kind": "zh",
-    "sort_order": 1
+    "sort_order": 5
   },
   {
-    "id": "s-nf3-p2",
-    "level_id": "nonfinite-3",
+    "id": "s-nf1-p6",
+    "level_id": "nonfinite-1",
     "kind": "playable",
     "en": "They plan to visit the museum.",
     "zh": "他们计划参观博物馆。",
     "prompt_kind": "zh",
-    "sort_order": 2
+    "sort_order": 6
   },
   {
-    "id": "s-nf3-p3",
-    "level_id": "nonfinite-3",
+    "id": "s-nf1-p7",
+    "level_id": "nonfinite-1",
     "kind": "playable",
     "en": "We want to learn English.",
     "zh": "我们想学英语。",
     "prompt_kind": "zh",
-    "sort_order": 3
+    "sort_order": 7
   },
   {
     "id": "s-nf4-anchor",
