@@ -102,6 +102,27 @@ body {
   border-color: #f4f1ea;
 }
 
+dialog.report-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  width: min(24rem, calc(100% - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgb(244 241 234 / 0.2);
+  border-radius: 16px;
+  background: #05060a;
+  color: #f4f1ea;
+  box-shadow: 0 22px 44px -14px rgb(0 0 0 / 0.85);
+}
+
+dialog.report-dialog::backdrop {
+  background: rgb(5 6 10 / 0.8);
+}
+
 dialog.cue-sheet {
   position: fixed;
   inset: 0;

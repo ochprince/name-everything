@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { playCardAudio, stopCardAudio } from '../lib/playAudio'
 import type { HintLang, ThinkHoldMs } from '../lib/storage'
 import type { Card } from '../types/card'
+import { StageHeader } from '../shared/StageHeader'
 import { LangToggle } from './LangToggle'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
@@ -17,6 +18,8 @@ export interface PracticeCardProps {
   onNext?: () => void
   progressLabel?: string
   chrome?: 'stage' | 'sheet'
+  backTo?: string
+  stageTitle?: string
 }
 
 const cueButton =
@@ -77,6 +80,8 @@ export function PracticeCard({
   onNext,
   progressLabel,
   chrome = 'stage',
+  backTo,
+  stageTitle = 'Name Everything',
 }: PracticeCardProps) {
   const [imageSrc, setImageSrc] = useState(card.image)
   const sheet = chrome === 'sheet'
@@ -206,19 +211,17 @@ export function PracticeCard({
         }`}
       >
         {sheet ? null : (
-          <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-2">
-            <span aria-hidden="true" />
-            <p className="text-center text-sm font-semibold tracking-[0.22em] text-day">
-              Name Everything
-            </p>
-            {progressLabel ? (
-              <p className="justify-self-end rounded-xl bg-rose px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-cyc">
-                {progressLabel}
-              </p>
-            ) : (
-              <span aria-hidden="true" />
-            )}
-          </header>
+          <StageHeader
+            backTo={backTo}
+            title={stageTitle}
+            trailing={
+              progressLabel ? (
+                <p className="rounded-xl bg-rose px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-cyc">
+                  {progressLabel}
+                </p>
+              ) : undefined
+            }
+          />
         )}
 
         <figure

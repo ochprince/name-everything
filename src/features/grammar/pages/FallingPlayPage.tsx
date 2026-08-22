@@ -1,0 +1,471 @@
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
+import { StageShell } from '../../../shared/StageShell'
+import { StageHeader } from '../../../shared/StageHeader'
+import { ReportDialog } from '../components/ReportDialog'
+import {
+  anchorForLevel,
+  levelById,
+  playablesForLevel,
+  sentenceById,
+  slotsForSentence,
+  grammarPack,
+  type Sentence,
+} from '../content/pack'
+import {
+  recordArcadeScore,
+  recordLevelScore,
+  useGrammarProgress,
+} from '../lib/storage'
+import {
+  advanceSlot,
+  applyCorrectBounce,
+  applyWrong,
+  beginSentence,
+  buildQueue,
+  isQueueFullyCleared,
+  land,
+  nextSentenceId,
+  slotOptions,
+  startRound,
+  tick,
+  type FallingState,
+} from '../lib/engine'
+import {
+  bounceSentenceUp,
+  resetSentenceMotion,
+  shatterSentence,
+} from '../lib/fallingMotion'
+import gsap from 'gsap'
+import { fallDurationFor, isLevelUnlocked, livesFor, thresholdFor } from '../lib/unlock'
+
+type SentenceOutcome = 'cleared' | 'failed'
+
+type SentenceResult = {
+  outcome: SentenceOutcome
+  sentenceId: string
+}
+
+/** 提示底边落到底部蓝线时的进度（0→1 对应 start%→100%） */
+const FALL_START_PERCENT = 10
+
+function fallProgressToTop(progress: number): number {
+  return FALL_START_PERCENT + progress * (100 - FALL_START_PERCENT)
+}
+
+function sentenceHitBottom(zoneEl: HTMLElement, wrapEl: HTMLElement): boolean {
+  return (
+    wrapEl.getBoundingClientRect().bottom >=
+    zoneEl.getBoundingClientRect().bottom - 2
+  )
+}
+
+export function FallingPlayPage({ mode }: { mode: 'level' | 'arcade' }) {
+  const { levelId = '' } = useParams()
+  const location = useLocation()
+  const progress = useGrammarProgress()
+
+  if (mode === 'arcade' && progress.passedLevelIds.length === 0) {
+    return <Navigate to="/" replace />
+  }
+
+  const level = mode === 'level' ? levelById(levelId) : undefined
+  if (mode === 'level' && (!level || !isLevelUnlocked(level, progress))) {
+    return <Navigate to="/practice/grammar/learn" replace />
+  }
+
+  const pool =
+    mode === 'level' && level
+      ? {
+          anchor: anchorForLevel(level.id),
+          playables: playablesForLevel(level.id),
+        }
+      : {
+          anchor: undefined,
+          playables: grammarPack.sentences.filter(
+            (sentence) =>
+              sentence.kind === 'playable' &&
+              progress.passedLevelIds.includes(sentence.level_id),
+          ),
+        }
+
+  if (pool.playables.length === 0 && !pool.anchor) {
+    return <Navigate to="/" replace />
+  }
+
+  return (
+    <FallingBoard
+      mode={mode}
+      levelId={level?.id}
+      backTo={
+        mode === 'level'
+          ? `/practice/grammar/learn/${levelId}`
+          : '/practice/grammar/play'
+      }
+      lives={level ? livesFor(level) : undefined}
+      fallMs={level ? fallDurationFor(level) : undefined}
+      threshold={level ? thresholdFor(level) : undefined}
+      queueSeed={`${mode}:${levelId}:${location.key}`}
+      pool={pool}
+    />
+  )
+}
+
+function FallingBoard({
+  mode,
+  levelId,
+  backTo,
+  lives,
+  fallMs,
+  threshold,
+  queueSeed,
+  pool,
+}: {
+  mode: 'level' | 'arcade'
+  levelId?: string
+  backTo: string
+  lives?: number
+  fallMs?: number
+  threshold?: number
+  queueSeed: string
+  pool: {
+    anchor: ReturnType<typeof anchorForLevel>
+    playables: ReturnType<typeof playablesForLevel>
+  }
+}) {
+  const queue = useMemo(
+    () => buildQueue(mode, pool.anchor, pool.playables),
+    [mode, pool.anchor, pool.playables, queueSeed],
+  )
+  const firstId = queue[0]
+  const [state, setState] = useState<FallingState | null>(() =>
+    firstId ? startRound(firstId, lives, fallMs) : null,
+  )
+  const [options, setOptions] = useState<string[]>([])
+  const [sentenceResult, setSentenceResult] = useState<SentenceResult | null>(null)
+  const [clearedIds, setClearedIds] = useState<Set<string>>(() => new Set())
+  const usedRef = useRef<string[]>(firstId ? [firstId] : [])
+  const settled = useRef(false)
+  const fallZoneRef = useRef<HTMLDivElement>(null)
+  const sentenceWrapRef = useRef<HTMLDivElement>(null)
+  const sentenceRef = useRef<HTMLParagraphElement>(null)
+  const bottomHandledRef = useRef(false)
+  const stateRef = useRef(state)
+  const sentenceResultRef = useRef(sentenceResult)
+
+  stateRef.current = state
+  sentenceResultRef.current = sentenceResult
+
+  const allQueueCleared = isQueueFullyCleared(queue, clearedIds)
+  const sentencesLeft = queue.filter((id) => !clearedIds.has(id)).length
+
+  const sentence = state?.sentenceId ? sentenceById(state.sentenceId) : undefined
+  const resultSentence = sentenceResult
+    ? sentenceById(sentenceResult.sentenceId)
+    : undefined
+  const slots = sentence ? slotsForSentence(sentence.id) : []
+  const slot = slots[state?.slotIndex ?? 0]
+
+  useEffect(() => {
+    if (!slot) return
+    setOptions(slotOptions(slot))
+  }, [slot?.id])
+
+  const triggerLandFail = useCallback(() => {
+    if (bottomHandledRef.current || sentenceResultRef.current) return
+    const current = stateRef.current
+    if (!current || current.status !== 'playing' || !current.sentenceId) return
+
+    bottomHandledRef.current = true
+    const failId = current.sentenceId
+    const landed = land({ ...current, remainingMs: 0 })
+    stateRef.current = landed
+    setState(landed)
+    if (sentenceRef.current) shatterSentence(sentenceRef.current)
+    setSentenceResult({ outcome: 'failed', sentenceId: failId })
+  }, [])
+
+  useEffect(() => {
+    resetSentenceMotion(sentenceRef.current)
+    bottomHandledRef.current = false
+  }, [state?.sentenceId, state?.slotIndex])
+
+  useEffect(() => {
+    if (!state || state.status !== 'playing' || sentenceResult) return
+
+    let frame = 0
+    let last = performance.now()
+    const loop = (now: number) => {
+      const dt = now - last
+      last = now
+      setState((current) => {
+        if (!current || current.status !== 'playing') return current
+        return tick(current, dt)
+      })
+      frame = requestAnimationFrame(loop)
+    }
+    frame = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(frame)
+  }, [state?.status, state?.sentenceId, sentenceResult])
+
+  useLayoutEffect(() => {
+    if (sentenceResultRef.current) return
+    const current = stateRef.current
+    if (!current || current.status !== 'playing') return
+    if (bottomHandledRef.current) return
+
+    const hitByTime = current.remainingMs <= 0
+    const zone = fallZoneRef.current
+    const wrap = sentenceWrapRef.current
+    const hitByDom = zone && wrap ? sentenceHitBottom(zone, wrap) : false
+
+    if (hitByTime || hitByDom) {
+      triggerLandFail()
+    }
+  })
+
+  useEffect(() => {
+    if (!state || state.status !== 'over' || settled.current) return
+    settled.current = true
+    if (mode === 'level' && levelId && threshold !== undefined) {
+      recordLevelScore(levelId, state.score, threshold)
+    }
+    if (mode === 'arcade') recordArcadeScore(state.score)
+  }, [state, mode, levelId, threshold])
+
+  if (!state || !firstId) {
+    return <Navigate to={backTo} replace />
+  }
+
+  const round = state
+  const fallT =
+    round.fallDurationMs <= 0
+      ? 1
+      : 1 - Math.max(0, round.remainingMs) / round.fallDurationMs
+
+  function pick(option: string) {
+    if (!slot || round.status !== 'playing' || sentenceResult) return
+    if (option !== slot.correct) {
+      if (sentenceRef.current) gsap.killTweensOf(sentenceRef.current)
+      setState((current) => (current ? applyWrong(current) : current))
+      return
+    }
+    setState((current) => {
+      if (!current) return current
+      const next = advanceSlot(current, slots.length)
+      if (next.score > current.score && current.sentenceId) {
+        bottomHandledRef.current = true
+        setClearedIds((prev) => new Set(prev).add(current.sentenceId!))
+        setSentenceResult({ outcome: 'cleared', sentenceId: current.sentenceId })
+        return next
+      }
+      const bounced = applyCorrectBounce(next)
+      bottomHandledRef.current = false
+      if (sentenceRef.current) bounceSentenceUp(sentenceRef.current)
+      return bounced
+    })
+  }
+
+  function continueAfterSentence() {
+    if (!state || !sentenceResult) return
+    setSentenceResult(null)
+
+    if (state.status === 'over') return
+
+    if (allQueueCleared) {
+      setState((current) => (current ? { ...current, status: 'over' } : current))
+      return
+    }
+
+    const nextId = nextSentenceId(queue, state.sentenceId, usedRef.current, clearedIds)
+    if (!nextId) {
+      setState((current) => (current ? { ...current, status: 'over' } : current))
+      return
+    }
+    if (!usedRef.current.includes(nextId)) {
+      usedRef.current = [...usedRef.current, nextId]
+    }
+    setState((current) =>
+      current ? beginSentence(current, nextId, fallMs) : current,
+    )
+  }
+
+  if (sentenceResult && resultSentence) {
+    return (
+      <SentenceResultScreen
+        outcome={sentenceResult.outcome}
+        sentence={resultSentence}
+        lives={state.lives}
+        gameOver={state.status === 'over'}
+        showSettlement={state.status === 'over' || allQueueCleared}
+        onNext={continueAfterSentence}
+        backTo={backTo}
+      />
+    )
+  }
+
+  if (state.status === 'over') {
+    const passed =
+      mode === 'level' && threshold !== undefined && state.score >= threshold
+    return (
+      <StageShell
+        header={<StageHeader backTo={backTo} title="结算" />}
+      >
+        <div className="flex flex-1 flex-col items-center justify-center gap-6">
+          <p className="text-3xl font-semibold tracking-[0.04em] text-day">
+            消除 {state.score} 句
+          </p>
+          {mode === 'level' ? (
+            <p className="text-lg font-medium text-rose">
+              {passed ? '过关了' : `还差，过关要 ${threshold} 句`}
+            </p>
+          ) : null}
+          <Link
+            to={backTo}
+            className="inline-flex min-h-14 min-w-[12rem] items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105"
+          >
+            返回
+          </Link>
+        </div>
+      </StageShell>
+    )
+  }
+
+  return (
+    <StageShell
+      header={
+        <StageHeader
+          backTo={backTo}
+          title={`还剩 ${sentencesLeft} 句`}
+          trailing={<Lives count={state.lives} />}
+        />
+      }
+    >
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div ref={fallZoneRef} className="relative min-h-[14rem] flex-1 overflow-hidden">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cobalt to-transparent opacity-80"
+          />
+          {sentence ? (
+            <div
+              ref={sentenceWrapRef}
+              className="pointer-events-none absolute inset-x-4"
+              style={{
+                top: `${fallProgressToTop(fallT)}%`,
+                transform: 'translateY(-100%)',
+              }}
+            >
+              <p
+                ref={sentenceRef}
+                className={`text-center text-2xl font-medium leading-snug tracking-[0.01em] will-change-transform ${
+                  state.lastWrong ? 'text-rose' : 'text-day'
+                }`}
+              >
+                {sentence.zh}
+              </p>
+            </div>
+          ) : null}
+        </div>
+        <div className="mt-2 rounded-2xl bg-rose/15 px-3 py-4">
+          <div className="grid grid-cols-2 gap-2">
+            {options.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => pick(option)}
+                className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-day/75 bg-cyc px-3 text-lg font-semibold tracking-[0.04em] text-day transition-[filter,background-color] duration-200 ease-out hover:border-day hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </StageShell>
+  )
+}
+
+function SentenceResultScreen({
+  outcome,
+  sentence,
+  lives,
+  gameOver,
+  showSettlement,
+  onNext,
+  backTo,
+}: {
+  outcome: SentenceOutcome
+  sentence: Sentence
+  lives: number
+  gameOver: boolean
+  showSettlement: boolean
+  onNext: () => void
+  backTo: string
+}) {
+  const cleared = outcome === 'cleared'
+
+  return (
+    <StageShell
+      header={
+        <StageHeader
+          backTo={backTo}
+          title="本句"
+          trailing={
+            <ReportDialog
+              target={{
+                asset_type: 'sentence',
+                asset_id: sentence.id,
+                level_id: sentence.level_id,
+              }}
+              label="报错本句"
+            />
+          }
+        />
+      }
+    >
+      <div className="flex flex-1 flex-col gap-6 pt-10">
+        <p
+          className={`text-center text-2xl font-semibold tracking-[0.04em] ${
+            cleared ? 'text-day' : 'text-rose'
+          }`}
+        >
+          {cleared ? '消除成功' : '落地失败'}
+        </p>
+        <div className="rounded-2xl bg-rose px-4 py-4 text-cyc">
+          <p className="text-lg font-medium tracking-[0.02em] text-cyc/75">{sentence.zh}</p>
+          <p className="mt-3 text-2xl font-medium leading-snug tracking-[0.01em]">
+            {sentence.en}
+          </p>
+        </div>
+        {!cleared && !gameOver ? (
+          <p className="text-center text-base font-medium tracking-[0.02em] text-day/75">
+            还剩 {lives} 命
+          </p>
+        ) : null}
+        <button
+          type="button"
+          onClick={onNext}
+          className="mt-auto mb-4 inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+        >
+          {showSettlement ? '查看结算' : '下一句'}
+        </button>
+      </div>
+    </StageShell>
+  )
+}
+
+function Lives({ count }: { count: number }) {
+  return (
+    <p aria-label={`剩余 ${count} 命`} className="flex gap-1">
+      {Array.from({ length: 3 }, (_, index) => (
+        <span
+          key={index}
+          className={`size-2.5 rounded-full ${
+            index < count ? 'bg-day' : 'bg-day/25'
+          }`}
+        />
+      ))}
+    </p>
+  )
+}

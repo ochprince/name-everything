@@ -1,4 +1,5 @@
 import { LangToggle } from '../components/LangToggle'
+import { exportReports, clearReports, useGrammarReports } from '../features/grammar'
 import { useProgress } from '../hooks/useProgress'
 import {
   todayKey,
@@ -42,6 +43,53 @@ function CueHold({
       >
         {on ? '开' : '关'}
       </button>
+    </div>
+  )
+}
+
+function GrammarReports() {
+  const reports = useGrammarReports()
+
+  async function copyAndDownload() {
+    const text = exportReports()
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      /* clipboard may be unavailable */
+    }
+    const blob = new Blob([text], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'grammar-reports.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className="mt-14 flex flex-col gap-3 pb-8">
+      <p className="text-lg font-medium tracking-[0.04em] text-day">语法报错</p>
+      <p className="text-base font-medium tracking-[0.02em] text-day/80">
+        {reports.length === 0 ? '还没有报错。' : `本机 ${reports.length} 条`}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => void copyAndDownload()}
+          className={`${holdButton} border border-day/75 bg-cyc text-day hover:border-day`}
+        >
+          导出语法报错
+        </button>
+        {reports.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => clearReports()}
+            className={`${holdButton} border border-day/75 bg-cyc text-day hover:border-day`}
+          >
+            清空已导出
+          </button>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -150,6 +198,8 @@ export function MePage() {
             </div>
           </div>
         </div>
+
+        <GrammarReports />
         </div>
       </div>
     </main>

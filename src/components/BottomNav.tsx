@@ -1,15 +1,21 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useProgress } from '../hooks/useProgress'
 
 const tabs = [
-  { to: '/', label: '练习', end: true },
-  { to: '/review', label: '复习', end: false },
-  { to: '/me', label: '我的', end: false },
+  { to: '/', label: '练习' },
+  { to: '/review', label: '复习' },
+  { to: '/me', label: '我的' },
 ] as const
+
+function tabOn(to: string, pathname: string): boolean {
+  if (to === '/') return pathname === '/' || pathname.startsWith('/practice')
+  return pathname === to || pathname.startsWith(`${to}/`)
+}
 
 export function BottomNav() {
   const { progress } = useProgress()
   const unseen = progress.reviewUnseenCount
+  const { pathname } = useLocation()
 
   return (
     <nav
@@ -21,28 +27,30 @@ export function BottomNav() {
         className="h-px bg-gradient-to-r from-cyc via-rose to-cobalt"
       />
       <div className="mx-auto flex max-w-md">
-        {tabs.map((tab) => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.end}
-            aria-label={
-              tab.to === '/review' && unseen > 0
-                ? `复习，${unseen} 个待复习`
-                : undefined
-            }
-            className={({ isActive }) =>
-              [
-                'flex min-h-14 flex-1 items-center justify-center text-lg font-semibold tracking-[0.18em] transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-day',
-                isActive ? 'text-rose' : 'text-day/80 hover:text-day',
-              ].join(' ')
-            }
-          >
-            {({ isActive }) => (
+        {tabs.map((tab) => {
+          const on = tabOn(tab.to, pathname)
+          return (
+            <NavLink
+              key={tab.to}
+              to={tab.to}
+              end={tab.to !== '/'}
+              aria-current={on ? 'page' : undefined}
+              aria-label={
+                tab.to === '/review' && unseen > 0
+                  ? `复习，${unseen} 个待复习`
+                  : undefined
+              }
+              className={() =>
+                [
+                  'flex min-h-14 flex-1 items-center justify-center text-lg font-semibold tracking-[0.18em] transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-day',
+                  on ? 'text-rose' : 'text-day/80 hover:text-day',
+                ].join(' ')
+              }
+            >
               <span
                 id={tab.to === '/review' ? 'nav-review' : undefined}
                 className={`relative ${
-                  isActive
+                  on
                     ? 'border-b-2 border-rose pb-0.5'
                     : 'border-b-2 border-transparent pb-0.5'
                 }`}
@@ -57,9 +65,9 @@ export function BottomNav() {
                   </span>
                 ) : null}
               </span>
-            )}
-          </NavLink>
-        ))}
+            </NavLink>
+          )
+        })}
       </div>
     </nav>
   )
