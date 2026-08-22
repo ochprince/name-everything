@@ -10,9 +10,14 @@
     "body_zh": "句子的核心动词。时态、语态都体现在这里。"
   },
   {
-    "id": "gp-past",
-    "title_zh": "过去式",
+    "id": "gp-past-sent",
+    "title_zh": "过去式 sent",
     "body_zh": "sent 是 send 的过去式，表示已经发生的动作。"
+  },
+  {
+    "id": "gp-past-made",
+    "title_zh": "过去式 made",
+    "body_zh": "made 是 make 的过去式，表示已经发生的动作。"
   },
   {
     "id": "gp-io",

@@ -16,7 +16,7 @@
   {
     "id": "sp-d1-v-past",
     "sentence_id": "s-d1-anchor",
-    "grammar_point_id": "gp-past",
+    "grammar_point_id": "gp-past-sent",
     "start": 3,
     "end": 7
   },
@@ -177,7 +177,7 @@
   {
     "id": "sp-svoc-past",
     "sentence_id": "s-svoc-anchor",
-    "grammar_point_id": "gp-past",
+    "grammar_point_id": "gp-past-made",
     "start": 5,
     "end": 9
   },
