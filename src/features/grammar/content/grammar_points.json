@@ -31,8 +31,8 @@
   },
   {
     "id": "gp-ditrans",
-    "title_zh": "双宾 S+V+IO+DO",
-    "body_zh": "S + V + IO + DO。骨架不动，换人称和物件就是替换。"
+    "title_zh": "主谓双宾 S+V+IO+DO",
+    "body_zh": "及物动词后接两个宾语：间接宾语（给谁）+ 直接宾语（给什么）。常见 send / give / show。"
   },
   {
     "id": "gp-svo",

@@ -78,7 +78,7 @@ Move each array from `grammarPack` in `pack.ts` into its own file. Example top o
   {
     "id": "simple",
     "title_zh": "简单句",
-    "description_zh": "五大句型主干，一关练一种。",
+    "description_zh": "五大句型主干。",
     "sort_order": 1,
     "released": true
   }
