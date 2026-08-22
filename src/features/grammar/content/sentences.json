@@ -322,5 +322,41 @@
     "zh": "我们待在家看电视，感到又累又无聊。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-nf2-anchor",
+    "level_id": "nonfinite-2",
+    "kind": "anchor",
+    "en": "Surfing the internet is my favorite.",
+    "zh": "上网冲浪是我的最爱。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-nf2-p1",
+    "level_id": "nonfinite-2",
+    "kind": "playable",
+    "en": "Reading books is my hobby.",
+    "zh": "读书是我的爱好。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-nf2-p2",
+    "level_id": "nonfinite-2",
+    "kind": "playable",
+    "en": "To travel the world is my dream.",
+    "zh": "环游世界是我的梦想。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-nf2-p3",
+    "level_id": "nonfinite-2",
+    "kind": "playable",
+    "en": "To help others is my goal.",
+    "zh": "帮助别人是我的目标。",
+    "prompt_kind": "zh",
+    "sort_order": 3
   }
 ]

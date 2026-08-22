@@ -128,5 +128,20 @@
     "id": "gp-past-part",
     "title_zh": "过去分词 done",
     "body_zh": "多表被动和完成：The window broken by the ball is mine.（被球打破的窗户）"
+  },
+  {
+    "id": "gp-nonfinite-subject",
+    "title_zh": "非谓语作主语",
+    "body_zh": "动词原形不能直接作主语、宾语；要充当这些成分必须变为非谓语：doing（动名词）或 to do（不定式）。"
+  },
+  {
+    "id": "gp-gerund-subject",
+    "title_zh": "动名词作主语",
+    "body_zh": "doing 作主语，表示习惯性、一般性的动作：Surfing the internet is my favorite."
+  },
+  {
+    "id": "gp-inf-subject",
+    "title_zh": "不定式作主语",
+    "body_zh": "to do 作主语，常表具体的、将来的动作：To help others is my goal."
   }
 ]

@@ -1488,5 +1488,149 @@
       "to bore",
       "bore"
     ]
+  },
+  {
+    "id": "s-nf2-anchor-slot-0",
+    "sentence_id": "s-nf2-anchor",
+    "slot_index": 0,
+    "role": "GER",
+    "correct": "Surfing the internet",
+    "distractors": [
+      "Surf the internet",
+      "Surfed the internet",
+      "To surf the internet"
+    ]
+  },
+  {
+    "id": "s-nf2-anchor-slot-1",
+    "sentence_id": "s-nf2-anchor",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "is",
+    "distractors": [
+      "are",
+      "am",
+      "be"
+    ]
+  },
+  {
+    "id": "s-nf2-anchor-slot-2",
+    "sentence_id": "s-nf2-anchor",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "my favorite",
+    "distractors": [
+      "my favorites",
+      "my favor",
+      "favorite"
+    ]
+  },
+  {
+    "id": "s-nf2-p1-slot-0",
+    "sentence_id": "s-nf2-p1",
+    "slot_index": 0,
+    "role": "GER",
+    "correct": "Reading books",
+    "distractors": [
+      "Read books",
+      "Reads books",
+      "To read books"
+    ]
+  },
+  {
+    "id": "s-nf2-p1-slot-1",
+    "sentence_id": "s-nf2-p1",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "is",
+    "distractors": [
+      "are",
+      "am",
+      "be"
+    ]
+  },
+  {
+    "id": "s-nf2-p1-slot-2",
+    "sentence_id": "s-nf2-p1",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "my hobby",
+    "distractors": [
+      "my hobbies",
+      "my habit",
+      "hobby"
+    ]
+  },
+  {
+    "id": "s-nf2-p2-slot-0",
+    "sentence_id": "s-nf2-p2",
+    "slot_index": 0,
+    "role": "INF",
+    "correct": "To travel the world",
+    "distractors": [
+      "Travel the world",
+      "Travelling the world",
+      "To travelling the world"
+    ]
+  },
+  {
+    "id": "s-nf2-p2-slot-1",
+    "sentence_id": "s-nf2-p2",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "is",
+    "distractors": [
+      "are",
+      "am",
+      "be"
+    ]
+  },
+  {
+    "id": "s-nf2-p2-slot-2",
+    "sentence_id": "s-nf2-p2",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "my dream",
+    "distractors": [
+      "my dreams",
+      "my dreamy",
+      "dream"
+    ]
+  },
+  {
+    "id": "s-nf2-p3-slot-0",
+    "sentence_id": "s-nf2-p3",
+    "slot_index": 0,
+    "role": "INF",
+    "correct": "To help others",
+    "distractors": [
+      "Help others",
+      "Helping others",
+      "To helping others"
+    ]
+  },
+  {
+    "id": "s-nf2-p3-slot-1",
+    "sentence_id": "s-nf2-p3",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "is",
+    "distractors": [
+      "are",
+      "am",
+      "be"
+    ]
+  },
+  {
+    "id": "s-nf2-p3-slot-2",
+    "sentence_id": "s-nf2-p3",
+    "slot_index": 2,
+    "role": "C",
+    "correct": "my goal",
+    "distractors": [
+      "my goals",
+      "my aim",
+      "goal"
+    ]
   }
 ]

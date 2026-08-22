@@ -52,5 +52,11 @@
     "chapter_id": "nonfinite",
     "sort_order": 1,
     "grammar_point_id": "gp-nonfinite-forms"
+  },
+  {
+    "id": "nonfinite-2",
+    "chapter_id": "nonfinite",
+    "sort_order": 2,
+    "grammar_point_id": "gp-nonfinite-subject"
   }
 ]

@@ -306,5 +306,33 @@
     "grammar_point_id": "gp-nonfinite-forms",
     "start": 19,
     "end": 78
+  },
+  {
+    "id": "sp-nf2-subj",
+    "sentence_id": "s-nf2-anchor",
+    "grammar_point_id": "gp-gerund-subject",
+    "start": 0,
+    "end": 20
+  },
+  {
+    "id": "sp-nf2-subj2",
+    "sentence_id": "s-nf2-anchor",
+    "grammar_point_id": "gp-nonfinite-subject",
+    "start": 0,
+    "end": 20
+  },
+  {
+    "id": "sp-nf2-v",
+    "sentence_id": "s-nf2-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 21,
+    "end": 23
+  },
+  {
+    "id": "sp-nf2-c",
+    "sentence_id": "s-nf2-anchor",
+    "grammar_point_id": "gp-c",
+    "start": 24,
+    "end": 35
   }
 ]
