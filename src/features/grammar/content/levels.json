@@ -1,9 +1,9 @@
 [
   {
-    "id": "dative-1",
+    "id": "sv-1",
     "chapter_id": "simple",
     "sort_order": 1,
-    "grammar_point_id": "gp-ditrans"
+    "grammar_point_id": "gp-sv"
   },
   {
     "id": "svo-1",
@@ -18,10 +18,10 @@
     "grammar_point_id": "gp-spc"
   },
   {
-    "id": "sv-1",
+    "id": "dative-1",
     "chapter_id": "simple",
     "sort_order": 4,
-    "grammar_point_id": "gp-sv"
+    "grammar_point_id": "gp-ditrans"
   },
   {
     "id": "svoc-1",
