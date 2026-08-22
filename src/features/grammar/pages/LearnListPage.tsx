@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { StageShell } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
@@ -14,10 +15,25 @@ import {
 import { useGrammarProgress } from '../lib/storage'
 import { isLevelPassed, isLevelUnlocked, levelListScoreLabel, levelUnlockHint } from '../lib/unlock'
 
+const SCROLL_KEY = 'grammar/learn-list/scroll-y'
+
 export function LearnListPage() {
   const progress = useGrammarProgress()
   const chapters = chaptersInOrder()
   const { hint, showHint } = useStageHint()
+
+  // Restore the previous scroll position when returning from a level page.
+  // Classic BrowserRouter unmounts the list on navigation, so window.scrollY
+  // would otherwise reset to the top on every back-navigation.
+  useEffect(() => {
+    const saved = Number(sessionStorage.getItem(SCROLL_KEY) ?? '0')
+    if (saved > 0) {
+      requestAnimationFrame(() => window.scrollTo(0, saved))
+    }
+    return () => {
+      sessionStorage.setItem(SCROLL_KEY, String(window.scrollY))
+    }
+  }, [])
 
   return (
     <>
