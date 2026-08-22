@@ -20,32 +20,18 @@ const SCROLL_EXEMPT_PATHS = new Set(['/practice/grammar/learn'])
 
 function ScrollToTop() {
   const { pathname } = useLocation()
-  // useLayoutEffect so the reset happens before paint. A single scrollTo is
-  // not enough on mobile: the URL bar collapse/expand and font-driven reflow
-  // can nudge scrollY after the first reset, so we also reset on the next
-  // frame and write every scroll container explicitly.
+  // useLayoutEffect so the reset happens before paint: an async effect would
+  // let the browser paint one frame at the old scrollY and let scroll
+  // anchoring fight the reset.
   useLayoutEffect(() => {
     if (SCROLL_EXEMPT_PATHS.has(pathname)) return
-    const reset = () => {
-      window.scrollTo(0, 0)
-      document.documentElement.scrollTop = 0
-      document.body.scrollTop = 0
-    }
-    reset()
-    const raf = requestAnimationFrame(reset)
-    return () => cancelAnimationFrame(raf)
+    window.scrollTo(0, 0)
   }, [pathname])
   return null
 }
 
 export default function App() {
   useEffect(() => {
-    // Take scroll restoration into our own hands: without this, the browser
-    // (bfcache / back navigation) can restore a previous page's scrollY and
-    // fight the ScrollToTop + learn-list restoration logic.
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual'
-    }
     const unlock = () => {
       unlockCardAudio()
       unlockUiSound()
