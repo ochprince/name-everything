@@ -15,13 +15,6 @@ body,
   background-color: #05060a;
 }
 
-/* Disable scroll anchoring: on route changes the browser otherwise nudges
-   scrollY a few pixels to keep a "stable" anchor node visible, fighting our
-   explicit scrollTo(0, 0). */
-html {
-  overflow-anchor: none;
-}
-
 body {
   margin: 0;
   overscroll-behavior-y: none;
