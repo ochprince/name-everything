@@ -11,7 +11,7 @@
     "title_zh": "谓语",
     "description_zh": "时态、语态、情态。",
     "sort_order": 2,
-    "released": false
+    "released": true
   },
   {
     "id": "nonfinite",

@@ -18,7 +18,7 @@
 **本期成功标准**
 
 - 练习入口是 Home：先选再开始；看图说句倒计时不会在进入 App 时自动响起。
-- 第一章可学、可打、可过关；其余章节在列表可见但锁住。
+- 已发布章可学、可打、可过关；未发布章在列表可见但锁住。
 - 下落填槽手感数字全部来自配置，改配置不必改组件逻辑。
 - 语法代码落在独立 feature 内，不把看图进度表和语法表揉成一份超级 state。
 
@@ -214,11 +214,12 @@
 | `note` | 可空备注 |
 | `created_at` | ISO-8601 |
 
-### 8.2 Week-1 pack
+### 8.2 Content pack invariants
 
-- 章节目录搭全（至少包括：简单句、谓语、非谓语；具体标题以 JSON 为准，代码不写死这些名字）。
-- 仅第一章 `released = true`，且至少 2 关；每关 1 条 `anchor` + 至少 3 条 `playable`（默认可在一局内过关）。
-- 其余章 `released = false`，可以没有关卡行。
+- 章节目录由数据驱动；**允许多章** `released = true`，代码不写死章名或开放顺序。
+- 每个 `released = true` 的章 **至少 1 关**；`released = false` 的章 **可以没有** 关卡行。
+- 每关 1 条 `kind = anchor` + 至少 3 条 `playable`（默认可在一局内达到过关门槛）。
+- 建议目录搭全（如简单句、谓语、非谓语），未开放章在列表可见但整章锁住。
 
 ### 8.3 Local progress（非课程资产）
 
@@ -327,4 +328,4 @@ src/
 | Storage | 静态 JSON；报错本机可导出 |
 | Tuning | 独立配置，禁止魔法数 |
 | Code | `shell` / `shared` / `features/{pictures,grammar,me}` |
-| Pack | 目录搭全，仅第一章 `released` |
+| Pack | 目录搭全；多章可 `released`；每发布章 ≥1 关 |

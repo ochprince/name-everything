@@ -70,5 +70,41 @@
     "zh": "他吃午饭。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-mod-anchor",
+    "level_id": "modal-1",
+    "kind": "anchor",
+    "en": "She must be very beautiful.",
+    "zh": "她一定非常漂亮。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-mod-p1",
+    "level_id": "modal-1",
+    "kind": "playable",
+    "en": "He must be very tired.",
+    "zh": "他一定非常累。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-mod-p2",
+    "level_id": "modal-1",
+    "kind": "playable",
+    "en": "They must be very happy.",
+    "zh": "他们一定非常开心。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-mod-p3",
+    "level_id": "modal-1",
+    "kind": "playable",
+    "en": "I must be very late.",
+    "zh": "我一定非常晚了。",
+    "prompt_kind": "zh",
+    "sort_order": 3
   }
 ]

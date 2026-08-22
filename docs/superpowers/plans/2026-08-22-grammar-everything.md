@@ -16,7 +16,7 @@
 - Storage keys: pictures `name-everything/progress/v1`; grammar `grammar/progress/v1`, `grammar/reports/v1` — must never merge.
 - All falling-fill tuning numbers come from `game_tuning.json`; no magic numbers in components.
 - Cross-feature imports forbidden: `grammar` must not import `features/pictures` internals and vice versa; shell imports public facades only.
-- Week-1 pack: full chapter directory (≥3 chapters), only first chapter `released = true` with ≥2 levels, each level 1 anchor + ≥3 playable; other chapters visible but locked.
+- Week-1 pack: each released chapter ≥1 level, each level 1 anchor + ≥3 playable; multiple chapters may be released; unreleased chapters may have no levels.
 - Update `README.md` and `README.zh.md` together for any user-facing behavior/docs change.
 - TDD: failing test before production code; commit after each task.
 
@@ -244,29 +244,27 @@ import {
   grammarPack,
   anchorForLevel,
   playablesForLevel,
-  chaptersSorted,
+  chaptersInOrder,
   levelsForChapter,
 } from './pack'
 
 describe('grammar pack invariants', () => {
-  it('has full chapter directory with only first chapter released', () => {
-    expect(chaptersSorted.length).toBeGreaterThanOrEqual(3)
-    const released = chaptersSorted.filter((c) => c.released)
-    expect(released).toHaveLength(1)
-    expect(released[0]!.sort_order).toBe(1)
+  it('has at least one released chapter in the pack', () => {
+    expect(chaptersInOrder().filter((c) => c.released).length).toBeGreaterThanOrEqual(1)
   })
 
-  it('released chapter has at least two levels each with one anchor and three playables', () => {
-    const chapter = chaptersSorted.find((c) => c.released)!
-    const levels = levelsForChapter(chapter.id)
-    expect(levels.length).toBeGreaterThanOrEqual(2)
-    for (const level of levels) {
-      const anchor = anchorForLevel(level.id)
-      const playables = playablesForLevel(level.id)
-      expect(anchor).toBeDefined()
-      expect(playables.length).toBeGreaterThanOrEqual(3)
-      for (const p of playables) {
-        expect(p.en).not.toBe(anchor!.en)
+  it('each released chapter has at least one level with one anchor and three playables', () => {
+    for (const chapter of chaptersInOrder().filter((c) => c.released)) {
+      const levels = levelsForChapter(chapter.id)
+      expect(levels.length).toBeGreaterThanOrEqual(1)
+      for (const level of levels) {
+        const anchor = anchorForLevel(level.id)
+        const playables = playablesForLevel(level.id)
+        expect(anchor).toBeDefined()
+        expect(playables.length).toBeGreaterThanOrEqual(3)
+        for (const p of playables) {
+          expect(p.en).not.toBe(anchor!.en)
+        }
       }
     }
   })

@@ -8,27 +8,34 @@ import {
 } from './pack'
 
 describe('grammar pack invariants', () => {
-  it('has full chapter directory with only first chapter released', () => {
+  it('has at least one released chapter in the pack', () => {
     const chapters = chaptersInOrder()
-    expect(chapters.length).toBeGreaterThanOrEqual(3)
+    expect(chapters.length).toBeGreaterThanOrEqual(1)
     const released = chapters.filter((c) => c.released)
-    expect(released).toHaveLength(1)
-    expect(released[0]!.sort_order).toBe(1)
+    expect(released.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('released chapter has at least two levels each with one anchor and three playables', () => {
-    const chapter = chaptersInOrder().find((c) => c.released)!
-    const levels = levelsForChapter(chapter.id)
-    expect(levels.length).toBeGreaterThanOrEqual(2)
-    for (const level of levels) {
-      const anchor = anchorForLevel(level.id)
-      const playables = playablesForLevel(level.id)
-      expect(anchor).toBeDefined()
-      expect(playables.length).toBeGreaterThanOrEqual(3)
-      for (const p of playables) {
-        expect(p.en).not.toBe(anchor!.en)
+  it('each released chapter has at least one level with one anchor and three playables', () => {
+    const released = chaptersInOrder().filter((c) => c.released)
+    for (const chapter of released) {
+      const levels = levelsForChapter(chapter.id)
+      expect(levels.length).toBeGreaterThanOrEqual(1)
+      for (const level of levels) {
+        const anchor = anchorForLevel(level.id)
+        const playables = playablesForLevel(level.id)
+        expect(anchor).toBeDefined()
+        expect(playables.length).toBeGreaterThanOrEqual(3)
+        for (const p of playables) {
+          expect(p.en).not.toBe(anchor!.en)
+        }
       }
     }
+  })
+
+  it('allows unreleased chapters with no levels', () => {
+    const nonfinite = chaptersInOrder().find((c) => c.id === 'nonfinite')
+    expect(nonfinite?.released).toBe(false)
+    expect(levelsForChapter('nonfinite')).toHaveLength(0)
   })
 
   it('every anchor has at least one sentence_span', () => {

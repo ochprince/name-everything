@@ -10,8 +10,15 @@ import {
   pointById,
   spansForSentence,
 } from '../content/pack'
+import type { GrammarPoint } from '../content/pack'
 import { useGrammarProgress } from '../lib/storage'
 import { highScoreFor, isLevelUnlocked, thresholdFor } from '../lib/unlock'
+import {
+  buildClickablePieces,
+  pointsForRange,
+  rangesEqual,
+  type SpanRange,
+} from '../lib/spanGroups'
 
 export function LearnPage() {
   const { levelId = '' } = useParams()
@@ -28,14 +35,15 @@ export function LearnPage() {
         : [],
     [anchor],
   )
-  const [activeSpanId, setActiveSpanId] = useState<string | null>(null)
+  const [activeRange, setActiveRange] = useState<SpanRange | null>(null)
 
   if (!level || !anchor || !unlocked) {
     return <Navigate to="/practice/grammar/learn" replace />
   }
 
-  const activeSpan = spans.find((span) => span.id === activeSpanId)
-  const point = activeSpan ? pointById(activeSpan.grammar_point_id) : undefined
+  const activePoints = activeRange
+    ? pointsForRange(spans, activeRange, pointById)
+    : []
   const score = highScoreFor(level.id, progress)
   const need = thresholdFor(level)
   const topic = pointById(level.grammar_point_id)
@@ -55,8 +63,8 @@ export function LearnPage() {
           <ClickableSentence
             en={anchor.en}
             spans={spans}
-            activeId={activeSpanId}
-            onPick={setActiveSpanId}
+            activeRange={activeRange}
+            onPick={setActiveRange}
           />
         </p>
         {anchor.zh ? (
@@ -64,21 +72,17 @@ export function LearnPage() {
         ) : null}
 
         <div className="min-h-[7.5rem]">
-          {point ? (
-            <div className="cue-raise relative rounded-2xl bg-rose px-4 py-4 pr-14 text-cyc">
-              <div className="absolute right-3 top-3">
-                <ReportDialog
-                  target={{
-                    asset_type: 'grammar_point',
-                    asset_id: point.id,
-                    level_id: level.id,
-                  }}
-                  label="报错这个知识点"
-                  className="border-cyc/25 text-cyc/70 hover:border-cyc/45 hover:text-cyc"
-                />
-              </div>
-              <p className="text-xl font-semibold tracking-[0.04em]">{point.title_zh}</p>
-              <p className="mt-2 text-lg font-medium tracking-[0.02em]">{point.body_zh}</p>
+          {activePoints.length > 0 ? (
+            <div
+              className={`flex flex-col gap-3 ${
+                activePoints.length > 1
+                  ? 'max-h-[min(40vh,20rem)] overflow-y-auto pr-1'
+                  : ''
+              }`}
+            >
+              {activePoints.map((point) => (
+                <GrammarPointCard key={point.id} point={point} levelId={level.id} />
+              ))}
             </div>
           ) : (
             <p className="text-lg font-medium tracking-[0.02em] text-day/70">
@@ -98,46 +102,55 @@ export function LearnPage() {
   )
 }
 
+function GrammarPointCard({
+  point,
+  levelId,
+}: {
+  point: GrammarPoint
+  levelId: string
+}) {
+  return (
+    <div className="cue-raise relative shrink-0 rounded-2xl bg-rose px-4 py-4 pr-14 text-cyc">
+      <div className="absolute right-3 top-3">
+        <ReportDialog
+          target={{
+            asset_type: 'grammar_point',
+            asset_id: point.id,
+            level_id: levelId,
+          }}
+          label="报错这个知识点"
+          className="border-cyc/25 text-cyc/70 hover:border-cyc/45 hover:text-cyc"
+        />
+      </div>
+      <p className="text-xl font-semibold tracking-[0.04em]">{point.title_zh}</p>
+      <p className="mt-2 text-lg font-medium tracking-[0.02em]">{point.body_zh}</p>
+    </div>
+  )
+}
+
 function ClickableSentence({
   en,
   spans,
-  activeId,
+  activeRange,
   onPick,
 }: {
   en: string
   spans: { id: string; start: number; end: number }[]
-  activeId: string | null
-  onPick: (id: string) => void
+  activeRange: SpanRange | null
+  onPick: (range: SpanRange) => void
 }) {
-  const pieces: { key: string; text: string; spanId?: string }[] = []
-  let cursor = 0
-  const ordered = [...spans].sort((a, b) => a.start - b.start)
-  for (const span of ordered) {
-    if (span.start < cursor) continue
-    if (span.start > cursor) {
-      pieces.push({ key: `t-${cursor}`, text: en.slice(cursor, span.start) })
-    }
-    pieces.push({
-      key: span.id,
-      text: en.slice(span.start, span.end),
-      spanId: span.id,
-    })
-    cursor = span.end
-  }
-  if (cursor < en.length) {
-    pieces.push({ key: `t-${cursor}`, text: en.slice(cursor) })
-  }
+  const pieces = buildClickablePieces(en, spans)
 
   return (
     <>
       {pieces.map((piece) =>
-        piece.spanId ? (
+        piece.range ? (
           <button
             key={piece.key}
             type="button"
-            onClick={() => onPick(piece.spanId!)}
+            onClick={() => onPick(piece.range!)}
             className={`rounded-md px-0.5 transition-colors duration-200 ease-out ${
-              activeId === piece.spanId
+              rangesEqual(activeRange, piece.range)
                 ? 'bg-rose text-cyc'
                 : 'underline decoration-rose/80 decoration-2 underline-offset-4'
             }`}
