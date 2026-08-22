@@ -124,6 +124,8 @@ Optional overrides: `pass_threshold`, `lives`, `fall_duration_ms`.
 
 ## Vocabulary guardrails
 
-Prefer: push, enter, see, sit, chat, go, leave, call off, student, door, hall, chair, game, meeting, classroom, stadium.
+**Avoid** rare, formal, or idiomatic words that distract from the grammar drill (e.g. nevertheless, approximately, infrastructure, phenomenon, commence).
 
-Avoid: nevertheless, approximately, infrastructure, phenomenon, commence.
+No vocabulary whitelist — pick natural words that fit the rule and chapter.
+
+If the **anchor** needs a word learners may not know, add a small `grammar_point` for it and link via an anchor `sentence_span` (same pattern as sub-rules like `gp-nonfinite-tense`). Do not leave opaque vocabulary unexplained on the learn page.

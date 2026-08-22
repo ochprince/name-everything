@@ -92,6 +92,7 @@ Level `grammar_point_id`: umbrella point (e.g. `gp-participle`).
 
 - **Anchor** = most typical example of the rule; carries **识别** (learn-page spans).
 - **Playables** = **替换** same skeleton (换主语/宾语/动词/分词), not new grammar; **slots only**, no spans.
+- Vocabulary: avoid rare/formal words (see [reference.md](reference.md) § Vocabulary guardrails); if the anchor needs an uncommon word, add a `grammar_point` + anchor span for it.
 - Every sentence needs matching `zh` for falling-fill prompt.
 - `prompt_kind`: always `"zh"` for now.
 
