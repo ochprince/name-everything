@@ -1,0 +1,74 @@
+[
+  {
+    "id": "s-d1-anchor",
+    "level_id": "dative-1",
+    "kind": "anchor",
+    "en": "He sent me a book.",
+    "zh": "他寄给了我一本书。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-d1-p1",
+    "level_id": "dative-1",
+    "kind": "playable",
+    "en": "She sent him an email.",
+    "zh": "她给他发了一封邮件。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-d1-p2",
+    "level_id": "dative-1",
+    "kind": "playable",
+    "en": "They gave us a cake.",
+    "zh": "他们给了我们一个蛋糕。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-d1-p3",
+    "level_id": "dative-1",
+    "kind": "playable",
+    "en": "I showed her a photo.",
+    "zh": "我给她看了一张照片。",
+    "prompt_kind": "zh",
+    "sort_order": 3
+  },
+  {
+    "id": "s-svo-anchor",
+    "level_id": "svo-1",
+    "kind": "anchor",
+    "en": "She loves music.",
+    "zh": "她喜欢音乐。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-svo-p1",
+    "level_id": "svo-1",
+    "kind": "playable",
+    "en": "I read books.",
+    "zh": "我读书。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-svo-p2",
+    "level_id": "svo-1",
+    "kind": "playable",
+    "en": "They watch movies.",
+    "zh": "他们看电影。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-svo-p3",
+    "level_id": "svo-1",
+    "kind": "playable",
+    "en": "He eats lunch.",
+    "zh": "他吃午饭。",
+    "prompt_kind": "zh",
+    "sort_order": 3
+  }
+]

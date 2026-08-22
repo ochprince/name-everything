@@ -1,0 +1,14 @@
+[
+  {
+    "id": "dative-1",
+    "chapter_id": "simple",
+    "sort_order": 1,
+    "grammar_point_id": "gp-ditrans"
+  },
+  {
+    "id": "svo-1",
+    "chapter_id": "simple",
+    "sort_order": 2,
+    "grammar_point_id": "gp-svo"
+  }
+]

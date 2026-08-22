@@ -1,0 +1,65 @@
+[
+  {
+    "id": "sp-d1-s",
+    "sentence_id": "s-d1-anchor",
+    "grammar_point_id": "gp-s",
+    "start": 0,
+    "end": 2
+  },
+  {
+    "id": "sp-d1-v",
+    "sentence_id": "s-d1-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 3,
+    "end": 7
+  },
+  {
+    "id": "sp-d1-io",
+    "sentence_id": "s-d1-anchor",
+    "grammar_point_id": "gp-io",
+    "start": 8,
+    "end": 10
+  },
+  {
+    "id": "sp-d1-do",
+    "sentence_id": "s-d1-anchor",
+    "grammar_point_id": "gp-do",
+    "start": 11,
+    "end": 17
+  },
+  {
+    "id": "sp-d1-all",
+    "sentence_id": "s-d1-anchor",
+    "grammar_point_id": "gp-ditrans",
+    "start": 0,
+    "end": 18
+  },
+  {
+    "id": "sp-svo-s",
+    "sentence_id": "s-svo-anchor",
+    "grammar_point_id": "gp-s",
+    "start": 0,
+    "end": 3
+  },
+  {
+    "id": "sp-svo-v",
+    "sentence_id": "s-svo-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 4,
+    "end": 9
+  },
+  {
+    "id": "sp-svo-o",
+    "sentence_id": "s-svo-anchor",
+    "grammar_point_id": "gp-o",
+    "start": 10,
+    "end": 16
+  },
+  {
+    "id": "sp-svo-all",
+    "sentence_id": "s-svo-anchor",
+    "grammar_point_id": "gp-svo",
+    "start": 0,
+    "end": 17
+  }
+]

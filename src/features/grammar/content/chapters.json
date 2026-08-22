@@ -1,0 +1,23 @@
+[
+  {
+    "id": "simple",
+    "title_zh": "简单句",
+    "description_zh": "五大句型主干，一关练一种。",
+    "sort_order": 1,
+    "released": true
+  },
+  {
+    "id": "predicate",
+    "title_zh": "谓语",
+    "description_zh": "时态、语态、情态。",
+    "sort_order": 2,
+    "released": false
+  },
+  {
+    "id": "nonfinite",
+    "title_zh": "非谓语",
+    "description_zh": "不定式、分词、动名词。",
+    "sort_order": 3,
+    "released": false
+  }
+]

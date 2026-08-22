@@ -1,0 +1,340 @@
+[
+  {
+    "id": "s-d1-anchor-slot-0",
+    "sentence_id": "s-d1-anchor",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "He",
+    "distractors": [
+      "She",
+      "It",
+      "His",
+      "Her"
+    ]
+  },
+  {
+    "id": "s-d1-anchor-slot-1",
+    "sentence_id": "s-d1-anchor",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "sent",
+    "distractors": [
+      "send",
+      "sends",
+      "gave"
+    ]
+  },
+  {
+    "id": "s-d1-anchor-slot-2",
+    "sentence_id": "s-d1-anchor",
+    "slot_index": 2,
+    "role": "IO",
+    "correct": "me",
+    "distractors": [
+      "I",
+      "him",
+      "her"
+    ]
+  },
+  {
+    "id": "s-d1-anchor-slot-3",
+    "sentence_id": "s-d1-anchor",
+    "slot_index": 3,
+    "role": "DO",
+    "correct": "a book",
+    "distractors": [
+      "the book",
+      "books",
+      "an book"
+    ]
+  },
+  {
+    "id": "s-d1-p1-slot-0",
+    "sentence_id": "s-d1-p1",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "She",
+    "distractors": [
+      "He",
+      "Her",
+      "It",
+      "His"
+    ]
+  },
+  {
+    "id": "s-d1-p1-slot-1",
+    "sentence_id": "s-d1-p1",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "sent",
+    "distractors": [
+      "send",
+      "sends",
+      "gave"
+    ]
+  },
+  {
+    "id": "s-d1-p1-slot-2",
+    "sentence_id": "s-d1-p1",
+    "slot_index": 2,
+    "role": "IO",
+    "correct": "him",
+    "distractors": [
+      "he",
+      "me",
+      "her"
+    ]
+  },
+  {
+    "id": "s-d1-p1-slot-3",
+    "sentence_id": "s-d1-p1",
+    "slot_index": 3,
+    "role": "DO",
+    "correct": "an email",
+    "distractors": [
+      "a email",
+      "email",
+      "a book"
+    ]
+  },
+  {
+    "id": "s-d1-p2-slot-0",
+    "sentence_id": "s-d1-p2",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "They",
+    "distractors": [
+      "Them",
+      "She",
+      "Their"
+    ]
+  },
+  {
+    "id": "s-d1-p2-slot-1",
+    "sentence_id": "s-d1-p2",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "gave",
+    "distractors": [
+      "give",
+      "gives",
+      "sent"
+    ]
+  },
+  {
+    "id": "s-d1-p2-slot-2",
+    "sentence_id": "s-d1-p2",
+    "slot_index": 2,
+    "role": "IO",
+    "correct": "us",
+    "distractors": [
+      "we",
+      "them",
+      "me"
+    ]
+  },
+  {
+    "id": "s-d1-p2-slot-3",
+    "sentence_id": "s-d1-p2",
+    "slot_index": 3,
+    "role": "DO",
+    "correct": "a cake",
+    "distractors": [
+      "cake",
+      "an cake",
+      "a book"
+    ]
+  },
+  {
+    "id": "s-d1-p3-slot-0",
+    "sentence_id": "s-d1-p3",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "I",
+    "distractors": [
+      "Me",
+      "He",
+      "My"
+    ]
+  },
+  {
+    "id": "s-d1-p3-slot-1",
+    "sentence_id": "s-d1-p3",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "showed",
+    "distractors": [
+      "show",
+      "shows",
+      "showed to"
+    ]
+  },
+  {
+    "id": "s-d1-p3-slot-2",
+    "sentence_id": "s-d1-p3",
+    "slot_index": 2,
+    "role": "IO",
+    "correct": "her",
+    "distractors": [
+      "she",
+      "him",
+      "me"
+    ]
+  },
+  {
+    "id": "s-d1-p3-slot-3",
+    "sentence_id": "s-d1-p3",
+    "slot_index": 3,
+    "role": "DO",
+    "correct": "a photo",
+    "distractors": [
+      "photo",
+      "an photo",
+      "the photos"
+    ]
+  },
+  {
+    "id": "s-svo-anchor-slot-0",
+    "sentence_id": "s-svo-anchor",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "She",
+    "distractors": [
+      "He",
+      "Her",
+      "It"
+    ]
+  },
+  {
+    "id": "s-svo-anchor-slot-1",
+    "sentence_id": "s-svo-anchor",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "loves",
+    "distractors": [
+      "love",
+      "loved",
+      "loving"
+    ]
+  },
+  {
+    "id": "s-svo-anchor-slot-2",
+    "sentence_id": "s-svo-anchor",
+    "slot_index": 2,
+    "role": "O",
+    "correct": "music",
+    "distractors": [
+      "musics",
+      "a music",
+      "the music"
+    ]
+  },
+  {
+    "id": "s-svo-p1-slot-0",
+    "sentence_id": "s-svo-p1",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "I",
+    "distractors": [
+      "Me",
+      "He",
+      "She"
+    ]
+  },
+  {
+    "id": "s-svo-p1-slot-1",
+    "sentence_id": "s-svo-p1",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "read",
+    "distractors": [
+      "reads",
+      "reading",
+      "wrote"
+    ]
+  },
+  {
+    "id": "s-svo-p1-slot-2",
+    "sentence_id": "s-svo-p1",
+    "slot_index": 2,
+    "role": "O",
+    "correct": "books",
+    "distractors": [
+      "book",
+      "a books",
+      "the book"
+    ]
+  },
+  {
+    "id": "s-svo-p2-slot-0",
+    "sentence_id": "s-svo-p2",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "They",
+    "distractors": [
+      "Them",
+      "We",
+      "She"
+    ]
+  },
+  {
+    "id": "s-svo-p2-slot-1",
+    "sentence_id": "s-svo-p2",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "watch",
+    "distractors": [
+      "watches",
+      "watched",
+      "look"
+    ]
+  },
+  {
+    "id": "s-svo-p2-slot-2",
+    "sentence_id": "s-svo-p2",
+    "slot_index": 2,
+    "role": "O",
+    "correct": "movies",
+    "distractors": [
+      "movie",
+      "a movies",
+      "the movies"
+    ]
+  },
+  {
+    "id": "s-svo-p3-slot-0",
+    "sentence_id": "s-svo-p3",
+    "slot_index": 0,
+    "role": "S",
+    "correct": "He",
+    "distractors": [
+      "Him",
+      "She",
+      "They"
+    ]
+  },
+  {
+    "id": "s-svo-p3-slot-1",
+    "sentence_id": "s-svo-p3",
+    "slot_index": 1,
+    "role": "V",
+    "correct": "eats",
+    "distractors": [
+      "eat",
+      "ate",
+      "eating"
+    ]
+  },
+  {
+    "id": "s-svo-p3-slot-2",
+    "sentence_id": "s-svo-p3",
+    "slot_index": 2,
+    "role": "O",
+    "correct": "lunch",
+    "distractors": [
+      "lunches",
+      "a lunch",
+      "the lunch"
+    ]
+  }
+]

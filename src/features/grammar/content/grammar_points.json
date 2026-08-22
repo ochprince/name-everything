@@ -1,0 +1,37 @@
+[
+  {
+    "id": "gp-s",
+    "title_zh": "主语 S",
+    "body_zh": "动作的发出者。可以是 He / She / I / They 等人称。"
+  },
+  {
+    "id": "gp-v",
+    "title_zh": "谓语 V",
+    "body_zh": "句子的核心动词。时态、语态都体现在这里。"
+  },
+  {
+    "id": "gp-io",
+    "title_zh": "间接宾语 IO",
+    "body_zh": "给谁。一般是人，紧跟动词：me / him / her / us。"
+  },
+  {
+    "id": "gp-do",
+    "title_zh": "直接宾语 DO",
+    "body_zh": "给什么。一般是物：a book / an email / a cake。"
+  },
+  {
+    "id": "gp-o",
+    "title_zh": "宾语 O",
+    "body_zh": "动作承受的对象：music / books / lunch。"
+  },
+  {
+    "id": "gp-ditrans",
+    "title_zh": "双宾 S+V+IO+DO",
+    "body_zh": "S + V + IO + DO。骨架不动，换人称和物件就是替换。"
+  },
+  {
+    "id": "gp-svo",
+    "title_zh": "主谓宾 S+V+O",
+    "body_zh": "及物动词后直接跟宾语，没有间接宾语。主语 + 谓语 + 宾语。"
+  }
+]
