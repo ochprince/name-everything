@@ -32,10 +32,16 @@ describe('grammar pack invariants', () => {
     }
   })
 
-  it('allows unreleased chapters with no levels', () => {
-    const nonfinite = chaptersInOrder().find((c) => c.id === 'nonfinite')
-    expect(nonfinite?.released).toBe(false)
-    expect(levelsForChapter('nonfinite')).toHaveLength(0)
+  it('unreleased chapters may carry levels that still satisfy pack invariants', () => {
+    const unreleased = chaptersInOrder().filter((c) => !c.released)
+    for (const chapter of unreleased) {
+      for (const level of levelsForChapter(chapter.id)) {
+        const anchor = anchorForLevel(level.id)
+        const playables = playablesForLevel(level.id)
+        expect(anchor).toBeDefined()
+        expect(playables.length).toBeGreaterThanOrEqual(3)
+      }
+    }
   })
 
   it('every anchor has at least one sentence_span', () => {

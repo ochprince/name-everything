@@ -264,5 +264,47 @@
     "grammar_point_id": "gp-v",
     "start": 0,
     "end": 13
+  },
+  {
+    "id": "sp-nf-s",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-s",
+    "start": 0,
+    "end": 3
+  },
+  {
+    "id": "sp-nf-v",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 4,
+    "end": 8
+  },
+  {
+    "id": "sp-nf-inf",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-inf-to-do",
+    "start": 19,
+    "end": 27
+  },
+  {
+    "id": "sp-nf-ing",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-ing-form",
+    "start": 34,
+    "end": 41
+  },
+  {
+    "id": "sp-nf-done",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-past-part",
+    "start": 52,
+    "end": 59
+  },
+  {
+    "id": "sp-nf-all",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-nonfinite-forms",
+    "start": 19,
+    "end": 78
   }
 ]

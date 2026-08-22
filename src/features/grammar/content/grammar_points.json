@@ -108,5 +108,25 @@
     "id": "gp-imperative",
     "title_zh": "祈使句用原形",
     "body_zh": "祈使句省去主语，直接用动词原形开头：Open the door. Sit down."
+  },
+  {
+    "id": "gp-nonfinite-forms",
+    "title_zh": "非谓语三种形态",
+    "body_zh": "to do 多表目的、将来；doing 多表主动、进行；done 多表被动、完成。形态选择看与主句主语的关系。"
+  },
+  {
+    "id": "gp-inf-to-do",
+    "title_zh": "不定式 to do",
+    "body_zh": "多表目的和将来：I came to help you.（为了帮你）"
+  },
+  {
+    "id": "gp-ing-form",
+    "title_zh": "现在分词 doing",
+    "body_zh": "多表主动和进行：The boy running over there is Tom.（跑着的那个男孩）"
+  },
+  {
+    "id": "gp-past-part",
+    "title_zh": "过去分词 done",
+    "body_zh": "多表被动和完成：The window broken by the ball is mine.（被球打破的窗户）"
   }
 ]

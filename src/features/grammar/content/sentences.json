@@ -286,5 +286,41 @@
     "zh": "请洗碗。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-nf-anchor",
+    "level_id": "nonfinite-1",
+    "kind": "anchor",
+    "en": "She went to school to study hard, feeling happy and excited about the new term.",
+    "zh": "她去学校努力学习，对新学期感到开心又兴奋。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-nf-p1",
+    "level_id": "nonfinite-1",
+    "kind": "playable",
+    "en": "He went to the library to read books, feeling calm and relaxed.",
+    "zh": "他去图书馆读书，感到平静又放松。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-nf-p2",
+    "level_id": "nonfinite-1",
+    "kind": "playable",
+    "en": "They came to the party to see friends, feeling glad and pleased.",
+    "zh": "他们来聚会见朋友，感到高兴又满足。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-nf-p3",
+    "level_id": "nonfinite-1",
+    "kind": "playable",
+    "en": "We stayed at home to watch TV, feeling tired and bored.",
+    "zh": "我们待在家看电视，感到又累又无聊。",
+    "prompt_kind": "zh",
+    "sort_order": 3
   }
 ]

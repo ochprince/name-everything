@@ -1296,5 +1296,197 @@
       "a dish",
       "dishes"
     ]
+  },
+  {
+    "id": "s-nf-anchor-slot-0",
+    "sentence_id": "s-nf-anchor",
+    "slot_index": 0,
+    "role": "V",
+    "correct": "went",
+    "distractors": [
+      "go",
+      "goes",
+      "going"
+    ]
+  },
+  {
+    "id": "s-nf-anchor-slot-1",
+    "sentence_id": "s-nf-anchor",
+    "slot_index": 1,
+    "role": "INF",
+    "correct": "to study",
+    "distractors": [
+      "studying",
+      "studied",
+      "study"
+    ]
+  },
+  {
+    "id": "s-nf-anchor-slot-2",
+    "sentence_id": "s-nf-anchor",
+    "slot_index": 2,
+    "role": "PP-A",
+    "correct": "feeling",
+    "distractors": [
+      "to feel",
+      "felt",
+      "feel"
+    ]
+  },
+  {
+    "id": "s-nf-anchor-slot-3",
+    "sentence_id": "s-nf-anchor",
+    "slot_index": 3,
+    "role": "PP-P",
+    "correct": "excited",
+    "distractors": [
+      "exciting",
+      "to excite",
+      "excite"
+    ]
+  },
+  {
+    "id": "s-nf-p1-slot-0",
+    "sentence_id": "s-nf-p1",
+    "slot_index": 0,
+    "role": "V",
+    "correct": "went",
+    "distractors": [
+      "go",
+      "goes",
+      "going"
+    ]
+  },
+  {
+    "id": "s-nf-p1-slot-1",
+    "sentence_id": "s-nf-p1",
+    "slot_index": 1,
+    "role": "INF",
+    "correct": "to read",
+    "distractors": [
+      "reading",
+      "read",
+      "reads"
+    ]
+  },
+  {
+    "id": "s-nf-p1-slot-2",
+    "sentence_id": "s-nf-p1",
+    "slot_index": 2,
+    "role": "PP-A",
+    "correct": "feeling",
+    "distractors": [
+      "to feel",
+      "felt",
+      "feel"
+    ]
+  },
+  {
+    "id": "s-nf-p1-slot-3",
+    "sentence_id": "s-nf-p1",
+    "slot_index": 3,
+    "role": "PP-P",
+    "correct": "relaxed",
+    "distractors": [
+      "relaxing",
+      "to relax",
+      "relax"
+    ]
+  },
+  {
+    "id": "s-nf-p2-slot-0",
+    "sentence_id": "s-nf-p2",
+    "slot_index": 0,
+    "role": "V",
+    "correct": "came",
+    "distractors": [
+      "come",
+      "comes",
+      "coming"
+    ]
+  },
+  {
+    "id": "s-nf-p2-slot-1",
+    "sentence_id": "s-nf-p2",
+    "slot_index": 1,
+    "role": "INF",
+    "correct": "to see",
+    "distractors": [
+      "seeing",
+      "saw",
+      "seen"
+    ]
+  },
+  {
+    "id": "s-nf-p2-slot-2",
+    "sentence_id": "s-nf-p2",
+    "slot_index": 2,
+    "role": "PP-A",
+    "correct": "feeling",
+    "distractors": [
+      "to feel",
+      "felt",
+      "feel"
+    ]
+  },
+  {
+    "id": "s-nf-p2-slot-3",
+    "sentence_id": "s-nf-p2",
+    "slot_index": 3,
+    "role": "PP-P",
+    "correct": "pleased",
+    "distractors": [
+      "pleasing",
+      "to please",
+      "please"
+    ]
+  },
+  {
+    "id": "s-nf-p3-slot-0",
+    "sentence_id": "s-nf-p3",
+    "slot_index": 0,
+    "role": "V",
+    "correct": "stayed",
+    "distractors": [
+      "stay",
+      "stays",
+      "staying"
+    ]
+  },
+  {
+    "id": "s-nf-p3-slot-1",
+    "sentence_id": "s-nf-p3",
+    "slot_index": 1,
+    "role": "INF",
+    "correct": "to watch",
+    "distractors": [
+      "watching",
+      "watched",
+      "watch"
+    ]
+  },
+  {
+    "id": "s-nf-p3-slot-2",
+    "sentence_id": "s-nf-p3",
+    "slot_index": 2,
+    "role": "PP-A",
+    "correct": "feeling",
+    "distractors": [
+      "to feel",
+      "felt",
+      "feel"
+    ]
+  },
+  {
+    "id": "s-nf-p3-slot-3",
+    "sentence_id": "s-nf-p3",
+    "slot_index": 3,
+    "role": "PP-P",
+    "correct": "bored",
+    "distractors": [
+      "boring",
+      "to bore",
+      "bore"
+    ]
   }
 ]

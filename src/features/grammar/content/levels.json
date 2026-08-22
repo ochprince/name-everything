@@ -46,5 +46,11 @@
     "chapter_id": "predicate",
     "sort_order": 3,
     "grammar_point_id": "gp-imperative"
+  },
+  {
+    "id": "nonfinite-1",
+    "chapter_id": "nonfinite",
+    "sort_order": 1,
+    "grammar_point_id": "gp-nonfinite-forms"
   }
 ]
