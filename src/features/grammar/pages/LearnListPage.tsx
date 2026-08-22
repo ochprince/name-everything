@@ -16,19 +16,31 @@ import { useGrammarProgress } from '../lib/storage'
 import { isLevelPassed, isLevelUnlocked, levelListScoreLabel, levelUnlockHint } from '../lib/unlock'
 
 const SCROLL_KEY = 'grammar/learn-list/scroll-y'
+const PENDING_KEY = 'grammar/learn-list/scroll-pending'
 
 export function LearnListPage() {
   const progress = useGrammarProgress()
   const chapters = chaptersInOrder()
   const { hint, showHint } = useStageHint()
 
-  // Restore the previous scroll position when returning from a level page.
-  // Classic BrowserRouter unmounts the list on navigation, so window.scrollY
-  // would otherwise reset to the top on every back-navigation.
+  // Scroll restoration for the learn list. Clicking a level marks a pending
+  // return (PENDING_KEY); the page's back link is a regular <Link>, i.e. a
+  // PUSH navigation, so useNavigationType cannot tell "coming back" from
+  // "entering fresh" — the marker can.
+  // - Pending return: restore the saved scroll position, then consume it.
+  // - Fresh entry (e.g. from home): start at the top, forget stale state.
+  // - Unmount: save the current position so the return can restore it.
   useEffect(() => {
-    const saved = Number(sessionStorage.getItem(SCROLL_KEY) ?? '0')
-    if (saved > 0) {
-      requestAnimationFrame(() => window.scrollTo(0, saved))
+    const pending = sessionStorage.getItem(PENDING_KEY) === '1'
+    sessionStorage.removeItem(PENDING_KEY)
+    if (pending) {
+      const saved = Number(sessionStorage.getItem(SCROLL_KEY) ?? '0')
+      if (saved > 0) {
+        requestAnimationFrame(() => window.scrollTo(0, saved))
+      }
+    } else {
+      sessionStorage.removeItem(SCROLL_KEY)
+      window.scrollTo(0, 0)
     }
     return () => {
       sessionStorage.setItem(SCROLL_KEY, String(window.scrollY))
@@ -78,7 +90,10 @@ export function LearnListPage() {
                       <li key={level.id}>
                         <Link
                           to={`/practice/grammar/learn/${level.id}`}
-                          onClick={() => playUiTap()}
+                          onClick={() => {
+                            playUiTap()
+                            sessionStorage.setItem(PENDING_KEY, '1')
+                          }}
                           className={`flex ${levelTileMinClass} items-center gap-3 rounded-2xl bg-rose px-4 py-4 text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyc active:brightness-95`}
                         >
                           <div className="min-w-0 flex-1">
