@@ -2,6 +2,10 @@
 
 **See a thing, say the English sentence.** Mobile-first practice loop: one image, a short think timer, then Aha! / Forgot / Got it.
 
+**Goal:** make thinking and speaking in English a habit — English first, translation second.
+
+Inspired by [Learn How to Think In English](https://youtu.be/MpiWuR-yL9k): name what’s around you, attach words to pictures (not translations), listen and repeat, and live small moments of the day in English. The app is meant to stay useful *and* fun on that path.
+
 **Try it:** [https://ochprince.github.io/name-everything/](https://ochprince.github.io/name-everything/)
 
 中文说明见 [README.zh.md](README.zh.md).
@@ -30,13 +34,20 @@ npm run build    # production build
 Design spec: [`docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md`](docs/superpowers/specs/2026-08-13-name-everything-mvp-design.md)  
 Timed recall: [`docs/superpowers/specs/2026-08-16-timed-recall-design.md`](docs/superpowers/specs/2026-08-16-timed-recall-design.md)
 
+## Roadmap
+
+- [x] **Name Everything** — one tap: 1 image + 1 word + 1 speakable sentence. A countdown adds just enough pressure; review trains a scene → word reflex.
+- [ ] **Grammar Everything** — a layered grammar mini-game. Each rule is anchored to one short, vivid example sentence, then practiced in three steps: *identify* (see the structure), *substitute* (same skeleton, new words), *restructure* (same meaning, new frame). The point is to own the rule, not memorize one line. Sketch: [`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md).
+- [ ] **Listen & Repeat** — turn “what you just said” or the scene example into shadowing + recording, then pack those clips into timed recap playlists. You hear your own effort and progress; mouth and mind work together.
+- [ ] **Live Small Moments** — 60-second challenges tied to real scenes (waking up, commute, meals, walking around). AI asks what you’re doing now and builds a 60s dialogue from the answer — closer to daily life, more interactive, more pressure.
+
 ## Week-1 out of scope
+
+Product ideas above live on the Roadmap, not in week 1.
 
 - AI long-tail card generation
 - Camera / photo recognition mode
 - Capacitor native shell or app-store release
-- Listen & repeat (recording / pronunciation scoring)
-- Live 60s life-scene challenges
 - Formal product naming / brand polish pass
 - Multi-device accounts or sync
 - Formal spaced-repetition (SRS) scheduling
