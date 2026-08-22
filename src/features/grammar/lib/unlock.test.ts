@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest'
-import { isLevelUnlocked, levelUnlockHint, thresholdFor } from './unlock'
+import { isLevelUnlocked, levelUnlockHint, nextLevelAfter, thresholdFor } from './unlock'
 import { recordLevelScore, loadGrammarProgress, defaultGrammarProgress } from './storage'
 import { levelsForChapter } from '../content/pack'
 import type { Level } from '../content/pack'
@@ -34,5 +34,18 @@ describe('level unlock', () => {
       recordLevelScore(level.id, thresholdFor(level), thresholdFor(level))
     }
     expect(isLevelUnlocked(predicateFirst!, loadGrammarProgress())).toBe(true)
+  })
+
+  it('nextLevelAfter walks chapter order and skips unreleased chapters', () => {
+    expect(nextLevelAfter(first!.id)?.id).toBe(second!.id)
+    expect(nextLevelAfter(simpleLevels[simpleLevels.length - 1]!.id)?.id).toBe(
+      predicateFirst!.id,
+    )
+
+    const predicateLevels = levelsForChapter('predicate')
+    const lastPredicate = predicateLevels[predicateLevels.length - 1]
+    if (lastPredicate) {
+      expect(nextLevelAfter(lastPredicate.id)).toBeNull()
+    }
   })
 })

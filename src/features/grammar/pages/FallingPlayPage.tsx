@@ -7,6 +7,7 @@ import {
   anchorForLevel,
   levelById,
   playablesForLevel,
+  pointById,
   sentenceById,
   slotsForSentence,
   grammarPack,
@@ -37,7 +38,7 @@ import {
   shatterSentence,
 } from '../lib/fallingMotion'
 import gsap from 'gsap'
-import { fallDurationFor, isLevelUnlocked, livesFor, thresholdFor } from '../lib/unlock'
+import { fallDurationFor, isLevelUnlocked, livesFor, nextLevelAfter, thresholdFor } from '../lib/unlock'
 
 type SentenceOutcome = 'cleared' | 'failed'
 
@@ -224,7 +225,7 @@ function FallingBoard({
     }
   })
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!state || state.status !== 'over' || settled.current) return
     settled.current = true
     if (mode === 'level' && levelId && threshold !== undefined) {
@@ -307,6 +308,10 @@ function FallingBoard({
   if (state.status === 'over') {
     const passed =
       mode === 'level' && threshold !== undefined && state.score >= threshold
+    const nextLevel =
+      mode === 'level' && passed && levelId ? nextLevelAfter(levelId) : null
+    const nextTopic = nextLevel ? pointById(nextLevel.grammar_point_id) : undefined
+
     return (
       <StageShell
         header={<StageHeader backTo={backTo} title="结算" />}
@@ -316,16 +321,37 @@ function FallingBoard({
             消除 {state.score} 句
           </p>
           {mode === 'level' ? (
-            <p className="text-lg font-medium text-rose">
-              {passed ? '过关了' : `还差，过关要 ${threshold} 句`}
-            </p>
+            <>
+              <p className="text-lg font-medium text-rose">
+                {passed ? '过关了' : `还差，过关要 ${threshold} 句`}
+              </p>
+              {passed ? (
+                <p className="text-base font-medium tracking-[0.02em] text-day/75">
+                  还剩 {state.lives} 命
+                </p>
+              ) : null}
+            </>
           ) : null}
-          <Link
-            to={backTo}
-            className="inline-flex min-h-14 min-w-[12rem] items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105"
-          >
-            返回
-          </Link>
+          <div className="flex w-full max-w-sm flex-col gap-3">
+            {nextLevel ? (
+              <Link
+                to={`/practice/grammar/learn/${nextLevel.id}`}
+                className="inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+              >
+                下一关：{nextTopic?.title_zh ?? nextLevel.id}
+              </Link>
+            ) : null}
+            <Link
+              to={backTo}
+              className={`inline-flex min-h-14 items-center justify-center rounded-2xl px-6 text-lg font-semibold tracking-[0.08em] transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 ${
+                nextLevel
+                  ? 'border border-day/75 text-day hover:bg-day/10'
+                  : 'bg-day text-cyc'
+              }`}
+            >
+              返回
+            </Link>
+          </div>
         </div>
       </StageShell>
     )
@@ -430,7 +456,7 @@ function SentenceResultScreen({
             cleared ? 'text-day' : 'text-rose'
           }`}
         >
-          {cleared ? '消除成功' : '落地失败'}
+          {cleared ? '成功' : '失败'}
         </p>
         <div className="rounded-2xl bg-rose px-4 py-4 text-cyc">
           <p className="text-lg font-medium tracking-[0.02em] text-cyc/75">{sentence.zh}</p>
