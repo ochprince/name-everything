@@ -466,5 +466,23 @@
     "zh": "我看见他正在过马路。",
     "prompt_kind": "zh",
     "sort_order": 5
+  },
+  {
+    "id": "s-nf1-p8",
+    "level_id": "nonfinite-1",
+    "kind": "playable",
+    "en": "She pushed the door to come in, seeing students sitting on the chairs.",
+    "zh": "她推开门进来，看见学生们坐在椅子上。",
+    "prompt_kind": "zh",
+    "sort_order": 8
+  },
+  {
+    "id": "s-nf1-p9",
+    "level_id": "nonfinite-1",
+    "kind": "playable",
+    "en": "The sports meeting canceled, students went back to the classroom sadly.",
+    "zh": "运动会取消了，学生们难过地回到教室。",
+    "prompt_kind": "zh",
+    "sort_order": 9
   }
 ]

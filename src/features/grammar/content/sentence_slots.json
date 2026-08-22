@@ -2064,5 +2064,89 @@
       "crosses the street",
       "to cross the street"
     ]
+  },
+  {
+    "id": "s-nf1-p8-slot-0",
+    "sentence_id": "s-nf1-p8",
+    "slot_index": 0,
+    "role": "V",
+    "correct": "pushed",
+    "distractors": [
+      "push",
+      "pushes",
+      "pushing"
+    ]
+  },
+  {
+    "id": "s-nf1-p8-slot-1",
+    "sentence_id": "s-nf1-p8",
+    "slot_index": 1,
+    "role": "INF",
+    "correct": "to come in",
+    "distractors": [
+      "come in",
+      "comes in",
+      "coming in"
+    ]
+  },
+  {
+    "id": "s-nf1-p8-slot-2",
+    "sentence_id": "s-nf1-p8",
+    "slot_index": 2,
+    "role": "PP-A",
+    "correct": "seeing",
+    "distractors": [
+      "saw",
+      "seen",
+      "to see"
+    ]
+  },
+  {
+    "id": "s-nf1-p8-slot-3",
+    "sentence_id": "s-nf1-p8",
+    "slot_index": 3,
+    "role": "PP-A",
+    "correct": "sitting",
+    "distractors": [
+      "sat",
+      "sit",
+      "seated"
+    ]
+  },
+  {
+    "id": "s-nf1-p9-slot-0",
+    "sentence_id": "s-nf1-p9",
+    "slot_index": 0,
+    "role": "PP-P",
+    "correct": "canceled",
+    "distractors": [
+      "was canceled",
+      "cancel",
+      "canceling"
+    ]
+  },
+  {
+    "id": "s-nf1-p9-slot-1",
+    "sentence_id": "s-nf1-p9",
+    "slot_index": 1,
+    "role": "S",
+    "correct": "students",
+    "distractors": [
+      "the students",
+      "student",
+      "classmates"
+    ]
+  },
+  {
+    "id": "s-nf1-p9-slot-2",
+    "sentence_id": "s-nf1-p9",
+    "slot_index": 2,
+    "role": "V",
+    "correct": "went",
+    "distractors": [
+      "go",
+      "goes",
+      "going"
+    ]
   }
 ]

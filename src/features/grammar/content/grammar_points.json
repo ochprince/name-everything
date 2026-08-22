@@ -158,5 +158,25 @@
     "id": "gp-gerund-vs-participle",
     "title_zh": "动名词 vs 现在分词",
     "body_zh": "doing 作名词性成分（主语/宾语/表语）叫动名词；作修饰性成分（定语/状语/宾补）叫现在分词。形式相同，身份看句法位置。"
+  },
+  {
+    "id": "gp-nonfinite-tense",
+    "title_zh": "非谓语不带时态",
+    "body_zh": "分词本身不带时态，时态由主句谓语体现：She pushed the door, seeing... 中 pushed 表过去，seeing 仍是 doing 形式。"
+  },
+  {
+    "id": "gp-pp-active",
+    "title_zh": "现在分词表主动",
+    "body_zh": "主动关系用 doing：seeing / sitting 表示动作由其逻辑主语发出，不随主句时态变化。"
+  },
+  {
+    "id": "gp-pp-passive",
+    "title_zh": "过去分词表被动",
+    "body_zh": "被动关系用 done：The sports meeting canceled 中 canceled 表被动（会议被取消）。"
+  },
+  {
+    "id": "gp-pp-vs-pred-passive",
+    "title_zh": "分词被动 ≠ 谓语被动",
+    "body_zh": "canceled 是过去分词作非谓语表被动；was canceled 是一般过去时被动谓语。结构上区分：分词前没有 be。"
   }
 ]

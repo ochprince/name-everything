@@ -383,5 +383,26 @@
     "grammar_point_id": "gp-gerund-vs-participle",
     "start": 0,
     "end": 17
+  },
+  {
+    "id": "sp-nf-ppactive",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-pp-active",
+    "start": 34,
+    "end": 41
+  },
+  {
+    "id": "sp-nf-pppassive",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-pp-passive",
+    "start": 52,
+    "end": 59
+  },
+  {
+    "id": "sp-nf-tense",
+    "sentence_id": "s-nf-anchor",
+    "grammar_point_id": "gp-nonfinite-tense",
+    "start": 34,
+    "end": 59
   }
 ]
