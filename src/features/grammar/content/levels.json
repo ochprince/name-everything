@@ -34,5 +34,17 @@
     "chapter_id": "predicate",
     "sort_order": 1,
     "grammar_point_id": "gp-modal"
+  },
+  {
+    "id": "verb-form-1",
+    "chapter_id": "predicate",
+    "sort_order": 2,
+    "grammar_point_id": "gp-predicate-form"
+  },
+  {
+    "id": "verb-form-2",
+    "chapter_id": "predicate",
+    "sort_order": 3,
+    "grammar_point_id": "gp-imperative"
   }
 ]

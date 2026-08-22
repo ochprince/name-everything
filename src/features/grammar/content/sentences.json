@@ -214,5 +214,77 @@
     "zh": "他让我们很生气。",
     "prompt_kind": "zh",
     "sort_order": 3
+  },
+  {
+    "id": "s-vf-anchor",
+    "level_id": "verb-form-1",
+    "kind": "anchor",
+    "en": "She is happy and plays the piano.",
+    "zh": "她很快乐，还弹钢琴。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-vf-p1",
+    "level_id": "verb-form-1",
+    "kind": "playable",
+    "en": "He is tired and watches TV.",
+    "zh": "他很累，在看电视。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-vf-p2",
+    "level_id": "verb-form-1",
+    "kind": "playable",
+    "en": "Tom is hungry and eats lunch.",
+    "zh": "汤姆饿了，在吃午饭。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-vf-p3",
+    "level_id": "verb-form-1",
+    "kind": "playable",
+    "en": "Mary is quiet and reads books.",
+    "zh": "玛丽很安静，在读书。",
+    "prompt_kind": "zh",
+    "sort_order": 3
+  },
+  {
+    "id": "s-imp-anchor",
+    "level_id": "verb-form-2",
+    "kind": "anchor",
+    "en": "Open the door, please.",
+    "zh": "请开门。",
+    "prompt_kind": "zh",
+    "sort_order": 0
+  },
+  {
+    "id": "s-imp-p1",
+    "level_id": "verb-form-2",
+    "kind": "playable",
+    "en": "Close the window, please.",
+    "zh": "请关窗。",
+    "prompt_kind": "zh",
+    "sort_order": 1
+  },
+  {
+    "id": "s-imp-p2",
+    "level_id": "verb-form-2",
+    "kind": "playable",
+    "en": "Turn on the light, please.",
+    "zh": "请开灯。",
+    "prompt_kind": "zh",
+    "sort_order": 2
+  },
+  {
+    "id": "s-imp-p3",
+    "level_id": "verb-form-2",
+    "kind": "playable",
+    "en": "Wash the dishes, please.",
+    "zh": "请洗碗。",
+    "prompt_kind": "zh",
+    "sort_order": 3
   }
 ]

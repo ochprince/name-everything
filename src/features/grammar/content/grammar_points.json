@@ -88,5 +88,25 @@
     "id": "gp-svoc",
     "title_zh": "主谓宾补 S+V+O+OC",
     "body_zh": "主语 + 谓语 + 宾语 + 宾补。宾补说明宾语变成什么或处于什么状态。"
+  },
+  {
+    "id": "gp-predicate-form",
+    "title_zh": "谓语动词的形式",
+    "body_zh": "实义动词和系动词作谓语时都要变形：配合主语的人称和数、体现时态和语态。祈使句是例外，直接用动词原形。"
+  },
+  {
+    "id": "gp-v-agree",
+    "title_zh": "动词配合主语",
+    "body_zh": "谓语动词形式随主语的人称和数变化：第三人称单数主语用 plays / is，其他主语用 play / are。"
+  },
+  {
+    "id": "gp-be-forms",
+    "title_zh": "be 的变形",
+    "body_zh": "be 作系动词或助动词时变形最多：am / is / are / was / were，随主语人称、数和时态变化。"
+  },
+  {
+    "id": "gp-imperative",
+    "title_zh": "祈使句用原形",
+    "body_zh": "祈使句省去主语，直接用动词原形开头：Open the door. Sit down."
   }
 ]

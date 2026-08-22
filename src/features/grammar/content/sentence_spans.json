@@ -201,5 +201,68 @@
     "grammar_point_id": "gp-svoc",
     "start": 0,
     "end": 19
+  },
+  {
+    "id": "sp-vf-s",
+    "sentence_id": "s-vf-anchor",
+    "grammar_point_id": "gp-s",
+    "start": 0,
+    "end": 3
+  },
+  {
+    "id": "sp-vf-be",
+    "sentence_id": "s-vf-anchor",
+    "grammar_point_id": "gp-be-forms",
+    "start": 4,
+    "end": 6
+  },
+  {
+    "id": "sp-vf-c",
+    "sentence_id": "s-vf-anchor",
+    "grammar_point_id": "gp-c",
+    "start": 7,
+    "end": 12
+  },
+  {
+    "id": "sp-vf-v",
+    "sentence_id": "s-vf-anchor",
+    "grammar_point_id": "gp-v-agree",
+    "start": 17,
+    "end": 22
+  },
+  {
+    "id": "sp-vf-o",
+    "sentence_id": "s-vf-anchor",
+    "grammar_point_id": "gp-o",
+    "start": 23,
+    "end": 32
+  },
+  {
+    "id": "sp-vf-all",
+    "sentence_id": "s-vf-anchor",
+    "grammar_point_id": "gp-predicate-form",
+    "start": 4,
+    "end": 32
+  },
+  {
+    "id": "sp-imp-v",
+    "sentence_id": "s-imp-anchor",
+    "grammar_point_id": "gp-imperative",
+    "start": 0,
+    "end": 4
+  },
+  {
+    "id": "sp-imp-o",
+    "sentence_id": "s-imp-anchor",
+    "grammar_point_id": "gp-o",
+    "start": 5,
+    "end": 13
+  },
+  {
+    "id": "sp-imp-all",
+    "sentence_id": "s-imp-anchor",
+    "grammar_point_id": "gp-v",
+    "start": 0,
+    "end": 13
   }
 ]
