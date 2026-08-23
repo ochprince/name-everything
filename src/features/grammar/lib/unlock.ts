@@ -80,7 +80,7 @@ export function levelListScoreLabel(level: Level, progress: GrammarProgress): st
   return `最高 ${score}/${total}`
 }
 
-/** List subtitle tone: update nudge uses blue on rose tiles. */
+/** List subtitle tone: only the「有更新」suffix is highlighted. */
 export function levelListScoreTone(
   level: Level,
   progress: GrammarProgress,

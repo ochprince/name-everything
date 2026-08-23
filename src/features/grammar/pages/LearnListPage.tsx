@@ -110,14 +110,15 @@ export function LearnListPage() {
                                 {anchor.en}
                               </span>
                             ) : null}
-                            <span
-                              className={`mt-1 block text-base font-medium tracking-[0.02em] ${
-                                scoreTone === 'update'
-                                  ? 'text-sky-200'
-                                  : 'text-cyc/70'
-                              }`}
-                            >
-                              {scoreLabel}
+                            <span className="mt-1 block text-base font-medium tracking-[0.02em] text-cyc/70">
+                              {scoreTone === 'update' && scoreLabel.endsWith('有更新') ? (
+                                <>
+                                  {scoreLabel.slice(0, -'有更新'.length)}
+                                  <span className="text-sky-500">有更新</span>
+                                </>
+                              ) : (
+                                scoreLabel
+                              )}
                             </span>
                           </div>
                           {cleared ? <LevelPassTrophy /> : null}
