@@ -116,7 +116,7 @@ function GrammarPointCard({
   levelId: string
 }) {
   return (
-    <div className="cue-raise relative shrink-0 rounded-2xl bg-rose px-4 py-4 pr-14 text-cyc">
+    <div className="cue-raise relative shrink-0 rounded-2xl bg-day px-4 py-4 pr-14 text-cyc">
       <div className="absolute right-3 top-3">
         <ReportDialog
           target={{
@@ -125,7 +125,7 @@ function GrammarPointCard({
             level_id: levelId,
           }}
           label="报错这个知识点"
-          className="border-cyc/25 text-cyc/70 hover:border-cyc/45 hover:text-cyc"
+          tone="onDay"
         />
       </div>
       <p className="text-xl font-semibold tracking-[0.04em]">{point.title_zh}</p>

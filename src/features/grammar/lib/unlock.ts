@@ -97,6 +97,38 @@ export function isLevelClearedOnContent(
   return total > 0 && highScoreFor(levelId, progress) >= total
 }
 
+/** Single in-progress cue for list rows (day + rose「进行中」). */
+export function isLevelInProgress(
+  level: Level,
+  progress: GrammarProgress,
+): boolean {
+  if (!isLevelUnlocked(level, progress) || isLevelClearedOnContent(level.id, progress)) {
+    return false
+  }
+  if (progress.lastPlayedLevelId === level.id) return true
+  if (progress.lastPlayedLevelId) {
+    const last = levelById(progress.lastPlayedLevelId)
+    if (
+      last &&
+      isLevelUnlocked(last, progress) &&
+      !isLevelClearedOnContent(last.id, progress)
+    ) {
+      return false
+    }
+  }
+  for (const chapter of chaptersInOrder()) {
+    for (const candidate of levelsForChapter(chapter.id)) {
+      if (
+        isLevelUnlocked(candidate, progress) &&
+        !isLevelClearedOnContent(candidate.id, progress)
+      ) {
+        return candidate.id === level.id
+      }
+    }
+  }
+  return false
+}
+
 export function livesFor(level: Level): number {
   return level.lives ?? gameTuning.lives
 }

@@ -7,6 +7,7 @@ export default {
         cyc: '#05060a',
         cobalt: '#1e3a8a',
         rose: '#e8a598',
+        gold: '#d4c69a',
         day: '#f4f1ea',
         ink: '#05060a',
       },

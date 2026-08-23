@@ -1,11 +1,16 @@
-export function LockIcon({ className = 'size-6 stroke-day/40' }: { className?: string }) {
+export function LockIcon({
+  className = 'size-6 text-[#d4c69a]',
+}: {
+  className?: string
+}) {
   return (
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
       className={className}
       fill="none"
-      strokeWidth="1.75"
+      stroke="currentColor"
+      strokeWidth="1.6"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
@@ -15,8 +20,17 @@ export function LockIcon({ className = 'size-6 stroke-day/40' }: { className?: s
   )
 }
 
-/** 与 LearnListPage 已解锁关卡磁贴（标题 + 标杆句 + 得分）对齐 */
-export const levelTileMinClass = 'min-h-[7.25rem]'
+/** Align with LearnListPage unlocked level tiles */
+export const levelTileMinClass = 'min-h-[8.75rem]'
+
+/** Champagne metal: left cool-white → right soft gold (not pure yellow gold). */
+const lockedInk = 'text-[#d4c69a]'
+
+const lockedFrame =
+  'rounded-2xl bg-gradient-to-r from-[#f3eee3] via-[#e5d9b5] to-[#cbb87a] p-px transition-[filter] duration-200 ease-out hover:brightness-110'
+
+const lockedInner =
+  'flex w-full min-h-[8.75rem] items-center justify-between gap-3 rounded-[0.9rem] bg-cyc/85 px-4 py-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e5d9b5] active:brightness-95'
 
 export function LockPlaceholder({
   label = '未解锁',
@@ -24,31 +38,51 @@ export function LockPlaceholder({
   label?: string
 }) {
   return (
-    <div
-      aria-label={label}
-      className={`flex ${levelTileMinClass} items-center justify-center rounded-2xl border border-day/30 bg-cyc/50`}
-    >
-      <LockIcon />
+    <div aria-label={label} className={lockedFrame}>
+      <div className={`${lockedInner} justify-center`}>
+        <span className="flex flex-col items-center gap-2">
+          <LockIcon className={`size-7 ${lockedInk}`} />
+          <span className={`text-sm font-semibold tracking-[0.12em] ${lockedInk}`}>
+            {label}
+          </span>
+        </span>
+      </div>
     </div>
   )
 }
 
 export function LockedLevelTile({
   title,
+  levelNo,
+  detail,
   onBlocked,
 }: {
   title: string
+  levelNo?: string
+  detail?: string
   onBlocked: () => void
 }) {
+  const ariaLabel = `${title}, 未解锁`
   return (
-    <button
-      type="button"
-      aria-label={`${title}，未解锁`}
-      onClick={onBlocked}
-      className={`flex w-full ${levelTileMinClass} items-center justify-between gap-3 rounded-2xl border border-day/30 bg-cyc/50 px-4 py-4 text-left transition-[border-color] duration-200 ease-out hover:border-day/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95`}
-    >
-      <span className="text-lg font-semibold tracking-[0.04em] text-day/45">{title}</span>
-      <LockIcon className="size-5 shrink-0 stroke-day/35" />
+    <button type="button" aria-label={ariaLabel} onClick={onBlocked} className={`${lockedFrame} w-full text-left`}>
+      <span className={lockedInner}>
+        <span className={`min-w-0 flex-1 ${lockedInk}`}>
+          {levelNo ? (
+            <span className="block text-xs font-semibold tracking-[0.18em] opacity-90">
+              LEVEL {levelNo}
+            </span>
+          ) : null}
+          <span className="mt-1 block text-lg font-semibold tracking-[0.04em]">
+            {title}
+          </span>
+          {detail ? (
+            <span className="mt-1 block text-base font-medium tracking-[0.04em] opacity-85">
+              {detail}
+            </span>
+          ) : null}
+        </span>
+        <LockIcon className={`size-6 shrink-0 ${lockedInk}`} />
+      </span>
     </button>
   )
 }

@@ -402,7 +402,7 @@ function FallingBoard({
             </div>
           ) : null}
         </div>
-        <div className="mt-2 rounded-2xl bg-rose/15 px-3 py-4">
+        <div className="mt-2 rounded-2xl border border-day/20 bg-cyc/40 px-3 py-4">
           <div className="grid grid-cols-2 gap-2">
             {options.map((option) => (
               <button
@@ -474,7 +474,7 @@ function SentenceResultScreen({
         >
           {cleared ? '成功' : '失败'}
         </p>
-        <div className="rounded-2xl bg-rose px-4 py-4 text-cyc">
+        <div className="rounded-2xl bg-day px-4 py-4 text-cyc">
           <p className="text-lg font-medium tracking-[0.02em] text-cyc/75">{sentence.zh}</p>
           <p className="mt-3 text-2xl font-medium leading-snug tracking-[0.01em]">
             {sentence.en}

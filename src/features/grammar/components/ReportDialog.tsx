@@ -10,10 +10,13 @@ type ReportTarget = {
 export function ReportDialog({
   target,
   label = '报错',
+  tone = 'onCyc',
   className = '',
 }: {
   target: ReportTarget
   label?: string
+  /** onDay = dark icon on cream panels; onCyc = light icon on dark stage */
+  tone?: 'onDay' | 'onCyc'
   className?: string
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -45,13 +48,18 @@ export function ReportDialog({
     close()
   }
 
+  const toneClass =
+    tone === 'onDay'
+      ? 'border-cyc/30 text-cyc/75 hover:border-cyc/55 hover:text-cyc focus-visible:outline-cyc'
+      : 'border-day/25 text-day/70 hover:border-day/50 hover:text-day focus-visible:outline-day'
+
   return (
     <>
       <button
         type="button"
         aria-label={label}
         onClick={open}
-        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-day/25 text-day/70 transition-[color,background-color,border-color] duration-200 ease-out hover:border-day/50 hover:text-day focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 ${className}`}
+        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-full border transition-[color,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:brightness-95 ${toneClass} ${className}`}
       >
         <FlagIcon />
       </button>

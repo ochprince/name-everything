@@ -19,6 +19,7 @@ export interface PracticeCardProps {
   progressLabel?: string
   chrome?: 'stage' | 'sheet'
   backTo?: string
+  onBack?: () => void
   stageTitle?: string
 }
 
@@ -49,17 +50,17 @@ function CueSpeaker({
   onPlay,
 }: {
   label: string
-  tone: 'onRose' | 'onCyc'
+  tone: 'onDay' | 'onCyc'
   onPlay: () => void
 }) {
-  const onRose = tone === 'onRose'
+  const onDay = tone === 'onDay'
   return (
     <button
       type="button"
       aria-label={label}
       onClick={onPlay}
       className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full border transition-[filter] duration-200 ease-out hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:brightness-95 ${
-        onRose
+        onDay
           ? 'border-cyc/45 text-cyc focus-visible:outline-cyc'
           : 'border-day/70 text-day focus-visible:outline-day'
       }`}
@@ -81,6 +82,7 @@ export function PracticeCard({
   progressLabel,
   chrome = 'stage',
   backTo,
+  onBack,
   stageTitle = 'Name Everything',
 }: PracticeCardProps) {
   const [imageSrc, setImageSrc] = useState(card.image)
@@ -207,26 +209,27 @@ export function PracticeCard({
       <div className="cyc-wash pointer-events-none absolute inset-0" />
       <div
         className={`relative mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden px-4 ${
-          sheet ? 'pb-6 pt-16' : 'pb-28 pt-[max(1.25rem,env(safe-area-inset-top))]'
+          sheet ? 'pb-6' : 'pb-28'
         }`}
       >
-        {sheet ? null : (
+        <div className="shrink-0 bg-cyc pb-2 pt-[max(1.25rem,env(safe-area-inset-top))]">
           <StageHeader
-            backTo={backTo}
-            title={stageTitle}
+            backTo={sheet ? undefined : backTo}
+            onBack={sheet ? onBack : undefined}
+            title={sheet ? '复习' : stageTitle}
             trailing={
-              progressLabel ? (
-                <p className="rounded-xl bg-rose px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-cyc">
+              !sheet && progressLabel ? (
+                <p className="rounded-xl bg-day px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-cyc">
                   {progressLabel}
                 </p>
               ) : undefined
             }
           />
-        )}
+        </div>
 
         <figure
           data-testid="card-photo"
-          className={`flex shrink-0 justify-center px-2 ${sheet ? 'mt-3' : 'mt-4'}`}
+          className={`flex shrink-0 justify-center px-2 ${sheet ? 'mt-3' : 'mt-2'}`}
         >
           <img
             src={imageSrc}
@@ -273,14 +276,14 @@ export function PracticeCard({
               </div>
               <div
                 data-testid="sentence-band"
-                className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-rose px-3 py-3"
+                className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-day px-3 py-3"
               >
                 <p className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
                   {card.sentence}
                 </p>
                 <CueSpeaker
                   label="朗读句子"
-                  tone="onRose"
+                  tone="onDay"
                   onPlay={() =>
                     playCardAudio(card.sentenceAudio, card.sentence)
                   }

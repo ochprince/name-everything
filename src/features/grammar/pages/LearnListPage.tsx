@@ -5,7 +5,15 @@ import { StageHeader } from '../../../shared/StageHeader'
 import { StageHint, useStageHint } from '../../../shared/StageHint'
 import { playUiTap } from '../../../shared/uiSound'
 import { LevelPassTrophy } from '../components/LevelPassTrophy'
-import { LockPlaceholder, LockedLevelTile, levelTileMinClass } from '../../../shared/LockPlaceholder'
+import { LockPlaceholder, LockedLevelTile } from '../../../shared/LockPlaceholder'
+import { ListChevron } from '../../../shared/DoorIcon'
+import {
+  chapterListMaterial,
+  secondaryOnMaterial,
+  stageListShell,
+  stageMaterialClass,
+  type StageMaterial,
+} from '../../../shared/stageMaterials'
 import {
   anchorForLevel,
   chaptersInOrder,
@@ -13,23 +21,24 @@ import {
   pointById,
 } from '../content/pack'
 import { useGrammarProgress } from '../lib/storage'
-import { isLevelClearedOnContent, isLevelUnlocked, levelListScoreLabel, levelListScoreTone, levelUnlockHint } from '../lib/unlock'
+import {
+  isLevelClearedOnContent,
+  isLevelInProgress,
+  isLevelUnlocked,
+  levelListScoreLabel,
+  levelListScoreTone,
+  levelUnlockHint,
+} from '../lib/unlock'
 
 const SCROLL_KEY = 'grammar/learn-list/scroll-y'
 const PENDING_KEY = 'grammar/learn-list/scroll-pending'
+const TOP_BANNER = '/images/home/grammar-horizon.jpg'
 
 export function LearnListPage() {
   const progress = useGrammarProgress()
   const chapters = chaptersInOrder()
   const { hint, showHint } = useStageHint()
 
-  // Scroll restoration for the learn list. Clicking a level captures the
-  // current scroll position and marks a pending return; the page's back link
-  // is a regular <Link> (PUSH navigation), so the marker tells "coming back"
-  // from "entering fresh".
-  // Note: the position is captured in onClick, not in the unmount cleanup —
-  // by the time the cleanup runs, the new page's DOM has replaced the list
-  // and the browser has clamped scrollY to the shorter page (i.e. 0).
   useEffect(() => {
     const pending = sessionStorage.getItem(PENDING_KEY) === '1'
     sessionStorage.removeItem(PENDING_KEY)
@@ -46,91 +55,140 @@ export function LearnListPage() {
 
   return (
     <>
-      <StageShell header={<StageHeader backTo="/" title="语法学习" />}>
-        <div className="flex flex-col gap-10 pt-8">
-          {chapters.map((chapter) => {
-          const levels = levelsForChapter(chapter.id)
-          return (
-            <section key={chapter.id} className="flex flex-col gap-3">
-              <h2 className="text-xl font-semibold tracking-[0.08em] text-day">
-                {chapter.title_zh}
-              </h2>
-              {chapter.description_zh ? (
-                <p className="text-base font-medium tracking-[0.02em] text-day/75">
-                  {chapter.description_zh}
-                </p>
-              ) : null}
-              {!chapter.released ? (
-                <LockPlaceholder label="章节未开放" />
-              ) : (
-                <ol className="flex flex-col gap-2">
-                  {levels.map((level, index) => {
-                    const anchor = anchorForLevel(level.id)
-                    const topic = pointById(level.grammar_point_id)
-                    const unlocked = isLevelUnlocked(level, progress)
-                    const cleared = isLevelClearedOnContent(level.id, progress)
-                    const scoreLabel = levelListScoreLabel(level, progress)
-                    const scoreTone = levelListScoreTone(level, progress)
-                    const title = `${index + 1}. ${topic?.title_zh ?? level.id}`
+      <StageShell
+        header={
+          <>
+            <StageHeader backTo="/" title="语法学习" />
+          </>
+        }
+      >
+        <div className="relative -mx-4 shrink-0">
+          <img
+            src={TOP_BANNER}
+            alt=""
+            className="block h-[7rem] w-full object-cover object-[50%_56%]"
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-cyc/70 to-transparent" />
+        </div>
 
-                    if (!unlocked) {
+        <div className="relative z-10 -mt-6 flex flex-col gap-9 pb-4">
+          {chapters.map((chapter, chapterIndex) => {
+            const levels = levelsForChapter(chapter.id)
+            // Alternate by chapter: 简单句 day, 谓语 cobalt, 非谓语 day…
+            const chapterMaterial = chapterListMaterial(chapterIndex)
+            return (
+              <section key={chapter.id} className="flex flex-col gap-3">
+                <div className="px-0.5">
+                  <h2 className="text-lg font-semibold tracking-[0.1em] text-day">
+                    {chapter.title_zh}
+                  </h2>
+                  {chapter.description_zh ? (
+                    <p className="mt-1 text-sm font-medium tracking-[0.04em] text-day/65">
+                      {chapter.description_zh}
+                    </p>
+                  ) : null}
+                </div>
+                {!chapter.released ? (
+                  <LockPlaceholder label="章节未开放" />
+                ) : (
+                  <ol className="flex flex-col gap-2.5">
+                    {levels.map((level, index) => {
+                      const anchor = anchorForLevel(level.id)
+                      const topic = pointById(level.grammar_point_id)
+                      const unlocked = isLevelUnlocked(level, progress)
+                      const cleared = isLevelClearedOnContent(level.id, progress)
+                      const inProgress = isLevelInProgress(level, progress)
+                      const scoreLabel = levelListScoreLabel(level, progress)
+                      const scoreTone = levelListScoreTone(level, progress)
+                      const levelNo = String(index + 1).padStart(2, '0')
+                      const topicTitle = topic?.title_zh ?? level.id
+                      // Keep chapter color (day/cobalt); in-progress is badge-only
+                      const material: StageMaterial = chapterMaterial
+
+                      if (!unlocked) {
+                        return (
+                          <li key={level.id}>
+                            <LockedLevelTile
+                              title={topicTitle}
+                              levelNo={levelNo}
+                              detail={anchor?.en}
+                              onBlocked={() => showHint(levelUnlockHint(level, progress))}
+                            />
+                          </li>
+                        )
+                      }
+
+                      const secondary = secondaryOnMaterial(material)
+                      const markMuted =
+                        material === 'cobalt' ? 'text-day/50' : 'text-cyc/40'
+                      const progressLabel =
+                        material === 'cobalt' ? 'text-day' : 'text-cyc'
+
                       return (
                         <li key={level.id}>
-                          <LockedLevelTile
-                            title={title}
-                            onBlocked={() => showHint(levelUnlockHint(level, progress))}
-                          />
+                          <Link
+                            to={`/practice/grammar/learn/${level.id}`}
+                            onClick={() => {
+                              playUiTap()
+                              sessionStorage.setItem(SCROLL_KEY, String(window.scrollY))
+                              sessionStorage.setItem(PENDING_KEY, '1')
+                            }}
+                            className={`${stageListShell} ${stageMaterialClass(material)}`}
+                            data-chapter-material={material}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <span
+                                className={`block text-[0.7rem] font-semibold tracking-[0.2em] ${markMuted}`}
+                              >
+                                LEVEL {levelNo}
+                              </span>
+                              <span className="mt-1.5 block text-lg font-semibold tracking-[0.04em]">
+                                {topicTitle}
+                              </span>
+                              {anchor ? (
+                                <span
+                                  className={`mt-1 block text-base font-medium tracking-[0.06em] ${secondary}`}
+                                >
+                                  {anchor.en}
+                                </span>
+                              ) : null}
+                              <span
+                                className={`mt-1.5 block text-sm font-medium tracking-[0.02em] ${secondary}`}
+                              >
+                                {scoreTone === 'update' && scoreLabel.endsWith('有更新') ? (
+                                  <>
+                                    {scoreLabel.slice(0, -'有更新'.length)}
+                                    <span className="text-sky-400">有更新</span>
+                                  </>
+                                ) : (
+                                  scoreLabel
+                                )}
+                              </span>
+                            </div>
+                            <span className="flex shrink-0 items-center gap-2 self-center">
+                              {inProgress ? (
+                                <span
+                                  className={`inline-flex items-center gap-1.5 text-sm font-semibold tracking-[0.08em] ${progressLabel}`}
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className="size-2.5 rounded-full bg-rose"
+                                  />
+                                  进行中
+                                </span>
+                              ) : null}
+                              {cleared ? <LevelPassTrophy /> : null}
+                              <ListChevron className={`size-5 ${markMuted}`} />
+                            </span>
+                          </Link>
                         </li>
                       )
-                    }
-
-                    return (
-                      <li key={level.id}>
-                        <Link
-                          to={`/practice/grammar/learn/${level.id}`}
-                          onClick={() => {
-                            playUiTap()
-                            // Capture the position before navigation starts:
-                            // once the level page's shorter DOM replaces the
-                            // list, the browser clamps scrollY to 0.
-                            sessionStorage.setItem(
-                              SCROLL_KEY,
-                              String(window.scrollY),
-                            )
-                            sessionStorage.setItem(PENDING_KEY, '1')
-                          }}
-                          className={`flex ${levelTileMinClass} items-center gap-3 rounded-2xl bg-rose px-4 py-4 text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyc active:brightness-95`}
-                        >
-                          <div className="min-w-0 flex-1">
-                            <span className="text-lg font-semibold tracking-[0.04em]">
-                              {title}
-                            </span>
-                            {anchor ? (
-                              <span className="mt-1 block text-base font-medium tracking-[0.01em] text-cyc/60">
-                                {anchor.en}
-                              </span>
-                            ) : null}
-                            <span className="mt-1 block text-base font-medium tracking-[0.02em] text-cyc/70">
-                              {scoreTone === 'update' && scoreLabel.endsWith('有更新') ? (
-                                <>
-                                  {scoreLabel.slice(0, -'有更新'.length)}
-                                  <span className="text-sky-500">有更新</span>
-                                </>
-                              ) : (
-                                scoreLabel
-                              )}
-                            </span>
-                          </div>
-                          {cleared ? <LevelPassTrophy /> : null}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ol>
-              )}
-            </section>
-          )
-        })}
+                    })}
+                  </ol>
+                )}
+              </section>
+            )
+          })}
         </div>
       </StageShell>
       <StageHint message={hint} />

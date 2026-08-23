@@ -8,6 +8,7 @@ import {
   type ThinkHoldMs,
   type HintLang,
 } from '../features/pictures/lib/storage'
+import { StageHeader, StickyStageChrome } from '../shared/StageHeader'
 
 const holdButton =
   'min-h-11 min-w-[4.75rem] rounded-2xl px-3 font-cue text-base font-semibold tracking-[0.14em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'
@@ -122,16 +123,16 @@ export function MePage() {
 
       <div className="relative h-full overflow-x-clip overflow-y-auto">
         <div className="mx-auto max-w-md px-4 pb-28">
-        <h1 className="pt-[max(1.5rem,env(safe-area-inset-top))] text-center text-sm font-semibold tracking-[0.22em] text-day">
-          我的
-        </h1>
+        <StickyStageChrome>
+          <StageHeader title="我的" />
+        </StickyStageChrome>
 
         <ul className="mt-10 flex flex-col gap-5">
           <li className="flex items-center justify-between gap-4">
             <span className="text-lg font-medium tracking-[0.08em] text-day">
               今日已练
             </span>
-            <span className="rounded-xl bg-rose px-3 py-1 text-lg font-semibold tracking-[0.08em] text-cyc">
+            <span className="rounded-xl bg-day px-3 py-1 text-lg font-semibold tracking-[0.08em] text-cyc">
               {todayCount}
             </span>
           </li>
@@ -139,7 +140,7 @@ export function MePage() {
             <span className="text-lg font-medium tracking-[0.08em] text-day">
               连续天数
             </span>
-            <span className="rounded-xl bg-rose px-3 py-1 text-lg font-semibold tracking-[0.08em] text-cyc">
+            <span className="rounded-xl bg-day px-3 py-1 text-lg font-semibold tracking-[0.08em] text-cyc">
               {streak}
             </span>
           </li>

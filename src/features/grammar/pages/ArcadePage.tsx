@@ -18,7 +18,7 @@ export function ArcadePage() {
           已过关句子随机混合，反复巩固。
         </p>
         {progress.arcadeHistory.length === 0 ? (
-          <p className="rounded-2xl bg-rose px-4 py-5 text-lg font-medium text-cyc">
+          <p className="rounded-2xl border border-gold/50 bg-cyc/80 px-4 py-5 text-lg font-medium text-day/80">
             暂无记录。完成一局后，成绩会显示在这里。
           </p>
         ) : (
@@ -26,12 +26,12 @@ export function ArcadePage() {
             {progress.arcadeHistory.map((entry) => (
               <li
                 key={entry.id}
-                className="flex items-baseline justify-between rounded-2xl bg-rose px-4 py-4 text-cyc"
+                className="flex items-baseline justify-between rounded-2xl bg-cobalt px-4 py-4 text-day"
               >
                 <span className="text-xl font-semibold tracking-[0.04em]">
                   {entry.score} 句
                 </span>
-                <span className="text-base font-medium tracking-[0.04em] text-cyc/70">
+                <span className="text-base font-medium tracking-[0.04em] text-day/70">
                   {new Date(entry.at).toLocaleDateString('zh-CN', {
                     month: 'numeric',
                     day: 'numeric',

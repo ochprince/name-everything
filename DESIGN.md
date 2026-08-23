@@ -5,6 +5,7 @@ colors:
   cyc: "#05060a"
   cobalt: "#1e3a8a"
   rose: "#e8a598"
+  gold: "#d4c69a"
   day: "#f4f1ea"
   ink: "#05060a"
 typography:
@@ -67,11 +68,23 @@ components:
     padding: "0 10px"
     typography: "{typography.cue}"
   horizon-sentence:
-    backgroundColor: "{colors.rose}"
+    backgroundColor: "{colors.day}"
     textColor: "{colors.cyc}"
     rounded: "{rounded.md}"
     padding: "12px"
     typography: "{typography.sentence}"
+  module-door-day:
+    backgroundColor: "{colors.day}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.md}"
+  module-door-cobalt:
+    backgroundColor: "{colors.cobalt}"
+    textColor: "{colors.day}"
+    rounded: "{rounded.md}"
+  module-door-outline:
+    backgroundColor: "{colors.cyc}"
+    textColor: "{colors.day}"
+    rounded: "{rounded.md}"
 ---
 
 # Name Everything visual system
@@ -82,25 +95,32 @@ The practice surface is a **cyclorama**: depthless night at the top, a cobalt ho
 
 This is Operate UI. Familiar tap targets, locked button copy (`Aha!` then `Forgot` / `Got it`), one-handed phone column. Expression lives in the wash, the cue type, and the action materials — not in a cream flashcard shell.
 
+**Home & lists** use **stage doors**, not rose slabs: equal-geometry rows with materials `day` / `cobalt` / `outline` (champagne border). Rose is accents only — never full content panels.
+
 ## Colors
 
 | Token | Hex | Role |
 | --- | --- | --- |
-| `cyc` | `#05060a` | Ground, chrome, Forgot fill |
-| `cobalt` | `#1e3a8a` | Horizon structure in the wash |
-| `rose` | `#e8a598` | Sentence band, 记录, counts, empty cue |
-| `day` | `#f4f1ea` | Got it fill, body on cyc, selected tabs |
-| `ink` | `#05060a` | Text on rose/day |
+| `cyc` | `#05060a` | Ground, chrome, Forgot fill, outline-door fill |
+| `cobalt` | `#1e3a8a` | Horizon wash; grammar / odd-chapter list doors |
+| `rose` | `#e8a598` | Accents only: slot pick, underlines, progress dots, nav badge, fail marks |
+| `gold` | `#d4c69a` | Champagne outline frames (locked doors) |
+| `day` | `#f4f1ea` | Got it; vocab door; even-chapter list; sentence / knowledge panels |
+| `ink` | `#05060a` | Text on day / rose accents |
 
-Sentence on rose uses `cyc` ink (not `day`) so contrast stays ≥4.5:1. Inactive nav is `day` at ~80% opacity, never a cool gray. Color is never the only state signal: labels stay.
+Sentence and grammar-point panels use `day` fill with `cyc` ink. Inactive nav is `day` at ~80% opacity. Color is never the only state signal: labels stay.
 
 ## Typography
 
-One family: self-hosted **Big Shoulders Text** (latin) with **Noto Sans SC** for Han. Lighting-plot stencil caps for chrome; the sentence is the same face at readable weight. Fixed rem steps, not fluid clamp. Tracking on chrome `0.08em`–`0.22em`; sentence `0.01em`. Do not introduce Inter, Space Grotesk, or a second display serif.
+One family: self-hosted **Big Shoulders Text** (latin) with **Noto Sans SC** for Han. Lighting-plot stencil caps for chrome; the sentence is the same face at readable weight. Fixed rem steps, not fluid clamp. Tracking on chrome `0.08em`–`0.22em`; sentence `0.01em`. Do not introduce Inter, Space Grotesk, or a second display serif. List/page titles stay StageHeader scale (`text-sm` + `0.22em`) — not hero display.
 
 ## Layout
 
 Mobile-first single column, `max-w-md`, `px-4`. Photo keeps a 4:3 set-piece crop, slightly inset (`px-2`), capped at about `32vh` so the cue stage has room. The cue panel between photo and actions is a stable flex region (min ~12.5rem): think countdown and revealed word/sentence swap inside it without shoving the action row. Stage chrome uses a fixed `h-dvh` column with `pb-28` for the tab bar; review overlay uses `sheet` chrome (no tab reserve). Safe-area padding on the top of each page.
+
+**Practice home:** display-only banner (object photo + 「看图开口」) then three equal doors (词汇 day / 语法学习 cobalt / 语法游戏 outline) with shared padding and left-aligned text baselines; door line icon on the right.
+
+**Grammar list:** chapter title + description, then doors. Even chapters unlock with `day`; odd with `cobalt`. In-progress row uses `day` + rose 「进行中」. Locked rows use gold outline + lock (same geometry).
 
 ## Elevation & Depth
 
@@ -116,7 +136,9 @@ Controls are `rounded-2xl` (16px). Fold cues and speaker marks are pills/circles
 - **Forgot** — cyc fill, day outline.
 - **Aha!** — day-wash fill, same cue size as Got it; think phase only.
 - **Next** — same day-wash fill as Aha!; timeout reveal only.
-- **Horizon sentence** — rose band + speaker.
+- **Horizon sentence** — day band + speaker (content stage).
+- **Grammar point card** — day panel, cyc ink.
+- **Module / list door** — day | cobalt | outline materials; equal geometry; no rose fills.
 - **Think countdown** — large day numeral in the cue stage (not a tappable eye). Timeout reveals in place; 复习 badge increments.
 - **BottomNav** — cyc bar, rose active, day/80 idle; hairline rose→cobalt.
 
@@ -127,12 +149,15 @@ Motion is a lighting raise, not page choreography. Word and sentence lift ~480ms
 **Do**
 
 - Lead with the picture; keep word/sentence hidden until Aha! (or review).
-- Put sentence ink on rose as `cyc`.
-- Treat empty Forgot / 记录 as rose cue bands with the spec copy.
+- Put sentence / knowledge panels on `day` with `cyc` ink.
+- Use stage doors (`day` / `cobalt` / champagne `outline`) for home modules and grammar lists.
+- Keep rose for small marks only: slot pick, underlines, progress dots, nav active, fail text.
 
 **Don't**
 
+- Fill sentence bands, knowledge cards, or list rows with rose/salmon.
 - Cream/paper flashcards, purple SaaS gradients, or Inter.
 - Hero-metric dashboards on 我的 (no giant number + tiny label grid).
 - Gradient text, glass cards, or colored side-stripes.
 - Overlay a second product name on the review sheet (use 返回).
+- Mix day and cobalt unlocked styles inside one chapter.

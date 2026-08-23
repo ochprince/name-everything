@@ -1,8 +1,42 @@
 import { Link } from 'react-router-dom'
 import { StageShell } from '../shared/StageShell'
+import { StageHeader } from '../shared/StageHeader'
 import { StageHint, useStageHint } from '../shared/StageHint'
+import { DoorIcon } from '../shared/DoorIcon'
+import {
+  stageDoorShell,
+  stageMaterialClass,
+  secondaryOnMaterial,
+  outlineDoorInner,
+  type StageMaterial,
+} from '../shared/stageMaterials'
 import { useGrammarProgress } from '../features/grammar/lib/storage'
 import { practiceTiles, type PracticeTile } from './practiceModules'
+import { useState } from 'react'
+
+const BANNER_IMAGE = '/images/home/banner-cup.jpg'
+const FALLBACK_IMAGE = '/images/cards/fallback.svg'
+
+const materialById: Record<string, StageMaterial> = {
+  vocab: 'day',
+  'grammar-learn': 'cobalt',
+  'grammar-play': 'outline',
+}
+
+function HomeBanner() {
+  const [src, setSrc] = useState(BANNER_IMAGE)
+
+  return (
+    <figure className="relative overflow-hidden rounded-2xl shadow-[0_22px_44px_-14px_rgba(0,0,0,0.75)]">
+      <img
+        src={src}
+        alt=""
+        className="aspect-[16/10] w-full object-cover"
+        onError={() => setSrc(FALLBACK_IMAGE)}
+      />
+    </figure>
+  )
+}
 
 export function PracticeHomePage() {
   const progress = useGrammarProgress()
@@ -11,19 +45,19 @@ export function PracticeHomePage() {
 
   return (
     <>
-      <StageShell
-        header={
-          <h1 className="pt-2 text-center text-sm font-semibold tracking-[0.22em] text-day">
-            练习
-          </h1>
-        }
-      >
-        <div className="flex flex-1 flex-col gap-5 pb-4 pt-8">
+      <StageShell header={<StageHeader title="练习" />}>
+        <div className="flex flex-1 flex-col gap-5 pb-4 pt-6">
+          <HomeBanner />
           <div className="flex flex-col gap-2.5">
             {tiles.map((tile) => (
               <ModuleTile
                 key={tile.id}
                 tile={tile}
+                material={
+                  tile.available
+                    ? (materialById[tile.id] ?? 'day')
+                    : 'outline'
+                }
                 onBlocked={() => {
                   if (tile.unavailableHint) showHint(tile.unavailableHint)
                 }}
@@ -39,13 +73,49 @@ export function PracticeHomePage() {
 
 function ModuleTile({
   tile,
+  material,
   onBlocked,
 }: {
   tile: PracticeTile
+  material: StageMaterial
   onBlocked: () => void
 }) {
-  const className =
-    'flex min-h-[5.5rem] w-full flex-col justify-center rounded-2xl px-5 py-4 text-left transition-[filter] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyc'
+  const isOutline = material === 'outline'
+  const outerClass = isOutline
+    ? `block w-full min-h-[7.5rem] rounded-2xl ${stageMaterialClass(material)} transition-[filter] duration-200 ease-out hover:brightness-105`
+    : `${stageDoorShell} ${stageMaterialClass(material)}`
+  const detailClass = secondaryOnMaterial(material)
+  const openDoor = tile.id === 'grammar-play' && tile.available
+
+  const body = (
+    <>
+      <span className="min-w-0 flex-1">
+        <span className="block text-xl font-semibold tracking-[0.06em]">
+          {tile.title}
+        </span>
+        <span className={`mt-1 block text-base font-medium tracking-[0.02em] ${detailClass}`}>
+          {tile.detail}
+        </span>
+        {tile.badge ? (
+          <span className={`mt-0.5 block text-sm font-medium tracking-[0.04em] ${detailClass}`}>
+            {tile.badge}
+          </span>
+        ) : null}
+      </span>
+      <DoorIcon
+        open={openDoor}
+        className={`size-[5.75rem] shrink-0 ${
+          material === 'day' ? 'text-cyc' : 'text-day'
+        }`}
+      />
+    </>
+  )
+
+  const content = isOutline ? (
+    <span className={`${outlineDoorInner} min-h-[7.5rem]`}>{body}</span>
+  ) : (
+    body
+  )
 
   if (!tile.available || !tile.to) {
     return (
@@ -54,32 +124,16 @@ function ModuleTile({
         aria-disabled="true"
         data-testid={`tile-${tile.id}`}
         onClick={onBlocked}
-        className={`${className} cursor-not-allowed border border-day/20 bg-cyc/80 text-day/45`}
+        className={`${outerClass} cursor-not-allowed text-day/45`}
       >
-        <span className="flex items-baseline justify-between gap-3">
-          <span className="text-xl font-semibold tracking-[0.06em]">{tile.title}</span>
-          <span className="text-sm font-semibold tracking-[0.18em] text-day/35">未解锁</span>
-        </span>
-        <span className="mt-1 text-base font-medium tracking-[0.02em]">{tile.detail}</span>
+        {content}
       </button>
     )
   }
 
   return (
-    <Link
-      to={tile.to}
-      data-testid={`tile-${tile.id}`}
-      className={`${className} bg-rose text-cyc hover:brightness-105 active:brightness-95`}
-    >
-      <span className="flex items-baseline justify-between gap-3">
-        <span className="text-xl font-semibold tracking-[0.06em]">{tile.title}</span>
-        {tile.badge ? (
-          <span className="shrink-0 text-sm font-medium tracking-[0.04em] text-cyc/55">
-            {tile.badge}
-          </span>
-        ) : null}
-      </span>
-      <span className="mt-1 text-lg font-medium tracking-[0.01em]">{tile.detail}</span>
+    <Link to={tile.to} data-testid={`tile-${tile.id}`} className={outerClass}>
+      {content}
     </Link>
   )
 }

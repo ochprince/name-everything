@@ -8,7 +8,7 @@ export function ScoreBadge({ score, need }: { score: number; need: number }) {
       }
       title={cleared ? `最高 ${score} · 已过关` : `最高 ${score}/${need}`}
     >
-      <TrophyIcon />
+      <MedalIcon />
       <span className="text-sm font-semibold tabular-nums tracking-[0.06em]">
         {cleared ? score : `${score}/${need}`}
       </span>
@@ -16,16 +16,21 @@ export function ScoreBadge({ score, need }: { score: number; need: number }) {
   )
 }
 
-function TrophyIcon() {
+/** Medal (奖章) — circle face + ribbon tails. */
+function MedalIcon() {
   return (
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
       className="size-4 fill-none stroke-current stroke-[1.75] text-rose"
     >
-      <path d="M8 4h8v3a4 4 0 0 1-8 0V4Z" strokeLinejoin="round" />
-      <path d="M6 4H4v1a2 2 0 0 0 2 2M18 4h2v1a2 2 0 0 1-2 2" strokeLinecap="round" />
-      <path d="M12 11v3M9 20h6M10 14h4v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3Z" strokeLinejoin="round" />
+      <circle cx="12" cy="10" r="5.25" />
+      <circle cx="12" cy="10" r="2.25" />
+      <path
+        d="M9.2 14.6 7.5 21l4.5-2.2L16.5 21l-1.7-6.4"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

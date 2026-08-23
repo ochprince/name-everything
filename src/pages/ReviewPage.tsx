@@ -5,6 +5,7 @@ import { useProgress } from '../features/pictures/hooks/useProgress'
 import { markForgot, markReviewGotIt, clearReviewUnseen, todayKey } from '../features/pictures/lib/storage'
 import { highlightParts } from '../features/pictures/lib/highlightWord'
 import type { Card } from '../types/card'
+import { StageHeader, StickyStageChrome } from '../shared/StageHeader'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
 
@@ -96,9 +97,9 @@ export function ReviewPage() {
 
       <div className="relative h-full overflow-x-clip overflow-y-auto">
         <div className="mx-auto max-w-md px-4 pb-28">
-        <h1 className="pt-[max(1.5rem,env(safe-area-inset-top))] text-center text-sm font-semibold tracking-[0.22em] text-day">
-          复习
-        </h1>
+        <StickyStageChrome>
+          <StageHeader title="复习" />
+        </StickyStageChrome>
         <p className="mt-3 text-center text-lg font-semibold tracking-[0.12em] text-rose">
           Forgot
           {progress.forgotIds.length > 0 ? (
@@ -110,8 +111,8 @@ export function ReviewPage() {
 
         <div id="review-queue" className="pb-40">
           {listed.length === 0 ? (
-            <div className="mt-16 rounded-2xl bg-rose px-4 py-5">
-              <p className="text-center text-lg font-medium leading-snug tracking-[0.01em] text-cyc">
+            <div className="mt-16 rounded-2xl border border-gold/50 bg-cyc/80 px-4 py-5">
+              <p className="text-center text-lg font-medium leading-snug tracking-[0.01em] text-day/85">
                 暂时没有 Forgot，去练习里诚实点一下吧
               </p>
             </div>
@@ -148,22 +149,11 @@ export function ReviewPage() {
           }}
           onClose={closeSheet}
         >
-          <button
-            type="button"
-            aria-label="返回列表"
-            onClick={closeSheet}
-            onMouseDown={(event) => {
-              // Avoid sticky :focus ring after tap on iOS / mouse.
-              event.preventDefault()
-            }}
-            className="absolute left-4 top-[max(1.25rem,env(safe-area-inset-top))] z-40 min-h-11 rounded-2xl border border-day/40 px-3 font-cue text-lg font-semibold tracking-[0.08em] text-day outline-none transition-[filter,border-color] duration-200 ease-out hover:border-day/70 hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day [-webkit-tap-highlight-color:transparent]"
-          >
-            返回
-          </button>
           <PracticeCard
             key={openCard.id}
             card={openCard}
             chrome="sheet"
+            onBack={closeSheet}
             hintLangDefault={progress.settings.hintLang}
             autoSpeak={progress.settings.autoSpeak}
             thinkHoldMs={progress.settings.thinkHoldMs}
