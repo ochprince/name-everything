@@ -12,7 +12,6 @@ import {
   secondaryOnMaterial,
   stageListShell,
   stageMaterialClass,
-  type StageMaterial,
 } from '../../../shared/stageMaterials'
 import {
   anchorForLevel,
@@ -101,7 +100,7 @@ export function LearnListPage() {
                       const levelNo = String(index + 1).padStart(2, '0')
                       const topicTitle = topic?.title_zh ?? level.id
                       // Keep chapter color (day/cobalt); in-progress is badge-only
-                      const material: StageMaterial = chapterMaterial
+                      const material = chapterMaterial
 
                       if (!unlocked) {
                         return (
@@ -134,7 +133,7 @@ export function LearnListPage() {
                             className={`${stageListShell} ${stageMaterialClass(material)}`}
                             data-chapter-material={material}
                           >
-                            <div className="min-w-0 flex-1">
+                            <div className="min-w-0 flex-1 overflow-hidden">
                               <span
                                 className={`block text-[0.7rem] font-semibold tracking-[0.2em] ${markMuted}`}
                               >
@@ -145,7 +144,7 @@ export function LearnListPage() {
                               </span>
                               {anchor ? (
                                 <span
-                                  className={`mt-1 block text-base font-medium tracking-[0.06em] ${secondary}`}
+                                  className={`mt-1 block min-w-0 truncate text-base font-medium tracking-[0.06em] ${secondary}`}
                                 >
                                   {anchor.en}
                                 </span>

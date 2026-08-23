@@ -5,7 +5,7 @@ export default {
     extend: {
       colors: {
         cyc: '#05060a',
-        cobalt: '#1e3a8a',
+        cobalt: '#002FA7',
         rose: '#e8a598',
         gold: '#d4c69a',
         day: '#f4f1ea',

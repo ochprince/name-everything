@@ -67,7 +67,7 @@ export function LockedLevelTile({
   return (
     <button type="button" aria-label={ariaLabel} onClick={onBlocked} className={`${lockedFrame} w-full text-left`}>
       <span className={lockedInner}>
-        <span className="min-w-0 flex-1">
+        <span className="min-w-0 flex-1 overflow-hidden">
           {levelNo ? (
             <span className={`block text-xs font-semibold tracking-[0.18em] ${lockedInkSoft}`}>
               LEVEL {levelNo}
@@ -77,7 +77,9 @@ export function LockedLevelTile({
             {title}
           </span>
           {detail ? (
-            <span className={`mt-1 block truncate text-base font-medium tracking-[0.04em] ${lockedInkSoft}`}>
+            <span
+              className={`mt-1 block min-w-0 truncate text-base font-medium tracking-[0.04em] ${lockedInkSoft}`}
+            >
               {detail}
             </span>
           ) : null}
