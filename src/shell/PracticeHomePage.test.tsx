@@ -35,7 +35,7 @@ describe('practice home', () => {
     expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
   })
 
-  it('keeps 语法挑战 disabled until a level is passed', async () => {
+  it('keeps 挑战模式 disabled until a level is passed', async () => {
     const user = userEvent.setup()
     renderHome()
     const tile = screen.getByTestId('tile-grammar-play')
@@ -45,7 +45,7 @@ describe('practice home', () => {
     expect(screen.getByRole('heading', { name: '练习' })).toBeInTheDocument()
   })
 
-  it('opens 语法挑战 after a level is passed', () => {
+  it('opens 挑战模式 after a level is passed', () => {
     saveGrammarProgress({
       ...defaultGrammarProgress(),
       passedLevelIds: ['dative-1'],

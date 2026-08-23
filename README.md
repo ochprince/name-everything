@@ -44,7 +44,7 @@ The **练习** tab opens a module picker at `/` (no countdown until you enter a 
 |------|-------|-------|
 | 词汇记忆 | `/practice/pictures` | Timed picture recall (Name Everything) |
 | 语法学习 | `/practice/grammar/learn` | Chapters → levels → learn page → falling-fill |
-| 语法挑战 | `/practice/grammar/play` | 30-sentence grouped challenge from passed levels; trophy on full clear when pool ≥ 30 |
+| 挑战模式 | `/practice/grammar/play` | Timed challenge from passed levels; trophy on full clear when pool ≥ 30 |
 
 Grammar content is stored in **Supabase** (`chapters`, `grammar_points`, `levels`, `sentences`, `sentence_spans`, `sentence_slots`, `game_tuning`). The app loads it at startup via the Data API. Author new lessons as SQL migrations under `supabase/migrations/` (see `.cursor/skills/grammar-content-pack`), then push so GitHub-linked Supabase applies them. Validate with `npm run grammar:validate` and `npm run grammar:coverage`.
 
@@ -89,12 +89,12 @@ Card images and audio **hotlink the Baicizhan CDN** (`https://ali.bczcdn.com/r/�
 
 Manual smoke-check after `npm run dev` (stop the dev server when done):
 
-- [ ] **Home** — three tiles; no countdown on `/`; 语法挑战 disabled until one level passed; click shows hint
+- [ ] **Home** — three tiles; no countdown on `/`; 挑战模式 disabled until one level passed; click shows hint
 - [ ] **词汇记忆** (`/practice/pictures`) — image visible; countdown in the cue stage; word / sentence hidden until Aha!; timeout reveals the answer, increments the 复习 count, and waits for Next
 - [ ] Aha! reveals word + sentence; Forgot / Got it apply immediately
 - [ ] A daily set of 10 practice Got its shows 今日已完成; Continue keeps the header at 10 / 10 and starts another set
 - [ ] **语法学习** — chapter list; linear unlock; learn page spans; start falling-fill; pass threshold unlocks next level
-- [ ] **语法挑战** — stratified 30-sentence sessions; grouped speed ramp; trophy on 30/30 when pool ≥ 30; hub shows history and cumulative trophy count
+- [ ] **挑战模式** — stratified 30-sentence sessions; grouped speed ramp; trophy on 30/30 when pool ≥ 30; hub shows history and cumulative trophy count
 - [ ] **Review** — Forgot list updates; sheet opens already revealed
 - [ ] **Me** — today count, streak, 思考时长 persist; export grammar reports JSON
 - [ ] Mobile viewport usable (one column, large tap targets)

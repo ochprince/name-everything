@@ -1,5 +1,5 @@
 import { Link, Navigate } from 'react-router-dom'
-import { StageShell } from '../../../shared/StageShell'
+import { StageShell, STAGE_CHROME_OFFSET } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
 import trophyPassed from '../assets/trophy-passed.svg'
 import { ArcadeEmptyPlaceholder } from '../components/ArcadeEmptyPlaceholder'
@@ -42,7 +42,7 @@ export function ArcadePage() {
       header={
         <StageHeader
           backTo="/"
-          title="语法挑战"
+          title="挑战模式"
           trailing={
             <div className="flex items-center gap-1">
               <ChallengeRulesDialog />
@@ -51,7 +51,10 @@ export function ArcadePage() {
         />
       }
     >
-      <div className="flex min-h-0 flex-1 flex-col gap-4 pt-2">
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden pt-2"
+        style={{ maxHeight: `calc(100dvh - ${STAGE_CHROME_OFFSET} - 7rem)` }}
+      >
         <section className="flex flex-col gap-2">
           <h2 className="px-0.5 text-xs font-semibold tracking-[0.18em] text-day/45">
             累计奖杯
@@ -71,13 +74,13 @@ export function ArcadePage() {
           </div>
         </section>
 
-        <section className="flex min-h-0 flex-1 flex-col gap-2">
+        <section className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
           {hasHistory ? (
             <>
-              <h2 className="px-0.5 text-xs font-semibold tracking-[0.18em] text-day/45">
+              <h2 className="shrink-0 px-0.5 text-xs font-semibold tracking-[0.18em] text-day/45">
                 最近
               </h2>
-              <ol className="flex flex-col gap-1.5 overflow-y-auto">
+              <ol className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-y-contain">
                 {progress.arcadeHistory.map((entry) => {
                   const earnedTrophy = entryEarnedTrophy(entry)
                   return (
