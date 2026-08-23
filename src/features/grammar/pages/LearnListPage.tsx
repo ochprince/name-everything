@@ -55,10 +55,7 @@ export function LearnListPage() {
 
   return (
     <>
-      <StageShell
-        headerTone="clear"
-        header={<StageHeader backTo="/" title="语法学习" />}
-      >
+      <StageShell header={<StageHeader backTo="/" title="语法学习" />}>
         <div
           className="relative -mx-4 shrink-0"
           style={{ marginTop: `calc(-1 * ${STAGE_CHROME_OFFSET})` }}

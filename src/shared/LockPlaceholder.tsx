@@ -77,7 +77,7 @@ export function LockedLevelTile({
             {title}
           </span>
           {detail ? (
-            <span className={`mt-1 block text-base font-medium tracking-[0.04em] ${lockedInkSoft}`}>
+            <span className={`mt-1 block truncate text-base font-medium tracking-[0.04em] ${lockedInkSoft}`}>
               {detail}
             </span>
           ) : null}
