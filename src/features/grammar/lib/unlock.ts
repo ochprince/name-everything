@@ -2,7 +2,6 @@ import { gameTuning } from '../content/tuning'
 import type { Level } from '../content/pack'
 import { chaptersInOrder, levelById, levelsForChapter, sentencesForLevel } from '../content/pack'
 import type { GrammarProgress } from './storage'
-import { levelThreshold } from './storage'
 
 function isPreviousChapterComplete(level: Level, progress: GrammarProgress): boolean {
   const chapters = chaptersInOrder()
@@ -56,26 +55,46 @@ function passedSentenceBaseline(levelId: string, progress: GrammarProgress): num
   return progress.passedSentenceCounts[levelId] ?? sentenceCountForLevel(levelId)
 }
 
-/** True when a passed level gained new sentences since the user last cleared it. */
+/** True when a passed level is no longer fully cleared on current content. */
 export function hasLevelContentUpdate(
   levelId: string,
   progress: GrammarProgress,
 ): boolean {
   if (!isLevelPassed(levelId, progress)) return false
-  return sentenceCountForLevel(levelId) > passedSentenceBaseline(levelId, progress)
+  const total = sentenceCountForLevel(levelId)
+  const score = highScoreFor(levelId, progress)
+  if (score < total) return true
+  return total > passedSentenceBaseline(levelId, progress)
 }
 
 export function levelListScoreLabel(level: Level, progress: GrammarProgress): string {
   const score = highScoreFor(level.id, progress)
-  const need = thresholdFor(level)
-  const passed = isLevelPassed(level.id, progress)
   const total = sentenceCountForLevel(level.id)
 
-  if (!passed) return `最高 ${score} / ${need}`
+  if (score >= total && total > 0) {
+    return `最高 ${score} · 已过关`
+  }
   if (hasLevelContentUpdate(level.id, progress)) {
     return `最高 ${score}/${total} · 有更新`
   }
-  return `最高 ${score} · 已过关`
+  return `最高 ${score}/${total}`
+}
+
+/** List subtitle tone: update nudge uses blue on rose tiles. */
+export function levelListScoreTone(
+  level: Level,
+  progress: GrammarProgress,
+): 'default' | 'update' {
+  return hasLevelContentUpdate(level.id, progress) ? 'update' : 'default'
+}
+
+/** Fully cleared on current sentence count (trophy / 已过关). */
+export function isLevelClearedOnContent(
+  levelId: string,
+  progress: GrammarProgress,
+): boolean {
+  const total = sentenceCountForLevel(levelId)
+  return total > 0 && highScoreFor(levelId, progress) >= total
 }
 
 export function livesFor(level: Level): number {
@@ -86,8 +105,9 @@ export function fallDurationFor(level: Level): number {
   return level.fall_duration_ms ?? gameTuning.fall_duration_ms
 }
 
+/** Pass bar = number of sentences in the level (anchor + playables). */
 export function thresholdFor(level: Level): number {
-  return levelThreshold(level.pass_threshold)
+  return sentenceCountForLevel(level.id)
 }
 
 /** Next level in chapter order; crosses into the next released chapter when needed. */

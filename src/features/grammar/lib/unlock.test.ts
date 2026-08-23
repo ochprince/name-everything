@@ -71,14 +71,48 @@ describe('level unlock', () => {
     saveGrammarProgress({
       ...defaultGrammarProgress(),
       passedLevelIds: [level.id],
-      highScores: { [level.id]: 4 },
+      highScores: { [level.id]: total - 1 },
       passedSentenceCounts: { [level.id]: total - 1 },
     })
     const progress = loadGrammarProgress()
 
     expect(hasLevelContentUpdate(level.id, progress)).toBe(true)
     expect(levelListScoreLabel(level, progress)).toBe(
-      `最高 4/${total} · 有更新`,
+      `最高 ${total - 1}/${total} · 有更新`,
+    )
+  })
+
+  it('shows 最高 x/y before clear and 最高 x · 已过关 when score meets total', () => {
+    const level = first!
+    const total = sentenceCountForLevel(level.id)
+    expect(thresholdFor(level)).toBe(total)
+
+    saveGrammarProgress({
+      ...defaultGrammarProgress(),
+      highScores: { [level.id]: Math.max(0, total - 1) },
+    })
+    expect(levelListScoreLabel(level, loadGrammarProgress())).toBe(
+      `最高 ${Math.max(0, total - 1)}/${total}`,
+    )
+
+    recordLevelScore(level.id, total, thresholdFor(level))
+    expect(levelListScoreLabel(level, loadGrammarProgress())).toBe(
+      `最高 ${total} · 已过关`,
+    )
+  })
+
+  it('shows 有更新 when historically passed under a lower score than current total', () => {
+    const level = first!
+    const total = sentenceCountForLevel(level.id)
+    saveGrammarProgress({
+      ...defaultGrammarProgress(),
+      passedLevelIds: [level.id],
+      highScores: { [level.id]: Math.max(1, total - 1) },
+      passedSentenceCounts: { [level.id]: total },
+    })
+    expect(hasLevelContentUpdate(level.id, loadGrammarProgress())).toBe(true)
+    expect(levelListScoreLabel(level, loadGrammarProgress())).toBe(
+      `最高 ${Math.max(1, total - 1)}/${total} · 有更新`,
     )
   })
 

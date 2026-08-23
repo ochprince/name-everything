@@ -1,13 +1,16 @@
 export function ScoreBadge({ score, need }: { score: number; need: number }) {
+  const cleared = need > 0 && score >= need
   return (
     <div
       className="inline-flex min-w-12 items-center justify-end gap-1.5 text-day"
-      aria-label={`最高 ${score}，过关 ${need} 句`}
-      title={`最高 ${score} · 过关 ${need} 句`}
+      aria-label={
+        cleared ? `最高 ${score}，已过关` : `最高 ${score}，过关 ${need} 句`
+      }
+      title={cleared ? `最高 ${score} · 已过关` : `最高 ${score}/${need}`}
     >
       <TrophyIcon />
       <span className="text-sm font-semibold tabular-nums tracking-[0.06em]">
-        {score}/{need}
+        {cleared ? score : `${score}/${need}`}
       </span>
     </div>
   )

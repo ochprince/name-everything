@@ -13,7 +13,7 @@ import {
   pointById,
 } from '../content/pack'
 import { useGrammarProgress } from '../lib/storage'
-import { isLevelPassed, isLevelUnlocked, levelListScoreLabel, levelUnlockHint } from '../lib/unlock'
+import { isLevelClearedOnContent, isLevelUnlocked, levelListScoreLabel, levelListScoreTone, levelUnlockHint } from '../lib/unlock'
 
 const SCROLL_KEY = 'grammar/learn-list/scroll-y'
 const PENDING_KEY = 'grammar/learn-list/scroll-pending'
@@ -68,8 +68,9 @@ export function LearnListPage() {
                     const anchor = anchorForLevel(level.id)
                     const topic = pointById(level.grammar_point_id)
                     const unlocked = isLevelUnlocked(level, progress)
-                    const passed = isLevelPassed(level.id, progress)
+                    const cleared = isLevelClearedOnContent(level.id, progress)
                     const scoreLabel = levelListScoreLabel(level, progress)
+                    const scoreTone = levelListScoreTone(level, progress)
                     const title = `${index + 1}. ${topic?.title_zh ?? level.id}`
 
                     if (!unlocked) {
@@ -109,11 +110,17 @@ export function LearnListPage() {
                                 {anchor.en}
                               </span>
                             ) : null}
-                            <span className="mt-1 block text-base font-medium tracking-[0.02em] text-cyc/70">
+                            <span
+                              className={`mt-1 block text-base font-medium tracking-[0.02em] ${
+                                scoreTone === 'update'
+                                  ? 'text-sky-200'
+                                  : 'text-cyc/70'
+                              }`}
+                            >
                               {scoreLabel}
                             </span>
                           </div>
-                          {passed ? <LevelPassTrophy /> : null}
+                          {cleared ? <LevelPassTrophy /> : null}
                         </Link>
                       </li>
                     )
