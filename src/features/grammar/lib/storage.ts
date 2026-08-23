@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { getSupabase, isSupabaseConfigured } from '../../../lib/supabase'
 import { gameTuning } from '../content/tuning'
 import { sentencesForLevel } from '../content/pack'
 
@@ -187,16 +188,31 @@ export function addReport(
   const note = input.note?.trim() ?? ''
   if (!note) return
 
+  const report: AssetReport = {
+    ...input,
+    id: newId(),
+    created_at: new Date().toISOString(),
+    note,
+  }
+
   const reports = loadReports()
-  saveReports([
-    {
-      ...input,
-      id: newId(),
-      created_at: new Date().toISOString(),
-      note,
-    },
-    ...reports,
-  ])
+  saveReports([report, ...reports])
+
+  if (isSupabaseConfigured()) {
+    void getSupabase()
+      .from('asset_reports')
+      .insert({
+        id: report.id,
+        asset_type: report.asset_type,
+        asset_id: report.asset_id,
+        level_id: report.level_id,
+        note: report.note,
+        created_at: report.created_at,
+      })
+      .then(({ error }) => {
+        if (error) console.warn('asset_reports insert failed:', error.message)
+      })
+  }
 }
 
 export function exportReports(): string {

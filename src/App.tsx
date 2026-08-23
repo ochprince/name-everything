@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { BottomNav } from './components/BottomNav'
 import { ProgressProvider } from './features/pictures/hooks/useProgress'
+import { GrammarPackProvider } from './features/grammar/content/GrammarPackProvider'
 import { unlockCardAudio } from './features/pictures/lib/playAudio'
 import { unlockUiSound } from './shared/uiSound'
 import { MePage } from './pages/MePage'
@@ -38,8 +39,9 @@ export default function App() {
   }, [])
 
   return (
-    <ProgressProvider>
-      <div className="min-h-dvh bg-cyc font-cue text-day">
+    <GrammarPackProvider>
+      <ProgressProvider>
+        <div className="min-h-dvh bg-cyc font-cue text-day">
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<PracticeHomePage />} />
@@ -59,7 +61,8 @@ export default function App() {
           <Route path="/me" element={<MePage />} />
         </Routes>
         <BottomNav />
-      </div>
-    </ProgressProvider>
+        </div>
+      </ProgressProvider>
+    </GrammarPackProvider>
   )
 }

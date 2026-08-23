@@ -4,9 +4,10 @@ import grammar_points from './grammar_points.json'
 import sentences from './sentences.json'
 import sentence_spans from './sentence_spans.json'
 import sentence_slots from './sentence_slots.json'
-import type { GrammarPack } from './pack'
+import gameTuningJson from './game_tuning.json'
+import type { GameTuning, GrammarPack } from './types'
 
-export function loadGrammarPack(): GrammarPack {
+export function loadGrammarPackFromJson(): GrammarPack {
   return {
     chapters,
     levels,
@@ -15,4 +16,8 @@ export function loadGrammarPack(): GrammarPack {
     sentence_spans,
     sentence_slots,
   } as GrammarPack
+}
+
+export function loadGameTuningFromJson(): GameTuning {
+  return gameTuningJson as GameTuning
 }

@@ -1,4 +1,2 @@
-import raw from './game_tuning.json'
-
-export const gameTuning = raw
-export type GameTuning = typeof gameTuning
+export type { GameTuning } from './types'
+export { gameTuning, getGameTuning, isGameTuningLoaded, setGameTuning } from './tuningStore'

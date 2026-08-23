@@ -46,7 +46,11 @@ Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-desi
 | 语法学习 | `/practice/grammar/learn` | 章节 → 关卡 → 学习页 → 下落填槽 |
 | 语法游戏 | `/practice/grammar/play` | 仅混合已过关关卡的 playable 句 |
 
-语法课程内容在 `src/features/grammar/content/*.json`；手感数字在 `game_tuning.json`。语法报错可在 **我的** 导出。
+语法课程内容存放在 **Supabase**（`chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`sentence_slots`、`game_tuning`），应用启动时通过 Data API 加载。新课写成 `supabase/migrations/` 下的 SQL migration（见 `.cursor/skills/grammar-content-pack`），push 后由 GitHub 关联的 Supabase 自动应用。用 `npm run grammar:validate` 与 `npm run grammar:coverage` 校验。
+
+本地开发：复制 `.env.example` 为 `.env.local`，填写 `VITE_SUPABASE_URL` 与 `VITE_SUPABASE_PUBLISHABLE_KEY`。GitHub Pages 构建需在仓库 Secrets 中配置同名变量（见 `deploy-pages.yml`）。数据库密码仅用于 Supabase CLI / 直连 Postgres（在 shell 中设置 `SUPABASE_DB_PASSWORD`，不要放进 Vite 环境变量）。
+
+语法报错在 **我的** 可导出本机记录；配置 Supabase 后也会写入 `asset_reports` 表。
 
 ## 路线图
 

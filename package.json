@@ -9,11 +9,14 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "grammar:validate": "node .cursor/skills/grammar-content-pack/scripts/validate-pack.mjs",
+    "grammar:coverage": "node .cursor/skills/grammar-content-pack/scripts/check-coverage.mjs"
   },
   "dependencies": {
     "@fontsource/big-shoulders-text": "^5.3.0",
     "@fontsource/noto-sans-sc": "^5.3.0",
+    "@supabase/supabase-js": "^2.112.3",
     "gsap": "^3.15.0",
     "lucide-react": "^1.31.0",
     "react": "^18.3.1",
