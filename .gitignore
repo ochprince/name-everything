@@ -28,5 +28,8 @@ dist-ssr
 .env.local
 .env.production
 
+# Supabase CLI local cache
+supabase/.temp/
+
 # Impeccable design artifacts / local runtime
 .impeccable/
