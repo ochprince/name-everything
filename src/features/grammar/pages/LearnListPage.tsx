@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { StageShell } from '../../../shared/StageShell'
+import { STAGE_CHROME_OFFSET, StageShell } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
 import { StageHint, useStageHint } from '../../../shared/StageHint'
 import { playUiTap } from '../../../shared/uiSound'
@@ -56,17 +56,18 @@ export function LearnListPage() {
   return (
     <>
       <StageShell
-        header={
-          <>
-            <StageHeader backTo="/" title="语法学习" />
-          </>
-        }
+        headerTone="clear"
+        header={<StageHeader backTo="/" title="语法学习" />}
       >
-        <div className="relative -mx-4 shrink-0">
+        <div
+          className="relative -mx-4 shrink-0"
+          style={{ marginTop: `calc(-1 * ${STAGE_CHROME_OFFSET})` }}
+        >
           <img
             src={TOP_BANNER}
             alt=""
-            className="block h-[7rem] w-full object-cover object-[50%_56%]"
+            className="block w-full object-cover object-[50%_56%]"
+            style={{ height: `calc(7rem + ${STAGE_CHROME_OFFSET})` }}
           />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-cyc/70 to-transparent" />
         </div>
