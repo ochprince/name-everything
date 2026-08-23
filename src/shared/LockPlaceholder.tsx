@@ -1,5 +1,5 @@
 export function LockIcon({
-  className = 'size-6 text-[#d4c69a]',
+  className = 'size-6 text-[#d4c69a]/55',
 }: {
   className?: string
 }) {
@@ -24,7 +24,8 @@ export function LockIcon({
 export const levelTileMinClass = 'min-h-[8.75rem]'
 
 /** Champagne metal: left cool-white → right soft gold (not pure yellow gold). */
-const lockedInk = 'text-[#d4c69a]'
+const lockedInk = 'text-[#d4c69a]/55'
+const lockedInkSoft = 'text-[#d4c69a]/40'
 
 const lockedFrame =
   'rounded-2xl bg-gradient-to-r from-[#f3eee3] via-[#e5d9b5] to-[#cbb87a] p-px transition-[filter] duration-200 ease-out hover:brightness-110'
@@ -66,22 +67,22 @@ export function LockedLevelTile({
   return (
     <button type="button" aria-label={ariaLabel} onClick={onBlocked} className={`${lockedFrame} w-full text-left`}>
       <span className={lockedInner}>
-        <span className={`min-w-0 flex-1 ${lockedInk}`}>
+        <span className="min-w-0 flex-1">
           {levelNo ? (
-            <span className="block text-xs font-semibold tracking-[0.18em] opacity-90">
+            <span className={`block text-xs font-semibold tracking-[0.18em] ${lockedInkSoft}`}>
               LEVEL {levelNo}
             </span>
           ) : null}
-          <span className="mt-1 block text-lg font-semibold tracking-[0.04em]">
+          <span className={`mt-1 block text-lg font-semibold tracking-[0.04em] ${lockedInk}`}>
             {title}
           </span>
           {detail ? (
-            <span className="mt-1 block text-base font-medium tracking-[0.04em] opacity-85">
+            <span className={`mt-1 block text-base font-medium tracking-[0.04em] ${lockedInkSoft}`}>
               {detail}
             </span>
           ) : null}
         </span>
-        <LockIcon className={`size-6 shrink-0 ${lockedInk}`} />
+        <LockIcon className={`size-6 shrink-0 ${lockedInkSoft}`} />
       </span>
     </button>
   )

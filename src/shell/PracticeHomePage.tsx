@@ -14,7 +14,7 @@ import { useGrammarProgress } from '../features/grammar/lib/storage'
 import { practiceTiles, type PracticeTile } from './practiceModules'
 import { useState } from 'react'
 
-const BANNER_IMAGE = '/images/home/banner-cup.jpg'
+const BANNER_IMAGE = 'https://i.imgur.com/IcK6gJC.jpg'
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
 
 const materialById: Record<string, StageMaterial> = {

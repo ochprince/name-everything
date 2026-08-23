@@ -32,7 +32,7 @@ import {
 
 const SCROLL_KEY = 'grammar/learn-list/scroll-y'
 const PENDING_KEY = 'grammar/learn-list/scroll-pending'
-const TOP_BANNER = '/images/home/grammar-horizon.jpg'
+const TOP_BANNER = 'https://i.imgur.com/rTUxgy2.jpg'
 
 export function LearnListPage() {
   const progress = useGrammarProgress()
