@@ -1,26 +1,16 @@
 #!/usr/bin/env node
 /**
- * Validate Grammar Everything content pack JSON:
+ * Validate Grammar Everything content in Supabase:
  * - unique ids per table
  * - foreign keys
  * - pack invariants (anchor/playables/slots/spans)
  * - span offsets match sentence.en slices
  *
- * Usage (repo root):
+ * Usage (repo root, with .env.local):
  *   node .cursor/skills/grammar-content-pack/scripts/validate-pack.mjs
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const CONTENT_DIR = join(__dirname, '../../../../src/features/grammar/content')
-
-function loadJson(name) {
-  const path = join(CONTENT_DIR, name)
-  return JSON.parse(readFileSync(path, 'utf8'))
-}
+import { fetchGrammarPack, supabaseConfig } from './supabase-fetch.mjs'
 
 const errors = []
 const warnings = []
@@ -46,13 +36,16 @@ function assertUniqueIds(items, label, idKey = 'id') {
   return seen
 }
 
-function main() {
-  const chapters = loadJson('chapters.json')
-  const levels = loadJson('levels.json')
-  const grammarPoints = loadJson('grammar_points.json')
-  const sentences = loadJson('sentences.json')
-  const sentenceSpans = loadJson('sentence_spans.json')
-  const sentenceSlots = loadJson('sentence_slots.json')
+async function main() {
+  const { url } = supabaseConfig()
+  const {
+    chapters,
+    levels,
+    grammar_points: grammarPoints,
+    sentences,
+    sentence_spans: sentenceSpans,
+    sentence_slots: sentenceSlots,
+  } = await fetchGrammarPack()
 
   const chapterIds = assertUniqueIds(chapters, 'chapters')
   const levelIds = assertUniqueIds(levels, 'levels')
@@ -61,7 +54,6 @@ function main() {
   assertUniqueIds(sentenceSpans, 'sentence_spans')
   assertUniqueIds(sentenceSlots, 'sentence_slots')
 
-  // chapters.sort_order unique
   const chapterOrders = new Set()
   for (const ch of chapters) {
     if (chapterOrders.has(ch.sort_order)) {
@@ -73,7 +65,6 @@ function main() {
     }
   }
 
-  // FK: levels
   const levelsByChapter = new Map()
   for (const level of levels) {
     if (!chapterIds.has(level.chapter_id)) {
@@ -88,7 +79,6 @@ function main() {
     levelsByChapter.get(level.chapter_id).push(level)
   }
 
-  // FK: sentences
   const sentencesByLevel = new Map()
   for (const sentence of sentences) {
     if (!levelIds.has(sentence.level_id)) {
@@ -106,7 +96,6 @@ function main() {
     sentencesByLevel.get(sentence.level_id).push(sentence)
   }
 
-  // FK: spans
   const playableIds = new Set(
     sentences.filter((s) => s.kind === 'playable').map((s) => s.id),
   )
@@ -130,7 +119,6 @@ function main() {
     }
   }
 
-  // FK: slots
   for (const slot of sentenceSlots) {
     if (!sentenceIds.has(slot.sentence_id)) {
       err(`sentence_slots: "${slot.id}" unknown sentence_id "${slot.sentence_id}"`)
@@ -143,15 +131,12 @@ function main() {
     }
   }
 
-  // Per-level invariants
   for (const [levelId, levelSentences] of sentencesByLevel) {
     const anchors = levelSentences.filter((s) => s.kind === 'anchor')
     const playables = levelSentences.filter((s) => s.kind === 'playable')
 
     if (anchors.length !== 1) {
-      err(
-        `level "${levelId}": expected exactly 1 anchor, found ${anchors.length}`,
-      )
+      err(`level "${levelId}": expected exactly 1 anchor, found ${anchors.length}`)
     }
 
     if (playables.length < 3) {
@@ -164,9 +149,7 @@ function main() {
     if (anchor) {
       for (const p of playables) {
         if (p.en === anchor.en) {
-          err(
-            `level "${levelId}": playable "${p.id}" en equals anchor en`,
-          )
+          err(`level "${levelId}": playable "${p.id}" en equals anchor en`)
         }
       }
 
@@ -185,7 +168,6 @@ function main() {
     }
   }
 
-  // Released chapter invariants (mirrors pack.test.ts)
   const releasedChapters = chapters.filter((c) => c.released)
   if (releasedChapters.length === 0) {
     err('chapters: at least one chapter must be released')
@@ -197,7 +179,6 @@ function main() {
     }
   }
 
-  // Span offset checks
   const sentenceById = new Map(sentences.map((s) => [s.id, s]))
   for (const span of sentenceSpans) {
     const sentence = sentenceById.get(span.sentence_id)
@@ -214,7 +195,6 @@ function main() {
     }
   }
 
-  // Slot coverage + correct text in en
   for (const sentence of sentences) {
     const slots = sentenceSlots
       .filter((s) => s.sentence_id === sentence.id)
@@ -244,9 +224,8 @@ function main() {
     })
   }
 
-  // Report
-  console.log('Grammar pack validation')
-  console.log(`  content: ${CONTENT_DIR}`)
+  console.log('Grammar pack validation (Supabase)')
+  console.log(`  url: ${url}`)
   console.log(`  chapters: ${chapters.length}`)
   console.log(`  levels: ${levels.length}`)
   console.log(`  grammar_points: ${grammarPoints.length}`)
@@ -271,4 +250,7 @@ function main() {
   process.exit(0)
 }
 
-main()
+main().catch((e) => {
+  console.error(e.message || e)
+  process.exit(1)
+})

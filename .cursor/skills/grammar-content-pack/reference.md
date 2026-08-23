@@ -1,71 +1,65 @@
 # Grammar Content Pack — Reference
 
 Schema source: `docs/superpowers/specs/2026-08-22-grammar-everything-design.md` §8.1  
-Types: `src/features/grammar/content/pack.ts`
+DDL: `supabase/migrations/20260823100000_grammar_content.sql`  
+Types: `src/features/grammar/content/types.ts`
+
+Authoring is **SQL migrations only**. Query live tables for existing ids.
 
 ## Field quick reference
 
-### chapters.json
+### chapters
 
-```json
-{ "id": "nonfinite", "title_zh": "非谓语", "description_zh": "…", "sort_order": 3, "released": false }
+```sql
+INSERT INTO chapters (id, title_zh, description_zh, sort_order, released) VALUES
+  ('nonfinite', '非谓语', '不定式、分词、动名词。', 3, false);
 ```
 
-### grammar_points.json
+### grammar_points
 
-```json
-{ "id": "gp-pp-active", "title_zh": "现在分词（主动）", "body_zh": "…" }
+```sql
+INSERT INTO grammar_points (id, title_zh, body_zh) VALUES
+  ('gp-pp-active', '现在分词（主动）', '…');
 ```
 
-### levels.json
+### levels
 
-```json
-{ "id": "participle-1", "chapter_id": "nonfinite", "sort_order": 1, "grammar_point_id": "gp-participle" }
+```sql
+INSERT INTO levels (id, chapter_id, sort_order, grammar_point_id, pass_threshold, lives, fall_duration_ms) VALUES
+  ('participle-1', 'nonfinite', 1, 'gp-participle', NULL, NULL, NULL);
 ```
 
 Optional overrides: `pass_threshold`, `lives`, `fall_duration_ms`.
 
-### sentences.json
+### sentences
 
-```json
-{
-  "id": "s-part-anchor",
-  "level_id": "participle-1",
-  "kind": "anchor",
-  "en": "She pushed the door, seeing students sitting on the chairs.",
-  "zh": "她推开门，看见学生们坐在椅子上。",
-  "prompt_kind": "zh",
-  "sort_order": 0
-}
+```sql
+INSERT INTO sentences (id, level_id, kind, en, zh, prompt_kind, image_url, sort_order) VALUES
+  ('s-part-anchor', 'participle-1', 'anchor',
+   'She pushed the door, seeing students sitting on the chairs.',
+   '她推开门，看见学生们坐在椅子上。',
+   'zh', NULL, 0);
 ```
 
-### sentence_spans.json
+### sentence_spans
 
-**Anchor only.** Do not add rows whose `sentence_id` is a `playable` sentence.
+**Anchor only.** Do not insert rows whose `sentence_id` is a `playable` sentence. Quote `"end"`.
 
-```json
-{
-  "id": "sp-part-v",
-  "sentence_id": "s-part-anchor",
-  "grammar_point_id": "gp-v",
-  "start": 4,
-  "end": 10
-}
+```sql
+INSERT INTO sentence_spans (id, sentence_id, grammar_point_id, start, "end") VALUES
+  ('sp-part-v', 's-part-anchor', 'gp-v', 4, 10);
 ```
 
 `en.slice(start, end)` must equal the highlighted text.
 
-### sentence_slots.json
+### sentence_slots
 
-```json
-{
-  "id": "s-part-p2-slot-0",
-  "sentence_id": "s-part-p2",
-  "slot_index": 0,
-  "role": "PP-P",
-  "correct": "canceled",
-  "distractors": ["was canceled", "cancel", "canceling"]
-}
+`distractors` is JSONB.
+
+```sql
+INSERT INTO sentence_slots (id, sentence_id, slot_index, role, correct, distractors) VALUES
+  ('s-part-p2-slot-0', 's-part-p2', 0, 'PP-P', 'canceled',
+   '["was canceled","cancel","canceling"]'::jsonb);
 ```
 
 ## Worked example — 分词（时态随主句谓语）
@@ -78,54 +72,35 @@ Optional overrides: `pass_threshold`, `lives`, `fall_duration_ms`.
 
 | id | title_zh |
 |----|----------|
-| `gp-nonfinite-tense` | 非谓语不带时态 |
+| `gp-participle` | 分词（时态随主句） |
 | `gp-pp-active` | 现在分词（主动） |
 | `gp-pp-passive` | 过去分词（被动） |
-| `gp-pp-vs-pred-passive` | 分词被动 ≠ 谓语被动 |
-| `gp-participle` | 分词（关标题） |
 
-**Level:** `participle-1` → `gp-participle`
+**Level:** `participle-1` → umbrella `gp-participle`
 
-**Four sentences:**
+**Deploy:** new file `supabase/migrations/YYYYMMDDHHMMSS_participle-1.sql` with `INSERT`s, then push GitHub (or `supabase db push`).
 
-| id | kind | en (short) |
-|----|------|------------|
-| `s-part-anchor` | anchor | She pushed the door, seeing students sitting on the chairs. |
-| `s-part-p1` | playable | He entered the hall, noticing everyone chatting happily. |
-| `s-part-p2` | playable | The sports meeting canceled, students went back sadly. |
-| `s-part-p3` | playable | The game called off, they left the stadium early. |
+**Validate:**
 
-**Anchor spans only** (no spans for `s-part-p1` … `p3`):
-
-| text | grammar_point_id |
-|------|------------------|
-| She | gp-s |
-| pushed | gp-v |
-| seeing | gp-pp-active |
-| sitting | gp-pp-active |
-| seeing students sitting on the chairs | gp-nonfinite-tense |
-
-**Slot teaching focus:**
-
-| Level area | correct | distractors intent |
-|------------|---------|-------------------|
-| Main V | pushed / entered / went | finite vs -ing (pushing) |
-| PP active | seeing / sitting | saw, seen, sits |
-| PP passive | canceled / called off | **was canceled**, cancel, canceling |
-
-## Distractor patterns
-
-| Mistake to catch | distractor examples |
-|------------------|---------------------|
-| Nonfinite used as finite predicate | pushing, was seeing |
-| Wrong participle voice | seen vs seeing; cancel vs canceled |
-| Passive predicate vs participle | was canceled, was called off |
-| Wrong tense on main verb | go / goes / going for went |
+```bash
+node .cursor/skills/grammar-content-pack/scripts/validate-pack.mjs
+node .cursor/skills/grammar-content-pack/scripts/check-coverage.mjs
+```
 
 ## Vocabulary guardrails
 
-**Avoid** rare, formal, or idiomatic words that distract from the grammar drill (e.g. nevertheless, approximately, infrastructure, phenomenon, commence).
+Prefer high-frequency words. If an uncommon word is required on the anchor, add a `grammar_point` + span so learners can tap it.
 
-No vocabulary whitelist — pick natural words that fit the rule and chapter.
+## DB integrity (use these instead of ad-hoc JSON checks)
 
-If the **anchor** needs a word learners may not know, add a small `grammar_point` for it and link via an anchor `sentence_span` (same pattern as sub-rules like `gp-nonfinite-tense`). Do not leave opaque vocabulary unexplained on the learn page.
+| Mechanism | What it catches |
+|-----------|-----------------|
+| PRIMARY KEY | duplicate ids |
+| FOREIGN KEY | orphan level/sentence/span/slot refs |
+| `CHECK (kind IN …)` | invalid sentence kind |
+| Unique `(sentence_id, slot_index)` | duplicate slot order |
+| Partial unique index one-anchor-per-level | two anchors in one level |
+| RLS + SELECT policies | public read for pack tables |
+| Migration transactions (`BEGIN`/`COMMIT`) | partial apply on failure |
+
+Failed deploy → fix SQL and ship a follow-up migration; do not hand-edit production rows as the source of truth.
