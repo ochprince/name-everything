@@ -34,5 +34,9 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     globals: true,
     passWithNoTests: true,
+    // 小机器（2 核 / 1.8GB）防护：限制 vitest worker 池，防止 OOM 拖垮系统
+    pool: 'forks',
+    maxWorkers: 1,
+    minWorkers: 1,
   },
 })
