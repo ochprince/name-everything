@@ -44,7 +44,7 @@ Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-desi
 |------|------|------|
 | 词汇记忆 | `/practice/pictures` | 看图限时回忆（Name Everything） |
 | 语法学习 | `/practice/grammar/learn` | 章节 → 关卡 → 学习页 → 下落填槽 |
-| 语法游戏 | `/practice/grammar/play` | 仅混合已过关关卡的 playable 句 |
+| 语法挑战 | `/practice/grammar/play` | 已过关句子 30 句分组挑战；池 ≥ 30 且 30/30 通关得奖杯 |
 
 语法课程内容存放在 **Supabase**（`chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`sentence_slots`、`game_tuning`），应用启动时通过 Data API 加载。新课写成 `supabase/migrations/` 下的 SQL migration（见 `.cursor/skills/grammar-content-pack`），push 后由 GitHub 关联的 Supabase 自动应用。用 `npm run grammar:validate` 与 `npm run grammar:coverage` 校验。
 
@@ -89,12 +89,12 @@ node scripts/build-t1-pack.mjs
 
 本地执行 `npm run dev` 后做冒烟检查（完成后关掉开发服）：
 
-- [ ] **Home** — 三个磁贴；`/` 无倒计时；未过关时语法游戏置灰，点击有提示
+- [ ] **Home** — 三个磁贴；`/` 无倒计时；未过关时语法挑战置灰，点击有提示
 - [ ] **词汇记忆**（`/practice/pictures`）— 可见图片；cue 区为倒计时；Aha! 前单词 / 句子隐藏；超时亮答案、复习计数 +1，等 Next 再切下一张
 - [ ] Aha! 后出单词和例句；Forgot / Got it 立即生效
 - [ ] 一组 10 次练习 Got it 后出现「今日已完成」；继续后计数保持 10 / 10，可再来一组
 - [ ] **语法学习** — 章列表；线性解锁；学习页可点 span；开始下落填槽；达门槛解锁下一关
-- [ ] **语法游戏** — 仅混合 playable；Hub 页有历史得分
+- [ ] **语法挑战** — 分层抽样 30 句；分组加速；池 ≥ 30 且 30/30 通关得奖杯；Hub 显示历史与累计奖杯
 - [ ] **复习** — Forgot 列表随操作更新；打开即出图+词+句
 - [ ] **我的** — 今日数量、连续天数、思考时长持久化；可导出语法报错 JSON
 - [ ] 手机视口可用（单列、点击区域够大）

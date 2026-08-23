@@ -15,7 +15,7 @@ import {
   type Sentence,
 } from '../content/pack'
 import {
-  recordArcadeScore,
+  recordArcadeRun,
   recordLevelScore,
   useGrammarProgress,
 } from '../lib/storage'
@@ -34,6 +34,13 @@ import {
   type FallingState,
 } from '../lib/engine'
 import {
+  arcadeEarnedTrophy,
+  arcadeFallDurationMs,
+  arcadeGroupNumber,
+  buildArcadeQueue,
+  shouldShowGroupSpeedBanner,
+} from '../lib/arcadeChallenge'
+import {
   bounceSentenceUp,
   resetSentenceMotion,
   shatterSentence,
@@ -42,6 +49,8 @@ import gsap from 'gsap'
 import { fallDurationFor, isLevelUnlocked, livesFor, nextLevelAfter, thresholdFor } from '../lib/unlock'
 import { gameTuning } from '../content/tuning'
 import { playUiCorrect, playUiFail, playUiSuccess, playUiTap, unlockUiSound } from '../../../shared/uiSound'
+import { GroupSpeedBanner } from '../components/GroupSpeedBanner'
+import { LevelPassTrophy } from '../components/LevelPassTrophy'
 
 type SentenceOutcome = 'cleared' | 'failed'
 
@@ -111,6 +120,7 @@ export function FallingPlayPage({ mode }: { mode: 'level' | 'arcade' }) {
       threshold={level ? thresholdFor(level) : undefined}
       queueSeed={`${mode}:${levelId}:${location.key}`}
       pool={pool}
+      arcadePoolSize={mode === 'arcade' ? pool.playables.length : undefined}
     />
   )
 }
@@ -124,6 +134,7 @@ function FallingBoard({
   threshold,
   queueSeed,
   pool,
+  arcadePoolSize,
 }: {
   mode: 'level' | 'arcade'
   levelId?: string
@@ -136,20 +147,25 @@ function FallingBoard({
     anchor: ReturnType<typeof anchorForLevel>
     playables: ReturnType<typeof playablesForLevel>
   }
+  arcadePoolSize?: number
 }) {
-  const queue = useMemo(
-    () => buildQueue(mode, pool.anchor, pool.playables),
-    [mode, pool.anchor, pool.playables, queueSeed],
-  )
+  const queue = useMemo(() => {
+    if (mode === 'arcade') return buildArcadeQueue(pool.playables)
+    return buildQueue(mode, pool.anchor, pool.playables)
+  }, [mode, pool.anchor, pool.playables, queueSeed])
   const firstId = queue[0]
+  const initialFallMs =
+    mode === 'arcade' ? arcadeFallDurationMs(0) : fallMs
   const [state, setState] = useState<FallingState | null>(() =>
-    firstId ? startRound(firstId, lives, fallMs) : null,
+    firstId ? startRound(firstId, lives, initialFallMs) : null,
   )
   const [options, setOptions] = useState<string[]>([])
   const [sentenceResult, setSentenceResult] = useState<SentenceResult | null>(null)
   const [clearedIds, setClearedIds] = useState<Set<string>>(() => new Set())
+  const [groupBanner, setGroupBanner] = useState<number | null>(null)
   const usedRef = useRef<string[]>(firstId ? [firstId] : [])
   const settled = useRef(false)
+  const pendingAdvanceRef = useRef<(() => void) | null>(null)
   const fallZoneRef = useRef<HTMLDivElement>(null)
   const sentenceWrapRef = useRef<HTMLDivElement>(null)
   const sentenceRef = useRef<HTMLParagraphElement>(null)
@@ -234,8 +250,11 @@ function FallingBoard({
     if (mode === 'level' && levelId && threshold !== undefined) {
       recordLevelScore(levelId, state.score, threshold)
     }
-    if (mode === 'arcade') recordArcadeScore(state.score)
-  }, [state, mode, levelId, threshold])
+    if (mode === 'arcade' && arcadePoolSize !== undefined) {
+      const cleared = isQueueFullyCleared(queue, clearedIds)
+      recordArcadeRun(state.score, queue.length, cleared, arcadePoolSize)
+    }
+  }, [state, mode, levelId, threshold, queue, clearedIds, arcadePoolSize])
 
   if (!state || !firstId) {
     return <Navigate to={backTo} replace />
@@ -275,10 +294,8 @@ function FallingBoard({
     })
   }
 
-  function continueAfterSentence() {
-    if (!state || !sentenceResult) return
-    playUiTap()
-    setSentenceResult(null)
+  function advanceToNextSentence() {
+    if (!state) return
 
     if (state.status === 'over') return
 
@@ -295,9 +312,38 @@ function FallingBoard({
     if (!usedRef.current.includes(nextId)) {
       usedRef.current = [...usedRef.current, nextId]
     }
+    const nextFallMs =
+      mode === 'arcade'
+        ? arcadeFallDurationMs(clearedIds.size)
+        : fallMs
     setState((current) =>
-      current ? beginSentence(current, nextId, fallMs) : current,
+      current ? beginSentence(current, nextId, nextFallMs) : current,
     )
+  }
+
+  function continueAfterSentence() {
+    if (!state || !sentenceResult) return
+    playUiTap()
+    setSentenceResult(null)
+
+    const hasMoreSentences = !allQueueCleared && state.status !== 'over'
+    if (
+      mode === 'arcade' &&
+      shouldShowGroupSpeedBanner(clearedIds.size, hasMoreSentences)
+    ) {
+      pendingAdvanceRef.current = advanceToNextSentence
+      setGroupBanner(arcadeGroupNumber(clearedIds.size))
+      return
+    }
+
+    advanceToNextSentence()
+  }
+
+  function handleGroupBannerComplete() {
+    setGroupBanner(null)
+    const advance = pendingAdvanceRef.current
+    pendingAdvanceRef.current = null
+    advance?.()
   }
 
   if (sentenceResult && resultSentence) {
@@ -321,15 +367,47 @@ function FallingBoard({
     const nextLevel =
       mode === 'level' && passed && levelId ? nextLevelAfter(levelId) : null
     const nextTopic = nextLevel ? pointById(nextLevel.grammar_point_id) : undefined
+    const sessionCleared =
+      mode === 'arcade' && isQueueFullyCleared(queue, clearedIds)
+    const earnedTrophy =
+      mode === 'arcade' &&
+      arcadePoolSize !== undefined &&
+      arcadeEarnedTrophy(sessionCleared, queue.length, arcadePoolSize)
 
     return (
       <StageShell
         header={<StageHeader backTo={backTo} title="结算" />}
       >
         <div className="flex flex-1 flex-col items-center justify-center gap-6">
-          <p className="text-3xl font-semibold tracking-[0.04em] text-day">
-            完成 {state.score} 句
-          </p>
+          {mode === 'arcade' ? (
+            <>
+              <p className="text-3xl font-semibold tracking-[0.04em] text-day">
+                {sessionCleared ? '挑战成功' : `本局 ${state.score} 句`}
+              </p>
+              {sessionCleared ? (
+                <p className="text-lg font-medium text-day/80">
+                  完成 {state.score}/{queue.length} 句
+                </p>
+              ) : null}
+              {earnedTrophy ? (
+                <div className="flex flex-col items-center gap-2">
+                  <LevelPassTrophy />
+                  <p className="text-base font-medium tracking-[0.06em] text-gold">
+                    获得奖杯
+                  </p>
+                </div>
+              ) : null}
+              {sessionCleared && !earnedTrophy ? (
+                <p className="text-base font-medium tracking-[0.04em] text-day/70">
+                  句子库未满 30 句，暂无奖杯
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-3xl font-semibold tracking-[0.04em] text-day">
+              完成 {state.score} 句
+            </p>
+          )}
           {mode === 'level' ? (
             <>
               <p className="text-lg font-medium text-rose">
@@ -367,15 +445,26 @@ function FallingBoard({
   }
 
   return (
-    <StageShell
-      header={
-        <StageHeader
-          backTo={backTo}
-          title={`还剩 ${sentencesLeft} 句`}
-          trailing={<LivesHearts count={state.lives} max={maxLives} size="sm" />}
+    <>
+      {groupBanner !== null ? (
+        <GroupSpeedBanner
+          groupNumber={groupBanner}
+          onComplete={handleGroupBannerComplete}
         />
-      }
-    >
+      ) : null}
+      <StageShell
+        header={
+          <StageHeader
+            backTo={backTo}
+            title={
+              mode === 'arcade'
+                ? `第 ${arcadeGroupNumber(clearedIds.size)} 组 · 还剩 ${sentencesLeft} 句`
+                : `还剩 ${sentencesLeft} 句`
+            }
+            trailing={<LivesHearts count={state.lives} max={maxLives} size="sm" />}
+          />
+        }
+      >
       <div className="relative flex min-h-0 flex-1 flex-col">
         <div ref={fallZoneRef} className="relative min-h-[14rem] flex-1 overflow-hidden">
           <div
@@ -417,7 +506,8 @@ function FallingBoard({
           </div>
         </div>
       </div>
-    </StageShell>
+      </StageShell>
+    </>
   )
 }
 

@@ -4,10 +4,11 @@ import { StageHeader } from '../shared/StageHeader'
 import { StageHint, useStageHint } from '../shared/StageHint'
 import { DoorIcon } from '../shared/DoorIcon'
 import {
-  stageDoorShell,
-  stageMaterialClass,
   secondaryOnMaterial,
   outlineDoorInner,
+  cobaltDoorInner,
+  dayDoorInner,
+  framedDoorOuter,
   type StageMaterial,
 } from '../shared/stageMaterials'
 import { useGrammarProgress } from '../features/grammar/lib/storage'
@@ -80,10 +81,9 @@ function ModuleTile({
   material: StageMaterial
   onBlocked: () => void
 }) {
-  const isOutline = material === 'outline'
-  const outerClass = isOutline
-    ? `block w-full min-h-[7.5rem] rounded-2xl ${stageMaterialClass(material)} transition-[filter] duration-200 ease-out hover:brightness-105`
-    : `${stageDoorShell} ${stageMaterialClass(material)}`
+  const outerClass = `${framedDoorOuter}${
+    material === 'cobalt' || material === 'day' ? ' active:brightness-95' : ''
+  }`
   const detailClass = secondaryOnMaterial(material)
   const openDoor = tile.id === 'grammar-play' && tile.available
 
@@ -111,10 +111,15 @@ function ModuleTile({
     </>
   )
 
-  const content = isOutline ? (
-    <span className={`${outlineDoorInner} min-h-[7.5rem]`}>{body}</span>
-  ) : (
-    body
+  const innerClass =
+    material === 'day'
+      ? dayDoorInner
+      : material === 'cobalt'
+        ? cobaltDoorInner
+        : outlineDoorInner
+
+  const content = (
+    <span className={`${innerClass} min-h-[7.5rem]`}>{body}</span>
   )
 
   if (!tile.available || !tile.to) {

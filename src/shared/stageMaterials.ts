@@ -22,9 +22,21 @@ export function stageMaterialClass(material: StageMaterial): string {
   return materialClass[material]
 }
 
+/** Champagne gradient frame for home practice doors. */
+export const framedDoorOuter =
+  'block w-full min-h-[7.5rem] rounded-2xl bg-gradient-to-r from-[#f3eee3] via-[#e5d9b5] to-[#cbb87a] p-px text-day transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e5d9b5]'
+
+/** Inner fill for day doors inside the champagne frame. */
+export const dayDoorInner =
+  'flex h-full w-full items-center gap-4 rounded-[0.9rem] bg-day px-5 py-4 text-cyc'
+
 /** Inner fill for outline (champagne frame) doors — apply on child or use with outlineFrame. */
 export const outlineDoorInner =
   'flex h-full w-full items-center gap-4 rounded-[0.9rem] bg-cyc px-5 py-4'
+
+/** Inner fill for cobalt doors inside the champagne frame. */
+export const cobaltDoorInner =
+  'flex h-full w-full items-center gap-4 rounded-[0.9rem] bg-cobalt px-5 py-4 text-day shadow-[inset_0_1px_0_rgba(244,241,234,0.12)]'
 
 /** Chapter index 0 → day, 1 → cobalt, 2 → day… (by display order). */
 export function chapterListMaterial(chapterIndex: number): 'day' | 'cobalt' {

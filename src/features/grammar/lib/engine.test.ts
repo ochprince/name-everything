@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { applyWrong, land, startRound, tick, applyCorrectBounce, isQueueFullyCleared, nextSentenceId, buildQueue } from './engine'
+import { buildArcadeQueue } from './arcadeChallenge'
 import { gameTuning } from '../content/tuning'
 import { anchorForLevel, playablesForLevel, grammarPack } from '../content/pack'
 
@@ -82,13 +83,14 @@ describe('falling engine', () => {
     expect(queue.slice(1).sort()).toEqual(playables.map((p) => p.id).sort())
   })
 
-  it('arcade queue excludes anchors and only uses passed-level playables', () => {
+  it('arcade queue uses stratified playable sentences without anchors', () => {
     const passedIds = new Set(['dative-1'])
     const pool = grammarPack.sentences.filter(
       (s) => s.kind === 'playable' && passedIds.has(s.level_id),
     )
-    const queue = buildQueue('arcade', undefined, pool)
+    const queue = buildArcadeQueue(pool)
     expect(queue.every((id) => pool.some((p) => p.id === id))).toBe(true)
+    expect(new Set(queue).size).toBe(queue.length)
     expect(
       queue.some(
         (id) => grammarPack.sentences.find((s) => s.id === id)?.kind === 'anchor',

@@ -44,8 +44,8 @@ export function practiceTiles(progress: GrammarProgress): PracticeTile[] {
     },
     {
       id: 'grammar-play',
-      title: '语法游戏',
-      detail: arcadeOpen ? '已过关句子，随机混合。' : '先去语法学习过一关。',
+      title: '语法挑战',
+      detail: arcadeOpen ? '30 句限时挑战，通关赢取奖杯。' : '先去语法学习过一关。',
       to: arcadeOpen ? '/practice/grammar/play' : null,
       available: arcadeOpen,
       unavailableHint: '先去语法学习过一关',

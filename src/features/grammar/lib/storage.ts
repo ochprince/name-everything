@@ -2,11 +2,14 @@ import { useSyncExternalStore } from 'react'
 import { getSupabase, isSupabaseConfigured } from '../../../lib/supabase'
 import { gameTuning } from '../content/tuning'
 import { sentencesForLevel } from '../content/pack'
+import { arcadeEarnedTrophy } from './arcadeChallenge'
 
 export type ArcadeRecord = {
   id: string
   at: string
   score: number
+  total: number
+  cleared: boolean
 }
 
 export type AssetReport = {
@@ -25,6 +28,7 @@ export type GrammarProgress = {
   passedSentenceCounts: Record<string, number>
   lastPlayedLevelId: string | null
   arcadeHistory: ArcadeRecord[]
+  arcadeTrophyCount: number
 }
 
 const PROGRESS_KEY = 'grammar/progress/v1'
@@ -46,6 +50,7 @@ const EMPTY_PROGRESS: GrammarProgress = {
   passedSentenceCounts: {},
   lastPlayedLevelId: null,
   arcadeHistory: [],
+  arcadeTrophyCount: 0,
 }
 const EMPTY_REPORTS: AssetReport[] = []
 
@@ -62,7 +67,8 @@ function parseProgress(raw: string | null): GrammarProgress {
       passedLevelIds: value.passedLevelIds ?? [],
       passedSentenceCounts: value.passedSentenceCounts ?? {},
       lastPlayedLevelId: value.lastPlayedLevelId ?? null,
-      arcadeHistory: value.arcadeHistory ?? [],
+      arcadeHistory: (value.arcadeHistory ?? []).map(normalizeArcadeRecord),
+      arcadeTrophyCount: value.arcadeTrophyCount ?? 0,
     }
   } catch {
     return EMPTY_PROGRESS
@@ -169,16 +175,37 @@ export function recordLevelScore(levelId: string, score: number, threshold: numb
   })
 }
 
-export function recordArcadeScore(score: number) {
+function normalizeArcadeRecord(
+  entry: Partial<ArcadeRecord> & Pick<ArcadeRecord, 'id' | 'at' | 'score'>,
+): ArcadeRecord {
+  return {
+    id: entry.id,
+    at: entry.at,
+    score: entry.score,
+    total: entry.total ?? entry.score,
+    cleared: entry.cleared ?? false,
+  }
+}
+
+export function recordArcadeRun(
+  score: number,
+  total: number,
+  cleared: boolean,
+  poolSize: number,
+) {
   const current = loadGrammarProgress()
   const entry: ArcadeRecord = {
     id: newId(),
     at: new Date().toISOString(),
     score,
+    total,
+    cleared,
   }
+  const earnedTrophy = arcadeEarnedTrophy(cleared, total, poolSize)
   saveGrammarProgress({
     ...current,
     arcadeHistory: [entry, ...current.arcadeHistory].slice(0, 20),
+    arcadeTrophyCount: current.arcadeTrophyCount + (earnedTrophy ? 1 : 0),
   })
 }
 
