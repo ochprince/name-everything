@@ -1,4 +1,3 @@
--- Canonical copy: see supabase/schema.sql
 -- Grammar Everything content schema (canonical)
 -- Skills MUST read this file (or the same migration) for table shapes.
 -- Do not infer schema from superseded / deleted migrations.

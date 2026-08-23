@@ -4,7 +4,7 @@ Turn a **语法知识点**（中文说明 + 可选英文例句）into Grammar Ev
 
 **Announce at start:** "I'm using the grammar-content-pack skill."
 
-Canonical store: Postgres tables under `supabase/migrations/`. The app reads via Supabase Data API. **Do not create, edit, or mention pack JSON files.**
+Canonical store: Postgres. **Authoritative table shapes: `supabase/schema.sql` only.** Do not infer schema by scanning historical migrations. The app reads via Supabase Data API. **Do not create, edit, or mention pack JSON files for authoring.**
 
 **Fixing existing rows** (bad distractors, 报错 export, typos, span offsets) → use [grammar-content-fix](../grammar-content-fix/SKILL.md), not this skill.
 
@@ -43,11 +43,12 @@ Append content with a **new SQL migration** (never rewrite historical seed migra
 | `levels` | One level = one list title (`grammar_point_id`) |
 | `sentences` | 1 `anchor` + ≥3 `playable` per level |
 | `sentence_spans` | **Only anchor** — clickable grammar spans on the learn page |
-| `sentence_slots` | Falling-fill slots for **every** sentence (anchor + playables) |
+| `slots` | Reusable blank definitions: `role` + `correct` + `distractors` |
+| `sentence_slot_refs` | Per sentence: ordered `slot_id` list (`slot_index` = play / LTR order) |
 
-Do **not** put lesson text in `game_tuning`.
+Do **not** put lesson text in `game_tuning`. There is **no** `sentence_slots` table.
 
-Schema / RLS: `supabase/migrations/20260823100000_grammar_content.sql`.
+Schema / RLS: **`supabase/schema.sql`** (mirrored by baseline migration `20260823140000_grammar_content.sql`).
 
 ### Step 2b — Merge vs new level (decision rule, 2026-08-23)
 
@@ -157,22 +158,30 @@ Before allocating new ids, query Supabase (or scan migrations) for collisions.
 node .cursor/skills/grammar-content-pack/scripts/span-offset.mjs "<en>" "<substring>"
 ```
 
-### Step 7 — sentence_slots
+### Step 7 — slots + sentence_slot_refs
 
-Every sentence (anchor + playables):
+Every sentence (anchor + playables) must have refs covering **every word** of `en` (word-boundary match via slot `correct`).
 
-- Continuous `slot_index` from `0`
-- `role`: reuse `S` `V` `O` `IO` `DO` `A`; add `PP-A` / `PP-P` for participles; `INF` for infinitives; `GER` for gerunds; `CONJ` for conjunctions
-- `correct`: exact substring of `en`
-- `distractors`: JSONB array of 3–4 strings teaching **boundaries** (e.g. `was canceled` vs `canceled`)
-- Slot order follows natural left-to-right reading where possible
+Hard rules:
 
-**Full-sentence coverage (hard requirement):** every word of `en` must be covered by at least one slot's `correct` (word-boundary match). No omissions: conjunctions (`and`), function words (`the`, `a`, `to`, `please`), and subjects are slots too.
+1. **Reuse before create:** if `(role, correct, distractors)` already exists in `slots`, reuse that `slots.id` in `sentence_slot_refs`.
+2. **New slot id** pattern: `sl-{role}-{correct-slug}` (add `-2`, `-3` on collision when distractors differ).
+3. **`slot_index` = left-to-right order in `en`:** non-overlapping matches of each `correct` advancing through the sentence. Index `0..n-1` continuous. Play order == reading order.
+4. **No cross-slot swallow:** a distractor must not equal `correct_i + " " + correct_{i+1}` or otherwise include the next blank’s `correct` as a trailing constituent.
+5. `distractors`: JSONB array of 3–4 teaching boundary foils; never equal to `correct`.
 
-- **Reuse before create:** if a word/phrase already has a slot elsewhere (same `correct` + similar distractors), copy those values with a **new** slot id for this sentence.
-- **Create only when no reusable item exists.**
-- Verify with `check-coverage.mjs` (Step 10): it must report `100.0%` / `0 uncovered`.
+```sql
+INSERT INTO slots (id, role, correct, distractors) VALUES
+  ('sl-mod-must', 'MOD', 'must', '["should","can","will"]'::jsonb)
+ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO sentence_slot_refs (sentence_id, slot_index, slot_id) VALUES
+  ('s-ex-p4', 0, 'sl-s-she'),
+  ('s-ex-p4', 1, 'sl-mod-must'),
+  ('s-ex-p4', 2, 'sl-v-be');
+```
+
+Verify with `check-coverage.mjs` (100%) and `validate-pack.mjs` (LTR + swallow checks).
 ### Step 8 — Write SQL migration
 
 Create a new file:
@@ -185,12 +194,11 @@ Rules:
 
 - Prefer **`INSERT`** for new rows. Use **`UPDATE`** only when fixing existing content.
 - Wrap in `BEGIN;` / `COMMIT;` for multi-statement safety.
-- Rely on DB constraints for integrity: PK uniqueness, FKs, `CHECK (kind IN ('anchor','playable'))`, unique `(sentence_id, slot_index)`, one-anchor-per-level index.
-- Escape single quotes in SQL strings (`''`).
-- `sentence_slots.distractors` is **JSONB**: `'["or","but","so"]'::jsonb`.
+- Rely on DB constraints: PK, FKs, `CHECK (kind…)`, PK `(sentence_id, slot_index)` on refs, one-anchor-per-level index.
+- Escape single quotes (`''`). `slots.distractors` is **JSONB**.
 - `sentence_spans."end"` must be quoted.
-- Do **not** regenerate or overwrite the initial seed migration for routine content adds.
-
+- Do **not** regenerate or overwrite the baseline seed for routine content adds.
+- Do **not** recreate a denormalized `sentence_slots` table.
 Example fragment:
 
 ```sql
@@ -200,11 +208,19 @@ INSERT INTO grammar_points (id, title_zh, body_zh) VALUES
   ('gp-example', '标题', '说明');
 
 INSERT INTO sentences (id, level_id, kind, en, zh, prompt_kind, image_url, sort_order) VALUES
-  ('s-ex-p4', 'some-level-1', 'playable', 'She runs.', '她跑。', 'zh', NULL, 4);
+  ('s-ex-p4', 'some-level-1', 'playable', 'She must be ready.', '她必须准备好。', 'zh', NULL, 4);
 
-INSERT INTO sentence_slots (id, sentence_id, slot_index, role, correct, distractors) VALUES
-  ('s-ex-p4-slot-0', 's-ex-p4', 0, 'S', 'She', '["He","Her","It"]'::jsonb),
-  ('s-ex-p4-slot-1', 's-ex-p4', 1, 'V', 'runs', '["run","running","ran"]'::jsonb);
+INSERT INTO slots (id, role, correct, distractors) VALUES
+  ('sl-s-she', 'S', 'She', '["He","Her","It"]'::jsonb),
+  ('sl-mod-must', 'MOD', 'must', '["should","can","will"]'::jsonb),
+  ('sl-v-be', 'V', 'be', '["is","was","being"]'::jsonb),
+  ('sl-c-ready', 'C', 'ready', '["readily","readiness","read"]'::jsonb);
+
+INSERT INTO sentence_slot_refs (sentence_id, slot_index, slot_id) VALUES
+  ('s-ex-p4', 0, 'sl-s-she'),
+  ('s-ex-p4', 1, 'sl-mod-must'),
+  ('s-ex-p4', 2, 'sl-v-be'),
+  ('s-ex-p4', 3, 'sl-c-ready');
 
 COMMIT;
 ```

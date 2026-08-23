@@ -45,6 +45,7 @@ async function main() {
     sentences,
     sentence_spans: sentenceSpans,
     sentence_slots: sentenceSlots,
+    slots: slotDefs,
   } = await fetchGrammarPack()
 
   const chapterIds = assertUniqueIds(chapters, 'chapters')
@@ -202,24 +203,39 @@ async function main() {
       .sort((a, b) => a.slot_index - b.slot_index)
 
     if (slots.length === 0) {
-      err(`sentences: "${sentence.id}" has no sentence_slots`)
+      err(`sentences: "${sentence.id}" has no sentence_slot_refs`)
       continue
     }
 
+    let cursor = 0
     slots.forEach((slot, i) => {
       if (slot.slot_index !== i) {
         err(
-          `sentence_slots: "${sentence.id}" slot_index gap — expected ${i}, got ${slot.slot_index} on "${slot.id}"`,
+          `sentence_slot_refs: "${sentence.id}" slot_index gap — expected ${i}, got ${slot.slot_index}`,
         )
       }
-      if (!sentence.en.includes(slot.correct)) {
+      const at = sentence.en.indexOf(slot.correct, cursor)
+      if (at < 0) {
         err(
-          `sentence_slots: "${slot.id}" correct "${slot.correct}" not found in en of "${sentence.id}"`,
+          `sentence_slot_refs: "${sentence.id}"#${i} correct "${slot.correct}" not in LTR order in en`,
         )
+      } else {
+        cursor = at + slot.correct.length
       }
       for (const d of slot.distractors) {
         if (d === slot.correct) {
-          err(`sentence_slots: "${slot.id}" distractor equals correct "${d}"`)
+          err(`slots: "${slot.slot_id ?? slot.id}" distractor equals correct "${d}"`)
+        }
+      }
+      if (i < slots.length - 1) {
+        const next = slots[i + 1]
+        const swallow = `${slot.correct} ${next.correct}`
+        for (const d of slot.distractors) {
+          if (d === swallow || d.endsWith(` ${next.correct}`)) {
+            err(
+              `slots: "${sentence.id}"#${i} distractor "${d}" swallows next correct "${next.correct}"`,
+            )
+          }
         }
       }
     })
@@ -240,12 +256,14 @@ async function main() {
 
   console.log('Grammar pack validation (Supabase)')
   console.log(`  url: ${url}`)
+  console.log(`  schema: supabase/schema.sql (slots + sentence_slot_refs)`)
   console.log(`  chapters: ${chapters.length}`)
   console.log(`  levels: ${levels.length}`)
   console.log(`  grammar_points: ${grammarPoints.length}`)
   console.log(`  sentences: ${sentences.length}`)
   console.log(`  sentence_spans: ${sentenceSpans.length}`)
-  console.log(`  sentence_slots: ${sentenceSlots.length}`)
+  console.log(`  slots: ${slotDefs.length}`)
+  console.log(`  sentence_slot_refs / resolved blanks: ${sentenceSlots.length}`)
   console.log('')
 
   if (warnings.length) {

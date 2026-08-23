@@ -2,6 +2,8 @@
 /**
  * Shared Supabase Data API helpers for grammar pack validators.
  * Loads URL + publishable key from env / .env.local and retries on transient errors.
+ *
+ * Canonical schema: supabase/schema.sql (slots + sentence_slot_refs).
  */
 
 import { readFileSync, existsSync } from 'node:fs'
@@ -57,9 +59,6 @@ function isRetryable(status, body) {
   return false
 }
 
-/**
- * Fetch all rows from a public table (paginated). Retries on schema-cache / network blips.
- */
 export async function fetchTable(table, { retries = 8, delayMs = 2000 } = {}) {
   const { url, key } = supabaseConfig()
   const headers = {
@@ -102,6 +101,13 @@ export async function fetchTable(table, { retries = 8, delayMs = 2000 } = {}) {
   throw lastError ?? new Error(`${table}: fetch failed`)
 }
 
+function normalizeDistractors(value) {
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string') return JSON.parse(value)
+  return []
+}
+
+/** Resolve refs + slot definitions into flat sentence_slots for validators / coverage. */
 export async function fetchGrammarPack() {
   const [
     chapters,
@@ -109,15 +115,40 @@ export async function fetchGrammarPack() {
     levels,
     sentences,
     sentence_spans,
-    sentence_slots,
+    slots,
+    refs,
   ] = await Promise.all([
     fetchTable('chapters'),
     fetchTable('grammar_points'),
     fetchTable('levels'),
     fetchTable('sentences'),
     fetchTable('sentence_spans'),
-    fetchTable('sentence_slots'),
+    fetchTable('slots'),
+    fetchTable('sentence_slot_refs'),
   ])
+
+  const slotById = new Map(slots.map((s) => [s.id, s]))
+  const sentence_slots = [...refs]
+    .sort(
+      (a, b) =>
+        a.sentence_id.localeCompare(b.sentence_id) || a.slot_index - b.slot_index,
+    )
+    .map((ref) => {
+      const slot = slotById.get(ref.slot_id)
+      if (!slot) {
+        throw new Error(`missing slot ${ref.slot_id} for ${ref.sentence_id}`)
+      }
+      return {
+        id: `${ref.sentence_id}-slot-${ref.slot_index}`,
+        sentence_id: ref.sentence_id,
+        slot_index: ref.slot_index,
+        role: slot.role,
+        correct: slot.correct,
+        distractors: normalizeDistractors(slot.distractors),
+        slot_id: ref.slot_id,
+      }
+    })
+
   return {
     chapters,
     grammar_points,
@@ -127,11 +158,8 @@ export async function fetchGrammarPack() {
       ...row,
       end: row.end ?? row.End,
     })),
-    sentence_slots: sentence_slots.map((row) => ({
-      ...row,
-      distractors: Array.isArray(row.distractors)
-        ? row.distractors
-        : JSON.parse(row.distractors),
-    })),
+    slots,
+    sentence_slot_refs: refs,
+    sentence_slots,
   }
 }
