@@ -195,6 +195,7 @@ async function main() {
     }
   }
 
+  // Slot coverage + correct text in en + slot order follows sentence order
   for (const sentence of sentences) {
     const slots = sentenceSlots
       .filter((s) => s.sentence_id === sentence.id)
@@ -222,6 +223,19 @@ async function main() {
         }
       }
     })
+
+    // slot_index must follow the component's order in the original sentence,
+    // so the game asks components in the same order they appear in en
+    let lastPos = -1
+    for (const slot of slots) {
+      const pos = sentence.en.indexOf(slot.correct)
+      if (pos !== -1 && pos < lastPos) {
+        err(
+          `sentence_slots: "${slot.id}" out of sentence order — "${slot.correct}" @${pos} comes after previous @${lastPos} in "${sentence.id}" ("${sentence.en}")`,
+        )
+      }
+      if (pos !== -1) lastPos = pos
+    }
   }
 
   console.log('Grammar pack validation (Supabase)')
