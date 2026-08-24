@@ -58,6 +58,8 @@ Grammar reports are saved locally for export on **我的** and also inserted int
 - [x] **Grammar Everything (substitute)** — learn page + timed falling-fill for passed levels; chapter 1 playable in repo. *Identify* and *restructure* remain on the roadmap. Spec: [`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md). Plan: [`docs/superpowers/plans/2026-08-22-grammar-everything.md`](docs/superpowers/plans/2026-08-22-grammar-everything.md). Sketch: [`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md).
 - [ ] **Listen & Repeat** — turn “what you just said” or the scene example into shadowing + recording, then pack those clips into timed recap playlists. You hear your own effort and progress; mouth and mind work together.
 - [ ] **Live Small Moments** — 60-second challenges tied to real scenes (waking up, commute, meals, walking around). AI asks what you’re doing now and builds a 60s dialogue from the answer — closer to daily life, more interactive, more pressure.
+- [ ] **Comprehensible Input content** — design content around comprehensible input: increase reading volume and ramp up gradually.
+- [ ] **Shadowing** — practice standard pronunciation and spoken English by shadowing; the point is to speak out loud.
 
 ## Known issues & design notes
 

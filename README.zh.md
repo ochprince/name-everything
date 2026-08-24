@@ -58,6 +58,8 @@ Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-desi
 - [x] **Grammar Everything（替换）** — 学习页 + 限时下落填槽 + 已过关混合局；仓库内第一章可玩。*识别* 与 *重组* 仍在路线图。规格：[`docs/superpowers/specs/2026-08-22-grammar-everything-design.md`](docs/superpowers/specs/2026-08-22-grammar-everything-design.md)。计划：[`docs/superpowers/plans/2026-08-22-grammar-everything.md`](docs/superpowers/plans/2026-08-22-grammar-everything.md)。草稿：[`docs/thought/2026-08-22-grammar-everything.md`](docs/thought/2026-08-22-grammar-everything.md)。
 - [ ] **Listen & Repeat** — 把「你刚说的」或场景例句做成跟读 + 录音，再编成锦集定时推送播放。直观感受到自己的努力和进步，嘴脑联动。
 - [ ] **Live Small Moments** — 按场景触发：起床、通勤、吃饭、逛街的 60 秒挑战。AI 询问当前正在做什么，根据回答生成 60 秒场景对话挑战——更贴合生活实际，也更有互动感和压力感。
+- [ ] **可理解输入内容** — 基于可理解输入设计内容：增加阅读量，并逐步提升。
+- [ ] **影子跟读法** — 用影子跟读不断练习标准发音和口语，强调要大声地说出来。
 
 ## 已知问题与设计备忘
 
