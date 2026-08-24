@@ -53,6 +53,63 @@ describe('grammar storage', () => {
     expect(JSON.parse(exportReports())).toHaveLength(0)
   })
 
+  it('enriches sentence reports with en/zh and every slot at export time', () => {
+    addReport({
+      asset_type: 'sentence',
+      asset_id: 's-d1-anchor',
+      level_id: 'dative-1',
+      note: '干扰项有问题',
+    })
+    const parsed = JSON.parse(exportReports()) as Array<Record<string, unknown>>
+    expect(parsed[0]).toMatchObject({
+      asset_type: 'sentence',
+      en: 'He sent me a book.',
+      zh: '他寄给了我一本书。',
+      level_title: '主谓双宾 S+V+IO+DO',
+    })
+    const slots = parsed[0]!.slots as Array<Record<string, unknown>>
+    expect(slots).toHaveLength(4)
+    expect(slots[0]).toMatchObject({
+      id: 's-d1-anchor-slot-0',
+      slot_index: 0,
+      role: 'S',
+      correct: 'He',
+    })
+    expect(slots[0]!.distractors).toContain('She')
+  })
+
+  it('enriches sentence_slot reports with sentence text and slot definition', () => {
+    addReport({
+      asset_type: 'sentence_slot',
+      asset_id: 's-d1-anchor-slot-0',
+      level_id: 'dative-1',
+      note: '主语干扰项不对',
+    })
+    const parsed = JSON.parse(exportReports()) as Array<Record<string, unknown>>
+    expect(parsed[0]).toMatchObject({
+      asset_type: 'sentence_slot',
+      sentence_en: 'He sent me a book.',
+      slot_index: 0,
+      role: 'S',
+      correct: 'He',
+    })
+  })
+
+  it('enriches grammar_point reports with title and body copy', () => {
+    addReport({
+      asset_type: 'grammar_point',
+      asset_id: 'gp-s',
+      level_id: 'sv-1',
+      note: '说明不清晰',
+    })
+    const parsed = JSON.parse(exportReports()) as Array<Record<string, unknown>>
+    expect(parsed[0]).toMatchObject({
+      asset_type: 'grammar_point',
+      title_zh: '主语 S',
+    })
+    expect(String(parsed[0]!.body_zh)).toContain('动作的发出者')
+  })
+
   it('records passedSentenceCounts when a level is passed', () => {
     const level = levelById('sv-1')
     expect(level).toBeDefined()
