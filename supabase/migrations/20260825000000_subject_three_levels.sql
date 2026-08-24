@@ -8,7 +8,7 @@ BEGIN;
 -- ============ 1. 语法点 ×3 ============
 INSERT INTO grammar_points (id, title_zh, body_zh) VALUES
   ('gp-subject-it', 'it 做主语（天气/时间/距离）',
-   'it 做主语时不指具体的人或物，专门谈论天气、温度、时间、距离：It keeps snowing.（雪一直在下）；It is eight o'clock.（现在八点了）。'),
+   'it 做主语时不指具体的人或物，专门谈论天气、温度、时间、距离：It keeps snowing.（雪一直在下）；It is eight o''clock.（现在八点了）。'),
   ('gp-subject-clause', '主语从句（that 引导）',
    '一个完整的独立句子不能直接充当另一个句子的成分，要变成从句并由引导词引导，不能裸放。that 引导陈述语气的主语从句时只起引导作用、不充当从句成分、不可省略：That she will come to my school makes me happy.（That she will come to my school 整体做主句主语）。这类 that 主语从句可改写为 it 作形式主语、从句后置：It makes me happy that she will come to my school.——it 只是语法占位，that 从句才是真正的逻辑主语。'),
   ('gp-there-be', 'There be 句型',
