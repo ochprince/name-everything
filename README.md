@@ -70,6 +70,7 @@ Grammar falling-fill gameplay — recorded from user review (2026-08-25):
    - Hell mode: no error chances at all.
 4. **Challenge mode (arcade) tuning** — 30 sentences / 6 groups is too many; trim to 20 sentences / 4 groups. Rework the difficulty and timing curves (currently uneven — difficulty jumps up and down). Stratification should follow chapter order: later groups should draw from later chapters; right now later groups still mix in early simple-chapter sentences.
 5. **Settlement / mid-round page animations** — add a celebratory animation (e.g. fireworks) on success, and a contrasting "slight letdown" animation on failure, on both the settlement page and the mid-round (failure) page. Pages currently feel stiff and dull.
+6. **Me-page settings organization** — config items currently mix vocab-memory settings with grammar/challenge-mode settings. Group them by module (sections/blocks) so the page stays elegant and clear as items grow (grammar game-mode/difficulty selectors may join later). Alternative: split settings into a standalone page with a single entry point from Me — the common app pattern.
 
 ## Week-1 out of scope
 
