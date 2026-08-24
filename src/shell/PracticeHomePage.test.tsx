@@ -40,6 +40,8 @@ describe('practice home', () => {
     renderHome()
     const tile = screen.getByTestId('tile-grammar-play')
     expect(tile).toHaveAttribute('aria-disabled', 'true')
+    // locked button must keep the same left-aligned text position as open tiles
+    expect(tile.className).toContain('text-left')
     await user.click(tile)
     expect(screen.getByRole('status')).toHaveTextContent('先去语法学习过一关')
     expect(screen.getByRole('heading', { name: '练习' })).toBeInTheDocument()

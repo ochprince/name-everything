@@ -24,7 +24,7 @@ export function stageMaterialClass(material: StageMaterial): string {
 
 /** Champagne gradient frame for home practice doors. */
 export const framedDoorOuter =
-  'block w-full min-h-[7.5rem] rounded-2xl bg-gradient-to-r from-[#f3eee3] via-[#e5d9b5] to-[#cbb87a] p-px text-day transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e5d9b5]'
+  'block w-full min-h-[7.5rem] rounded-2xl bg-gradient-to-r from-[#f3eee3] via-[#e5d9b5] to-[#cbb87a] p-px text-left text-day transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e5d9b5]'
 
 /** Inner fill for day doors inside the champagne frame. */
 export const dayDoorInner =
