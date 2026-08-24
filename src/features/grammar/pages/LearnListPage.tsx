@@ -75,17 +75,16 @@ export function LearnListPage() {
             const chapterMaterial = chapterListMaterial(chapterIndex)
             return (
               <section key={chapter.id} className="flex flex-col gap-3">
-                <h2
-                  className="sticky z-20 -mx-4 bg-cyc px-4 py-2 text-lg font-semibold tracking-[0.1em] text-day"
-                  style={{ top: STAGE_CHROME_OFFSET }}
-                >
-                  {chapter.title_zh}
-                </h2>
-                {chapter.description_zh ? (
-                  <p className="px-0.5 text-sm font-medium tracking-[0.04em] text-day/65">
-                    {chapter.description_zh}
-                  </p>
-                ) : null}
+                <div className="px-0.5">
+                  <h2 className="text-lg font-semibold tracking-[0.1em] text-day">
+                    {chapter.title_zh}
+                  </h2>
+                  {chapter.description_zh ? (
+                    <p className="mt-1 text-sm font-medium tracking-[0.04em] text-day/65">
+                      {chapter.description_zh}
+                    </p>
+                  ) : null}
+                </div>
                 {!chapter.released ? (
                   <LockPlaceholder label="章节未开放" />
                 ) : (

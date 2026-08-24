@@ -65,15 +65,6 @@ describe('LearnListPage scroll restoration', () => {
     expect(sessionStorage.getItem(SCROLL_KEY)).toBeNull()
   })
 
-  it('keeps chapter titles sticky below the header chrome', async () => {
-    const user = userEvent.setup()
-    renderApp('/')
-    await user.click(screen.getByRole('link', { name: /语法学习/ }))
-    const heading = screen.getByRole('heading', { name: '简单句' })
-    expect(heading.className).toContain('sticky')
-    expect(heading.style.top).toContain('max(1.25rem')
-  })
-
   it('restores the scroll position when returning from a level page', async () => {
     const scrollTo = vi.fn()
     window.scrollTo = scrollTo
