@@ -68,6 +68,7 @@ Grammar falling-fill gameplay — recorded from user review (2026-08-25):
 3. **Idea — difficulty modes**:
    - Hard mode: each option has only one error chance.
    - Hell mode: no error chances at all.
+4. **Challenge mode (arcade) tuning** — 30 sentences / 6 groups is too many; trim to 20 sentences / 4 groups. Rework the difficulty and timing curves (currently uneven — difficulty jumps up and down). Stratification should follow chapter order: later groups should draw from later chapters; right now later groups still mix in early simple-chapter sentences.
 
 ## Week-1 out of scope
 
