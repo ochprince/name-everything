@@ -59,6 +59,16 @@ Grammar reports are saved locally for export on **我的** and also inserted int
 - [ ] **Listen & Repeat** — turn “what you just said” or the scene example into shadowing + recording, then pack those clips into timed recap playlists. You hear your own effort and progress; mouth and mind work together.
 - [ ] **Live Small Moments** — 60-second challenges tied to real scenes (waking up, commute, meals, walking around). AI asks what you’re doing now and builds a 60s dialogue from the answer — closer to daily life, more interactive, more pressure.
 
+## Known issues & design notes
+
+Grammar falling-fill gameplay — recorded from user review (2026-08-25):
+
+1. **Brute-force exploit** — rapidly clicking all four options reveals the answer: a wrong pick does not kill the sentence immediately (3 strikes per sentence), so the 4th option always goes through. Scores can be farmed this way.
+2. **Failure-page click trap** — on a wrong answer or timeout the view swaps to the failure page, whose “next sentence” button sits at the same position as the four answer options. A user frantically clicking an option at that moment lands on “next” instead, and never gets to see the correct answer.
+3. **Idea — difficulty modes**:
+   - Hard mode: each option has only one error chance.
+   - Hell mode: no error chances at all.
+
 ## Week-1 out of scope
 
 Product ideas above live on the Roadmap, not in week 1.
