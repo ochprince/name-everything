@@ -32,7 +32,7 @@ export function fallDurationForAnswerMode(
 ): number {
   if (mode === 'produce') {
     const factor = gameTuning.produce_fall_duration_factor
-    const safeFactor = Number.isFinite(factor) ? factor : 1.5
+    const safeFactor = Number.isFinite(factor) ? factor : 2
     return Math.round(baseMs * safeFactor)
   }
   return baseMs

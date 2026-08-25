@@ -29,7 +29,7 @@
 | `mcq` | 现状不变：按 `SentenceSlot` 四选一，严格等于 `slot.correct` |
 | `produce` UI | 下落中文 `zh`；底部选项区改为输入框 + 提交；**不**显示骨架/空槽 |
 | `produce` 判题 | 用户输入 vs `sentence.en`，经 `englishAnswersMatch` |
-| 时限 | 仍下落；`fallDurationMs = base × 1.5`；落地未提交 = 本句失败扣命 |
+| 时限 | 仍下落；`fallDurationMs = base × 2`；落地未提交 = 本句失败扣命 |
 | 答错 | 与四选一相同：不立即死句，`applyWrong` 加速，可再提交 |
 | 答对 | 本句清除 +1 分，进入下一句（跳过槽位推进） |
 | 空提交 | 忽略：不判对、不扣命、不加速；提示用户输入后再提交 |
@@ -56,7 +56,7 @@
 `game_tuning.json`（及对应 TypeScript 类型）新增：
 
 - `produce_answer_ratio: 0.5`
-- `produce_fall_duration_factor: 1.5`
+- `produce_fall_duration_factor: 2`
 
 ### 引擎
 
@@ -97,7 +97,7 @@ next sentenceId
 
 - 题型：回忆产出（比对该句 `en`），非本轮真替换生成  
 - 比例：按句 50%  
-- 时限：1.5× 仍下落  
+- 时限：2× 仍下落  
 - 答错：同四选一加速可重试  
 - 提示：仅中文，无骨架  
 - 模式：关卡 + 挑战都开  
