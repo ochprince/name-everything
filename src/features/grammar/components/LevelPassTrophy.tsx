@@ -1,6 +1,6 @@
 import trophyPassed from '../assets/trophy-passed.svg'
 
-/** Passed-level trophy — iconfont 奖杯2-1 (multicolor). */
+/** Passed-level trophy — iconfont 007-trophy (multicolor). */
 export function LevelPassTrophy() {
   return (
     <span

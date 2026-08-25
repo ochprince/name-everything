@@ -101,7 +101,6 @@ export function LearnListPage() {
                       const topicTitle = topic?.title_zh ?? level.id
                       // Keep chapter color (day/cobalt); in-progress is badge-only
                       const material = chapterMaterial
-
                       if (!unlocked) {
                         return (
                           <li key={level.id}>
