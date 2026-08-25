@@ -36,6 +36,18 @@ body {
   pointer-events: none;
 }
 
+/* Sticky chrome top seal — covers the 1px hairline where light cards peek above top:0. */
+.stage-chrome-solid::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6px;
+  height: 8px;
+  background: #05060a;
+  pointer-events: none;
+}
+
 .cyc-wash {
   z-index: 0;
   background-color: #05060a;

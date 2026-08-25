@@ -10,14 +10,20 @@ export const STAGE_CHROME_OFFSET =
 /** Scroll past this Y before sticky chrome goes solid. ~half chrome height. */
 export const STAGE_CHROME_SCROLL_THRESHOLD = 40
 
-const STAGE_CHROME_LAYOUT =
-  'sticky top-0 z-30 -mx-4 px-4 pb-2 pt-[max(1.25rem,env(safe-area-inset-top))]'
+const STAGE_CHROME_LAYOUT = 'sticky z-30 -mx-4 px-4 pb-2'
+
+const STAGE_CHROME_TOP =
+  'top-0 pt-[max(1.25rem,env(safe-area-inset-top))]'
+
+/** Pull 2px past the stick edge + matching pad so solid fill covers the hairline gap. */
+const STAGE_CHROME_TOP_SOLID =
+  'top-[-2px] pt-[max(calc(1.25rem+2px),calc(env(safe-area-inset-top)+2px))] stage-chrome-solid'
 
 const STAGE_CHROME_WASH =
   'bg-gradient-to-b from-cyc/75 via-cyc/35 to-transparent'
 
 /** Shared sticky title wash — soft cyc fade so page art can show through (top of page). */
-export const STAGE_CHROME_CLASS = `${STAGE_CHROME_LAYOUT} ${STAGE_CHROME_WASH}`
+export const STAGE_CHROME_CLASS = `${STAGE_CHROME_LAYOUT} ${STAGE_CHROME_TOP} ${STAGE_CHROME_WASH}`
 
 /** Bottom inset for stages without BottomNav — primary CTAs must not add extra mb-*. */
 export const STAGE_BOTTOM_PAD = 'pb-6'
@@ -41,7 +47,11 @@ export function StageChrome({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className={`${STAGE_CHROME_LAYOUT} ${scrolled ? 'bg-cyc' : STAGE_CHROME_WASH}`}
+      className={`${STAGE_CHROME_LAYOUT} ${
+        scrolled
+          ? `${STAGE_CHROME_TOP_SOLID} bg-cyc`
+          : `${STAGE_CHROME_TOP} ${STAGE_CHROME_WASH}`
+      }`}
     >
       {children}
     </div>

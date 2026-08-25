@@ -44,6 +44,14 @@ describe('StageShell sticky chrome scroll wash', () => {
     expect(chrome?.className).not.toMatch(/from-cyc\/75/)
   })
 
+  it('seals the sticky top edge when solid so light content cannot peek through', () => {
+    renderShell()
+    setScrollY(STAGE_CHROME_SCROLL_THRESHOLD)
+    const chrome = chromeEl()
+    expect(chrome?.className).toMatch(/\bstage-chrome-solid\b/)
+    expect(chrome?.className).toMatch(/top-\[-2px\]/)
+  })
+
   it('restores the gradient wash when scrolling back to the top', () => {
     renderShell()
     setScrollY(STAGE_CHROME_SCROLL_THRESHOLD)
