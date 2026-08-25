@@ -70,9 +70,8 @@ Grammar falling-fill gameplay — recorded from user review (2026-08-25):
 3. **Idea — difficulty modes**:
    - Hard mode: each option has only one error chance.
    - Hell mode: no error chances at all.
-4. **Challenge mode (arcade) tuning** — keep 30 sentences / 6 groups (no longer trimming to 20/4). Difficulty curve reworked via stratified sampling + difficulty-sliced groups (2026-08-25): sentences are ranked by (chapter order → level order); every passed level contributes one sentence, remaining slots are drawn one per evenly-sliced difficulty layer; the picked sentences are sliced into 5-sentence groups in difficulty order (group 1 = earliest chapter → group 6 = latest), shuffled inside each group, strictly increasing across groups — later groups no longer mix in early simple-chapter sentences.
-5. **Settlement / mid-round page animations** — add a celebratory animation (e.g. fireworks) on success, and a contrasting "slight letdown" animation on failure, on both the settlement page and the mid-round (failure) page. Pages currently feel stiff and dull.
-6. **Me-page settings organization** — config items currently mix vocab-memory settings with grammar/challenge-mode settings. Group them by module (sections/blocks) so the page stays elegant and clear as items grow (grammar game-mode/difficulty selectors may join later). Alternative: split settings into a standalone page with a single entry point from Me — the common app pattern.
+4. **Settlement / mid-round page animations** — add a celebratory animation (e.g. fireworks) on success, and a contrasting "slight letdown" animation on failure, on both the settlement page and the mid-round (failure) page. Pages currently feel stiff and dull.
+5. **Me-page settings organization** — config items currently mix vocab-memory settings with grammar/challenge-mode settings. Group them by module (sections/blocks) so the page stays elegant and clear as items grow (grammar game-mode/difficulty selectors may join later). Alternative: split settings into a standalone page with a single entry point from Me — the common app pattern.
 
 ## Week-1 out of scope
 
