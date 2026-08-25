@@ -29,6 +29,9 @@ export function isLevelUnlocked(
   level: Level,
   progress: GrammarProgress,
 ): boolean {
+  // 已通关的关卡永远不再上锁：即使上一章末尾新增了 level（本章
+  // "全通"门槛因此失效），已通过的下一章首关也必须保持解锁。
+  if (progress.passedLevelIds.includes(level.id)) return true
   const siblings = levelsForChapter(level.chapter_id)
   const index = siblings.findIndex((item) => item.id === level.id)
   if (index < 0) return false

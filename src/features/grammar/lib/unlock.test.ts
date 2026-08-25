@@ -48,6 +48,23 @@ describe('level unlock', () => {
     expect(isLevelUnlocked(predicateFirst!, loadGrammarProgress())).toBe(true)
   })
 
+  it('passed level never re-locks when a new level is appended to the previous chapter', () => {
+    // 回归：predicate 章末尾新增 passive-1 后，predicate 不再"全通"，
+    // 但已通关的 nonfinite 首关不能被重新锁上（通过态优先于门槛）。
+    const nonfiniteFirst = levelsForChapter('nonfinite')[0]!
+    saveGrammarProgress({
+      ...defaultGrammarProgress(),
+      passedLevelIds: [nonfiniteFirst.id],
+      highScores: {
+        [nonfiniteFirst.id]: sentenceCountForLevel(nonfiniteFirst.id),
+      },
+    })
+    const progress = loadGrammarProgress()
+    // predicate 全未通过 → 章节门槛判不过，但已通关必须保持解锁
+    expect(levelUnlockHint(nonfiniteFirst, progress)).toBe('')
+    expect(isLevelUnlocked(nonfiniteFirst, progress)).toBe(true)
+  })
+
   it('nextLevelAfter walks chapter order across chapters', () => {
     expect(nextLevelAfter(first!.id)?.id).toBe(second!.id)
     expect(nextLevelAfter(simpleLevels[simpleLevels.length - 1]!.id)?.id).toBe(
