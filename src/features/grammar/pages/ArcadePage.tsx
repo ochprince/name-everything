@@ -39,6 +39,7 @@ export function ArcadePage() {
 
   return (
     <StageShell
+      lockViewport
       header={
         <StageHeader
           backTo="/"

@@ -61,9 +61,15 @@ export function StageChrome({ children }: { children: ReactNode }) {
 export function StageShell({
   children,
   header,
+  lockViewport = false,
 }: {
   children: ReactNode
   header?: ReactNode
+  /**
+   * Pin the stage to the viewport (h-dvh, no document scroll) so children can
+   * use flex-1 + overflow scroll with a pinned footer CTA.
+   */
+  lockViewport?: boolean
 }) {
   const { pathname } = useLocation()
   const withBottomNav = showsBottomNav(pathname)
@@ -72,7 +78,11 @@ export function StageShell({
   const column = (
     <div
       className={`relative mx-auto flex w-full max-w-md flex-col px-4 ${bottomPad} ${
-        withBottomNav ? 'min-h-full' : 'min-h-dvh'
+        withBottomNav
+          ? 'min-h-full'
+          : lockViewport
+            ? 'h-full min-h-0'
+            : 'min-h-dvh'
       }`}
     >
       {header ? <StageChrome>{header}</StageChrome> : null}
@@ -92,6 +102,20 @@ export function StageShell({
         <div className="relative h-full overflow-x-clip overflow-y-auto">
           {column}
         </div>
+      </main>
+    )
+  }
+
+  // Locked stages (e.g. 挑战模式 hub) keep the footer CTA pinned; only an
+  // inner region may scroll — no document/window scroll.
+  if (lockViewport) {
+    return (
+      <main
+        data-seed="af3fdd03"
+        className="relative z-0 h-dvh overflow-hidden bg-cyc font-cue"
+      >
+        <div className="cyc-wash pointer-events-none absolute inset-0" />
+        {column}
       </main>
     )
   }

@@ -71,4 +71,34 @@ describe('stage primary CTA bottom inset', () => {
     const column = screen.getByRole('link', { name: '开始挑战' }).parentElement
     expect(column?.getAttribute('style') ?? '').not.toMatch(/7rem/)
   })
+
+  it('挑战模式 locks viewport so 开始挑战 stays pinned while history scrolls', () => {
+    localStorage.setItem('grammar/arcade-rules-intro/v1', '1')
+    saveGrammarProgress({
+      ...defaultGrammarProgress(),
+      passedLevelIds: ['dative-1'],
+      arcadeHistory: [
+        {
+          id: 'a1',
+          at: '2026-08-25T12:00:00.000Z',
+          score: 20,
+          total: 25,
+          cleared: false,
+        },
+      ],
+    })
+    renderApp('/practice/grammar/play')
+
+    const main = document.querySelector('main')
+    expect(main).toHaveClass('h-dvh')
+    expect(main).toHaveClass('overflow-hidden')
+    expect(main).not.toHaveClass('min-h-dvh')
+
+    const history = screen.getByRole('list')
+    expect(history.className).toMatch(/overflow-y-auto/)
+
+    const cta = screen.getByRole('link', { name: '开始挑战' })
+    expect(cta.className).toMatch(/shrink-0/)
+    expect(cta.parentElement?.className).toMatch(/min-h-0/)
+  })
 })
