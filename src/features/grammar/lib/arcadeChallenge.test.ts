@@ -58,6 +58,29 @@ describe('arcadeChallenge', () => {
     }
   })
 
+  it('keeps groups strictly increasing in difficulty (later groups draw from later chapters)', () => {
+    const pool = playablesForLevels(grammarPack.levels.map((level) => level.id))
+    const queue = buildArcadeQueue(pool)
+    expect(queue.length).toBe(Math.min(ARCADE_SESSION_SIZE, pool.length))
+    expect(new Set(queue).size).toBe(queue.length)
+
+    const rankOf = (sentenceId: string) => {
+      const sentence = grammarPack.sentences.find((s) => s.id === sentenceId)!
+      const level = grammarPack.levels.find((l) => l.id === sentence.level_id)!
+      const chapter = grammarPack.chapters.find((c) => c.id === level.chapter_id)!
+      return chapter.sort_order * 100 + level.sort_order
+    }
+    const ranks = queue.map(rankOf)
+
+    for (let g = 1; g < Math.ceil(ranks.length / ARCADE_GROUP_SIZE); g++) {
+      const start = g * ARCADE_GROUP_SIZE
+      const prevMax = Math.max(...ranks.slice(start - ARCADE_GROUP_SIZE, start))
+      const curMin = Math.min(...ranks.slice(start, start + ARCADE_GROUP_SIZE))
+      // 同关平行句 rank 相同，允许相等；组间不得出现难度回退
+      expect(curMin).toBeGreaterThanOrEqual(prevMax)
+    }
+  })
+
   it('maps cleared counts to group index and fall duration', () => {
     expect(arcadeGroupIndex(0)).toBe(0)
     expect(arcadeGroupIndex(4)).toBe(0)
