@@ -2,6 +2,15 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { StageShell, STAGE_CHROME_OFFSET } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
+import {
+  useKeyboardOverlapPx,
+  usePinLayoutOnKeyboardDismiss,
+} from '../../../shared/useAppViewportHeight'
+import {
+  KEYBOARD_OVERLAP_LOCK_PX,
+  pinLayoutToTop,
+  readKeyboardOverlapPx,
+} from '../../../shared/appViewport'
 import { ReportDialog } from '../components/ReportDialog'
 import { LivesHearts } from '../components/LivesHearts'
 import { FallingAnswerPad } from '../components/FallingAnswerPad'
@@ -183,6 +192,9 @@ function FallingBoard({
   const bottomHandledRef = useRef(false)
   const stateRef = useRef(state)
   const sentenceResultRef = useRef(sentenceResult)
+  // Shrink the absolute board above the soft keyboard so fall % / land line retarget.
+  const keyboardOverlapPx = useKeyboardOverlapPx()
+  usePinLayoutOnKeyboardDismiss()
 
   stateRef.current = state
   sentenceResultRef.current = sentenceResult
@@ -208,6 +220,49 @@ function FallingBoard({
   useEffect(() => {
     setProduceDraft('')
   }, [state?.sentenceId])
+
+  // iOS focuses the produce field by scrolling the page up. That parks the fall
+  // start above the visible viewport (long wait to see text) and leaves a black
+  // gap after dismiss until the user scrolls back. Keep scroll pinned at top and
+  // let keyboardOverlapPx shrink the board instead.
+  useEffect(() => {
+    if (state?.answerMode !== 'produce' || sentenceResult) return
+
+    const pin = () => pinLayoutToTop()
+
+    const onFocusIn = (event: FocusEvent) => {
+      const target = event.target
+      if (!(target instanceof HTMLElement)) return
+      if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') return
+      pin()
+      requestAnimationFrame(pin)
+      window.setTimeout(pin, 50)
+      window.setTimeout(pin, 300)
+    }
+
+    const onScroll = () => {
+      if (
+        window.scrollY > 0 ||
+        (window.visualViewport?.offsetTop ?? 0) > 0 ||
+        readKeyboardOverlapPx() > KEYBOARD_OVERLAP_LOCK_PX
+      ) {
+        pin()
+      }
+    }
+
+    document.addEventListener('focusin', onFocusIn)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.visualViewport?.addEventListener('scroll', onScroll)
+    window.visualViewport?.addEventListener('resize', onScroll)
+
+    return () => {
+      document.removeEventListener('focusin', onFocusIn)
+      window.removeEventListener('scroll', onScroll)
+      window.visualViewport?.removeEventListener('scroll', onScroll)
+      window.visualViewport?.removeEventListener('resize', onScroll)
+      pin()
+    }
+  }, [state?.answerMode, state?.sentenceId, sentenceResult])
 
   const triggerLandFail = useCallback(() => {
     if (bottomHandledRef.current || sentenceResultRef.current) return
@@ -539,7 +594,7 @@ function FallingBoard({
         className="absolute inset-x-0 flex min-h-0 flex-col"
         style={{
           top: STAGE_CHROME_OFFSET,
-          bottom: `calc(${SAFE_BOTTOM} + ${GAME_BOTTOM_GAP_PX}px)`,
+          bottom: `calc(${SAFE_BOTTOM} + ${GAME_BOTTOM_GAP_PX + keyboardOverlapPx}px)`,
         }}
       >
         <div
