@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color: #f4f1ea;
+  color: #ffffff;
   background: #05060a;
   font-family: "Big Shoulders Text", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
@@ -54,7 +54,7 @@ body {
   background-image:
     radial-gradient(
       ellipse 175% 70% at 50% 108%,
-      #f4f1ea 0%,
+      #ffffff 0%,
       #e8a598 16%,
       #d4897c 32%,
       #002FA7 52%,
@@ -107,11 +107,11 @@ body {
   inset: 0;
   z-index: 20;
   border-radius: inherit;
-  border: 1px solid rgba(244, 241, 234, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.75);
 }
 
 .forgot-cue:hover::after {
-  border-color: #f4f1ea;
+  border-color: #ffffff;
 }
 
 dialog.report-dialog {
@@ -127,7 +127,7 @@ dialog.report-dialog {
   border: 1px solid rgb(244 241 234 / 0.2);
   border-radius: 16px;
   background: #05060a;
-  color: #f4f1ea;
+  color: #ffffff;
   box-shadow: 0 22px 44px -14px rgb(0 0 0 / 0.85);
 }
 

@@ -4,7 +4,7 @@ import { Physics2DPlugin } from 'gsap/Physics2DPlugin'
 gsap.registerPlugin(Physics2DPlugin)
 
 /** 主题色粒子（cyc 近黑不参与；day/rose/gold/cobalt 在深色背景上亮眼）。 */
-const THEME_COLORS = ['#f4f1ea', '#e8a598', '#d4c69a', '#002FA7'] as const
+const THEME_COLORS = ['#ffffff', '#e8a598', '#d4c69a', '#002FA7'] as const
 
 function makeLayer(container: HTMLElement): HTMLElement {
   const layer = document.createElement('div')

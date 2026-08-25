@@ -8,7 +8,7 @@ export default {
         cobalt: '#002FA7',
         rose: '#e8a598',
         gold: '#d4c69a',
-        day: '#f4f1ea',
+        day: '#ffffff',
         ink: '#05060a',
       },
       fontFamily: {

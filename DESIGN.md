@@ -6,7 +6,7 @@ colors:
   cobalt: "#002FA7"
   rose: "#e8a598"
   gold: "#d4c69a"
-  day: "#f4f1ea"
+  day: "#ffffff"
   ink: "#05060a"
 typography:
   cue:
@@ -105,7 +105,7 @@ This is Operate UI. Familiar tap targets, locked button copy (`Aha!` then `Forgo
 | `cobalt` | `#002FA7` | International Klein Blue — horizon wash; grammar / odd-chapter list doors |
 | `rose` | `#e8a598` | Accents only: slot pick, underlines, progress dots, nav badge, fail marks |
 | `gold` | `#d4c69a` | Champagne outline frames (locked doors) |
-| `day` | `#f4f1ea` | Beige paper white — Got it; vocab door; even-chapter list; sentence / knowledge panels |
+| `day` | `#ffffff` | Pure white — Got it; vocab door; even-chapter list; sentence / knowledge panels |
 | `ink` | `#05060a` | Text on day / rose accents |
 
 Sentence and grammar-point panels use `day` fill with `cyc` ink. Inactive nav is `day` at ~80% opacity. Color is never the only state signal: labels stay.
