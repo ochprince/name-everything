@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { applyWrong, land, startRound, tick, applyCorrectBounce, isQueueFullyCleared, nextSentenceId, buildQueue } from './engine'
+import {
+  applyWrong,
+  beginSentence,
+  land,
+  startRound,
+  tick,
+  applyCorrectBounce,
+  isQueueFullyCleared,
+  nextSentenceId,
+  buildQueue,
+  fallDurationForAnswerMode,
+  pickAnswerMode,
+} from './engine'
 import { buildArcadeQueue } from './arcadeChallenge'
 import { gameTuning } from '../content/tuning'
 import { anchorForLevel, playablesForLevel, grammarPack } from '../content/pack'
@@ -104,5 +116,44 @@ describe('falling engine', () => {
         (id) => grammarPack.sentences.find((s) => s.id === id)?.kind === 'anchor',
       ),
     ).toBe(false)
+  })
+
+  it('pickAnswerMode uses ratio against random()', () => {
+    expect(pickAnswerMode(0.5, () => 0.49)).toBe('produce')
+    expect(pickAnswerMode(0.5, () => 0.5)).toBe('mcq')
+    expect(pickAnswerMode(0, () => 0)).toBe('mcq')
+    expect(pickAnswerMode(1, () => 0.99)).toBe('produce')
+  })
+
+  it('fallDurationForAnswerMode stretches produce rounds', () => {
+    expect(fallDurationForAnswerMode(8000, 'mcq')).toBe(8000)
+    expect(fallDurationForAnswerMode(8000, 'produce')).toBe(
+      Math.round(8000 * gameTuning.produce_fall_duration_factor),
+    )
+  })
+
+  it('startRound defaults to mcq and preserves base duration', () => {
+    const state = startRound('s1', 3, 8000)
+    expect(state.answerMode).toBe('mcq')
+    expect(state.fallDurationMs).toBe(8000)
+    expect(state.remainingMs).toBe(8000)
+  })
+
+  it('startRound and beginSentence apply produce duration factor', () => {
+    const started = startRound('s1', 3, 8000, 'produce')
+    expect(started.answerMode).toBe('produce')
+    expect(started.fallDurationMs).toBe(
+      Math.round(8000 * gameTuning.produce_fall_duration_factor),
+    )
+    expect(started.remainingMs).toBe(started.fallDurationMs)
+
+    const next = beginSentence(started, 's2', 8000, 'produce')
+    expect(next.sentenceId).toBe('s2')
+    expect(next.answerMode).toBe('produce')
+    expect(next.slotIndex).toBe(0)
+    expect(next.fallSpeed).toBe(1)
+    expect(next.fallDurationMs).toBe(
+      Math.round(8000 * gameTuning.produce_fall_duration_factor),
+    )
   })
 })

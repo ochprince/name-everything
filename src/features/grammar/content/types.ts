@@ -66,4 +66,6 @@ export type GameTuning = {
   wrong_speed_factor: number
   min_fall_duration_ms: number
   correct_bounce_factor: number
+  produce_answer_ratio: number
+  produce_fall_duration_factor: number
 }

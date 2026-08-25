@@ -4,5 +4,7 @@
   "fall_duration_ms": 8000,
   "wrong_speed_factor": 0.7,
   "min_fall_duration_ms": 2500,
-  "correct_bounce_factor": 0.28
+  "correct_bounce_factor": 0.28,
+  "produce_answer_ratio": 0.5,
+  "produce_fall_duration_factor": 1.5
 }

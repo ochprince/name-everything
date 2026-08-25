@@ -3,6 +3,8 @@ import type { Sentence, SentenceSlot } from '../content/pack'
 
 export type FallingMode = 'level' | 'arcade'
 
+export type AnswerMode = 'mcq' | 'produce'
+
 export type FallingState = {
   lives: number
   score: number
@@ -13,6 +15,24 @@ export type FallingState = {
   fallSpeed: number
   status: 'playing' | 'over'
   lastWrong: boolean
+  answerMode: AnswerMode
+}
+
+export function pickAnswerMode(
+  ratio: number = gameTuning.produce_answer_ratio,
+  random: () => number = Math.random,
+): AnswerMode {
+  return random() < ratio ? 'produce' : 'mcq'
+}
+
+export function fallDurationForAnswerMode(
+  baseMs: number,
+  mode: AnswerMode,
+): number {
+  if (mode === 'produce') {
+    return Math.round(baseMs * gameTuning.produce_fall_duration_factor)
+  }
+  return baseMs
 }
 
 function maxFallSpeed(fallDurationMs: number): number {
@@ -76,8 +96,10 @@ export function isQueueFullyCleared(
 export function startRound(
   firstId: string,
   lives: number = gameTuning.lives,
-  fallDurationMs: number = gameTuning.fall_duration_ms,
+  baseFallDurationMs: number = gameTuning.fall_duration_ms,
+  answerMode: AnswerMode = 'mcq',
 ): FallingState {
+  const fallDurationMs = fallDurationForAnswerMode(baseFallDurationMs, answerMode)
   return {
     lives,
     score: 0,
@@ -88,6 +110,7 @@ export function startRound(
     fallSpeed: 1,
     status: 'playing',
     lastWrong: false,
+    answerMode,
   }
 }
 
@@ -147,8 +170,10 @@ export function applyCorrectBounce(state: FallingState): FallingState {
 export function beginSentence(
   state: FallingState,
   sentenceId: string,
-  fallDurationMs = state.fallDurationMs,
+  baseFallDurationMs = state.fallDurationMs,
+  answerMode: AnswerMode = 'mcq',
 ): FallingState {
+  const fallDurationMs = fallDurationForAnswerMode(baseFallDurationMs, answerMode)
   return {
     ...state,
     sentenceId,
@@ -157,6 +182,7 @@ export function beginSentence(
     fallDurationMs,
     fallSpeed: 1,
     lastWrong: false,
+    answerMode,
   }
 }
 
