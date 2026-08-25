@@ -61,8 +61,9 @@ export function nextSentenceId(
   const pool = remaining.length > 0 ? remaining : targetPool
   const candidates =
     pool.length > 1 && currentId ? pool.filter((id) => id !== currentId) : pool
-  const pick = candidates[Math.floor(Math.random() * candidates.length)]
-  return pick ?? pool[0] ?? null
+  // 按队列顺序取下一个（保持 buildArcadeQueue 的难度阶梯），
+  // 而非随机抽样——否则简单句会出现在任意分组。
+  return candidates[0] ?? null
 }
 
 export function isQueueFullyCleared(

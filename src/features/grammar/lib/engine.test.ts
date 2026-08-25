@@ -55,10 +55,18 @@ describe('falling engine', () => {
 
   it('nextSentenceId walks the queue in order when clearedIds is omitted', () => {
     const queue = ['a', 'b', 'c']
-    expect(nextSentenceId(queue, null, [])).toBeTruthy()
-    expect(nextSentenceId(queue, 'a', ['a'])).toBeTruthy()
+    expect(nextSentenceId(queue, null, [])).toBe('a')
+    expect(nextSentenceId(queue, 'a', ['a'])).toBe('b')
     expect(nextSentenceId(queue, 'b', ['a', 'b'])).toBe('c')
-    expect(nextSentenceId(queue, 'c', ['a', 'b', 'c'])).toBeTruthy()
+    // 全部出过：回绕到队列头（跳过当前句）
+    expect(nextSentenceId(queue, 'c', ['a', 'b', 'c'])).toBe('a')
+  })
+
+  it('nextSentenceId walks in order skipping cleared sentences', () => {
+    const queue = ['a', 'b', 'c', 'd']
+    const cleared = new Set(['b'])
+    expect(nextSentenceId(queue, 'a', ['a'], cleared)).toBe('c')
+    expect(nextSentenceId(queue, 'c', ['a', 'c'], cleared)).toBe('d')
   })
 
   it('nextSentenceId replays uncleared sentences before ending', () => {
