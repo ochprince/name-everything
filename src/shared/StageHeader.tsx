@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { BackButton, BackLink } from './BackLink'
-import { STAGE_CHROME_CLASS } from './StageShell'
+import { StageChrome } from './StageShell'
 
 const sideSlot = 'inline-flex min-h-11 min-w-[3rem] items-center'
 
@@ -36,5 +36,5 @@ export function StageHeader({
 
 /** Sticky pack for pages that do not use StageShell (复习 / 我的). */
 export function StickyStageChrome({ children }: { children: ReactNode }) {
-  return <div className={STAGE_CHROME_CLASS}>{children}</div>
+  return <StageChrome>{children}</StageChrome>
 }

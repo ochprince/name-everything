@@ -35,6 +35,16 @@ describe('practice home', () => {
     expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
   })
 
+  it('contains scroll in the viewport like 复习 / 我的 so the bar stops above bottom nav', () => {
+    renderHome()
+    const main = document.querySelector('main')
+    expect(main).toHaveClass('h-dvh')
+    expect(main).toHaveClass('overflow-hidden')
+    const scroller = main?.querySelector('.overflow-y-auto')
+    expect(scroller).toBeTruthy()
+    expect(scroller).toHaveClass('h-full')
+  })
+
   it('keeps 挑战模式 disabled until a level is passed', async () => {
     const user = userEvent.setup()
     renderHome()
