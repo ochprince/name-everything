@@ -27,12 +27,15 @@ import {
   buildQueue,
   isQueueFullyCleared,
   land,
+  markCleared,
   nextSentenceId,
+  pickAnswerMode,
   slotOptions,
   startRound,
   tick,
   type FallingState,
 } from '../lib/engine'
+import { englishAnswersMatch } from '../lib/englishAnswerCompare'
 import {
   arcadeEarnedTrophy,
   arcadeFallDurationMs,
@@ -164,9 +167,10 @@ function FallingBoard({
   const initialFallMs =
     mode === 'arcade' ? arcadeFallDurationMs(0) : fallMs
   const [state, setState] = useState<FallingState | null>(() =>
-    firstId ? startRound(firstId, lives, initialFallMs) : null,
+    firstId ? startRound(firstId, lives, initialFallMs, pickAnswerMode()) : null,
   )
   const [options, setOptions] = useState<string[]>([])
+  const [produceDraft, setProduceDraft] = useState('')
   const [sentenceResult, setSentenceResult] = useState<SentenceResult | null>(null)
   const [clearedIds, setClearedIds] = useState<Set<string>>(() => new Set())
   const [groupBanner, setGroupBanner] = useState<number | null>(null)
@@ -194,9 +198,16 @@ function FallingBoard({
   const slot = slots[state?.slotIndex ?? 0]
 
   useEffect(() => {
-    if (!slot) return
+    if (!slot || state?.answerMode === 'produce') {
+      setOptions([])
+      return
+    }
     setOptions(slotOptions(slot))
-  }, [slot?.id])
+  }, [slot?.id, state?.answerMode])
+
+  useEffect(() => {
+    setProduceDraft('')
+  }, [state?.sentenceId])
 
   const triggerLandFail = useCallback(() => {
     if (bottomHandledRef.current || sentenceResultRef.current) return
@@ -293,6 +304,7 @@ function FallingBoard({
 
   function pick(option: string) {
     unlockUiSound()
+    if (round.answerMode !== 'mcq') return
     if (!slot || round.status !== 'playing' || sentenceResult) return
     if (option !== slot.correct) {
       playUiFail()
@@ -318,6 +330,30 @@ function FallingBoard({
     })
   }
 
+  function submitProduce() {
+    unlockUiSound()
+    if (round.status !== 'playing' || sentenceResult) return
+    if (round.answerMode !== 'produce' || !sentence) return
+    const trimmed = produceDraft.trim()
+    if (!trimmed) return
+
+    if (!englishAnswersMatch(trimmed, sentence.en)) {
+      playUiFail()
+      if (sentenceRef.current) gsap.killTweensOf(sentenceRef.current)
+      setState((current) => (current ? applyWrong(current) : current))
+      return
+    }
+
+    setState((current) => {
+      if (!current || !current.sentenceId) return current
+      bottomHandledRef.current = true
+      setClearedIds((prev) => new Set(prev).add(current.sentenceId!))
+      playUiSuccess()
+      setSentenceResult({ outcome: 'cleared', sentenceId: current.sentenceId })
+      return markCleared(current)
+    })
+  }
+
   function advanceToNextSentence() {
     if (!state) return
 
@@ -340,8 +376,9 @@ function FallingBoard({
       mode === 'arcade'
         ? arcadeFallDurationMs(clearedIds.size)
         : fallMs
+    const answerMode = pickAnswerMode()
     setState((current) =>
-      current ? beginSentence(current, nextId, nextFallMs) : current,
+      current ? beginSentence(current, nextId, nextFallMs, answerMode) : current,
     )
   }
 
@@ -535,18 +572,46 @@ function FallingBoard({
         </div>
         <div className="mt-4">
           <div className="rounded-2xl border border-day/20 bg-cyc/40 px-3 py-4">
-            <div className="grid grid-cols-2 gap-2">
-              {options.map((option) => (
+            {round.answerMode === 'produce' ? (
+              <form
+                className="flex flex-col gap-2"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  submitProduce()
+                }}
+              >
+                <input
+                  type="text"
+                  value={produceDraft}
+                  onChange={(event) => setProduceDraft(event.target.value)}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  placeholder="输入英文句子"
+                  className="min-h-14 w-full rounded-2xl border border-day/75 bg-cyc px-3 text-lg font-semibold tracking-[0.02em] text-day placeholder:text-day/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day"
+                />
                 <button
-                  key={option}
-                  type="button"
-                  onClick={() => pick(option)}
-                  className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-day/75 bg-cyc px-3 text-lg font-semibold tracking-[0.04em] text-day transition-[filter,background-color] duration-200 ease-out hover:border-day hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+                  type="submit"
+                  className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-day px-3 text-base font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
                 >
-                  {option}
+                  提交
                 </button>
-              ))}
-            </div>
+              </form>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {options.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => pick(option)}
+                    className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-day/75 bg-cyc px-3 text-lg font-semibold tracking-[0.04em] text-day transition-[filter,background-color] duration-200 ease-out hover:border-day hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
