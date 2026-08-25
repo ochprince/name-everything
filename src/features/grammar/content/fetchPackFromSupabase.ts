@@ -1,4 +1,20 @@
 import { getSupabase } from '../../../lib/supabase'
+import {
+  mergeCachedTables,
+  mergeVersions,
+  readCachedGrammarContent,
+  writeCachedGrammarContent,
+} from './contentCacheIdb'
+import {
+  CONTENT_TABLE_NAMES,
+  emptyVersions,
+  isCompleteCache,
+  tablesNeedingFetch,
+  type CachedContentTables,
+  type CachedGrammarContent,
+  type ContentTableName,
+  type ContentTableVersions,
+} from './contentCacheTypes'
 import { mergeGameTuning } from './loadPackFromJson'
 import type {
   Chapter,
@@ -66,6 +82,11 @@ type GameTuningRow = {
   value: number
 }
 
+type VersionRow = {
+  table_name: string
+  version: number
+}
+
 function mapChapter(row: ChapterRow): Chapter {
   return {
     id: row.id,
@@ -116,7 +137,7 @@ function mapTuning(rows: GameTuningRow[]): GameTuning {
   return mergeGameTuning(values)
 }
 
-function resolveSentenceSlots(
+export function resolveSentenceSlots(
   refs: SentenceSlotRefRow[],
   slotById: Map<string, SlotRow>,
 ): SentenceSlot[] {
@@ -136,7 +157,6 @@ function resolveSentenceSlots(
         ? slot.distractors
         : JSON.parse(String(slot.distractors))
       return {
-        // Occurrence id keeps reports/UI stable per blank; slot_id is reusable definition.
         id: `${ref.sentence_id}-slot-${ref.slot_index}`,
         sentence_id: ref.sentence_id,
         slot_index: ref.slot_index,
@@ -154,49 +174,125 @@ async function selectAll<T>(table: string): Promise<T[]> {
   return (data ?? []) as T[]
 }
 
-export async function fetchGrammarPackFromSupabase(): Promise<GrammarPack> {
-  const [
-    chapterRows,
-    grammarPointRows,
-    levelRows,
-    sentenceRows,
-    spanRows,
-    slotRows,
-    refRows,
-  ] = await Promise.all([
-    selectAll<ChapterRow>('chapters'),
-    selectAll<GrammarPoint>('grammar_points'),
-    selectAll<LevelRow>('levels'),
-    selectAll<SentenceRow>('sentences'),
-    selectAll<SentenceSpanRow>('sentence_spans'),
-    selectAll<SlotRow>('slots'),
-    selectAll<SentenceSlotRefRow>('sentence_slot_refs'),
-  ])
+export async function fetchContentTableVersions(): Promise<ContentTableVersions> {
+  const rows = await selectAll<VersionRow>('content_table_versions')
+  const versions = emptyVersions()
+  for (const row of rows) {
+    if ((CONTENT_TABLE_NAMES as readonly string[]).includes(row.table_name)) {
+      versions[row.table_name as ContentTableName] = Number(row.version)
+    }
+  }
+  return versions
+}
 
+export async function fetchContentTables(
+  names: ContentTableName[],
+): Promise<Partial<CachedContentTables>> {
+  const entries = await Promise.all(
+    names.map(async (name) => [name, await selectAll(name)] as const),
+  )
+  return Object.fromEntries(entries) as Partial<CachedContentTables>
+}
+
+export function assembleGrammarContentFromTables(tables: CachedContentTables): {
+  pack: GrammarPack
+  tuning: GameTuning
+} {
+  const slotRows = tables.slots as SlotRow[]
+  const refRows = tables.sentence_slot_refs as SentenceSlotRefRow[]
   const slotById = new Map(slotRows.map((row) => [row.id, row]))
 
   return {
-    chapters: chapterRows.map(mapChapter),
-    grammar_points: grammarPointRows,
-    levels: levelRows.map(mapLevel),
-    sentences: sentenceRows.map(mapSentence),
-    sentence_spans: spanRows.map(mapSpan),
-    sentence_slots: resolveSentenceSlots(refRows, slotById),
+    pack: {
+      chapters: (tables.chapters as ChapterRow[]).map(mapChapter),
+      grammar_points: tables.grammar_points as GrammarPoint[],
+      levels: (tables.levels as LevelRow[]).map(mapLevel),
+      sentences: (tables.sentences as SentenceRow[]).map(mapSentence),
+      sentence_spans: (tables.sentence_spans as SentenceSpanRow[]).map(mapSpan),
+      sentence_slots: resolveSentenceSlots(refRows, slotById),
+    },
+    tuning: mapTuning(tables.game_tuning as GameTuningRow[]),
   }
 }
 
+export async function fetchGrammarPackFromSupabase(): Promise<GrammarPack> {
+  const tables = await fetchContentTables([
+    'chapters',
+    'grammar_points',
+    'levels',
+    'sentences',
+    'sentence_spans',
+    'slots',
+    'sentence_slot_refs',
+  ])
+  const assembled = assembleGrammarContentFromTables({
+    chapters: tables.chapters ?? [],
+    grammar_points: tables.grammar_points ?? [],
+    levels: tables.levels ?? [],
+    sentences: tables.sentences ?? [],
+    sentence_spans: tables.sentence_spans ?? [],
+    slots: tables.slots ?? [],
+    sentence_slot_refs: tables.sentence_slot_refs ?? [],
+    game_tuning: [],
+  })
+  return assembled.pack
+}
+
 export async function fetchGameTuningFromSupabase(): Promise<GameTuning> {
-  const rows = await selectAll<GameTuningRow>('game_tuning')
-  return mapTuning(rows)
+  const tables = await fetchContentTables(['game_tuning'])
+  return mapTuning((tables.game_tuning ?? []) as GameTuningRow[])
 }
 
 export async function fetchGrammarContentFromSupabase(): Promise<{
   pack: GrammarPack
   tuning: GameTuning
 }> {
-  const [pack, tuning] = await Promise.all([
-    fetchGrammarPackFromSupabase(),
-    fetchGameTuningFromSupabase(),
+  const [tables, versions] = await Promise.all([
+    fetchContentTables([...CONTENT_TABLE_NAMES]),
+    fetchContentTableVersions(),
   ])
-  return { pack, tuning }
+  const cachedTables = mergeCachedTables(null, tables)
+  const cache: CachedGrammarContent = { versions, tables: cachedTables }
+  await writeCachedGrammarContent(cache)
+  return assembleGrammarContentFromTables(cachedTables)
+}
+
+/**
+ * Apply remote versions: fetch only changed tables, write IDB, return assembled content.
+ * Returns null when nothing changed (and cache was already complete).
+ */
+export async function syncGrammarContentCache(
+  local: CachedGrammarContent | null,
+): Promise<{ pack: GrammarPack; tuning: GameTuning; changed: boolean } | null> {
+  const remoteVersions = await fetchContentTableVersions()
+  const localVersions = local?.versions ?? emptyVersions()
+  const needed = tablesNeedingFetch(localVersions, remoteVersions)
+
+  if (needed.length === 0 && isCompleteCache(local)) {
+    return {
+      ...assembleGrammarContentFromTables(local.tables),
+      changed: false,
+    }
+  }
+
+  const fetched = await fetchContentTables(
+    needed.length > 0 ? needed : [...CONTENT_TABLE_NAMES],
+  )
+  const tables = mergeCachedTables(local?.tables ?? null, fetched)
+  const versions = mergeVersions(
+    local?.versions ?? null,
+    remoteVersions,
+    needed.length > 0 ? needed : [...CONTENT_TABLE_NAMES],
+  )
+  const cache: CachedGrammarContent = { versions, tables }
+  await writeCachedGrammarContent(cache)
+  return {
+    ...assembleGrammarContentFromTables(tables),
+    changed: true,
+  }
+}
+
+export async function readLocalGrammarContentCache(): Promise<CachedGrammarContent | null> {
+  const cache = await readCachedGrammarContent()
+  return isCompleteCache(cache) ? cache : null
 }

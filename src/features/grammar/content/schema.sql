@@ -1,4 +1,3 @@
--- Canonical copy: see supabase/schema.sql
 -- Grammar Everything content schema (canonical)
 -- Skills MUST read this file (or the same migration) for table shapes.
 -- Do not infer schema from superseded / deleted migrations.
@@ -72,6 +71,11 @@ CREATE TABLE game_tuning (
   value DOUBLE PRECISION NOT NULL
 );
 
+CREATE TABLE content_table_versions (
+  table_name TEXT PRIMARY KEY,
+  version BIGINT NOT NULL DEFAULT 1
+);
+
 CREATE TABLE asset_reports (
   id TEXT PRIMARY KEY,
   asset_type TEXT NOT NULL CHECK (asset_type IN ('sentence', 'grammar_point', 'sentence_slot')),
@@ -81,6 +85,50 @@ CREATE TABLE asset_reports (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE OR REPLACE FUNCTION bump_content_table_version()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE content_table_versions
+  SET version = version + 1
+  WHERE table_name = TG_TABLE_NAME;
+  RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER trg_chapters_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON chapters
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
+CREATE TRIGGER trg_grammar_points_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON grammar_points
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
+CREATE TRIGGER trg_levels_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON levels
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
+CREATE TRIGGER trg_sentences_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON sentences
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
+CREATE TRIGGER trg_sentence_spans_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON sentence_spans
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
+CREATE TRIGGER trg_slots_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON slots
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
+CREATE TRIGGER trg_sentence_slot_refs_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON sentence_slot_refs
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
+CREATE TRIGGER trg_game_tuning_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON game_tuning
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
 ALTER TABLE chapters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE grammar_points ENABLE ROW LEVEL SECURITY;
 ALTER TABLE levels ENABLE ROW LEVEL SECURITY;
@@ -89,6 +137,7 @@ ALTER TABLE sentence_spans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE slots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sentence_slot_refs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE game_tuning ENABLE ROW LEVEL SECURITY;
+ALTER TABLE content_table_versions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE asset_reports ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "chapters_public_read" ON chapters
@@ -107,9 +156,11 @@ CREATE POLICY "sentence_slot_refs_public_read" ON sentence_slot_refs
   FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "game_tuning_public_read" ON game_tuning
   FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "content_table_versions_public_read" ON content_table_versions
+  FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "asset_reports_public_insert" ON asset_reports
   FOR INSERT TO anon, authenticated WITH CHECK (true);
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT SELECT ON chapters, grammar_points, levels, sentences, sentence_spans, slots, sentence_slot_refs, game_tuning TO anon, authenticated;
+GRANT SELECT ON chapters, grammar_points, levels, sentences, sentence_spans, slots, sentence_slot_refs, game_tuning, content_table_versions TO anon, authenticated;
 GRANT INSERT ON asset_reports TO anon, authenticated;

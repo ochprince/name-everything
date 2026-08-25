@@ -1,5 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { fetchGrammarContentFromSupabase } from './fetchPackFromSupabase'
+import {
+  assembleGrammarContentFromTables,
+  fetchGrammarContentFromSupabase,
+  readLocalGrammarContentCache,
+  syncGrammarContentCache,
+} from './fetchPackFromSupabase'
 import {
   loadGameTuningFromJson,
   loadGrammarPackFromJson,
@@ -27,6 +32,27 @@ export function GrammarPackProvider({ children }: { children: ReactNode }) {
     async function load() {
       try {
         if (isSupabaseConfigured()) {
+          const cached = await readLocalGrammarContentCache()
+          if (cancelled) return
+
+          if (cached) {
+            const assembled = assembleGrammarContentFromTables(cached.tables)
+            setGrammarPack(assembled.pack)
+            setGameTuning(assembled.tuning)
+            setState('ready')
+
+            void syncGrammarContentCache(cached)
+              .then((result) => {
+                if (cancelled || !result?.changed) return
+                setGrammarPack(result.pack)
+                setGameTuning(result.tuning)
+              })
+              .catch(() => {
+                // Keep serving stale cache when background sync fails.
+              })
+            return
+          }
+
           const { pack, tuning } = await fetchGrammarContentFromSupabase()
           if (cancelled) return
           setGrammarPack(pack)
