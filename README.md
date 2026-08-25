@@ -70,7 +70,7 @@ Grammar falling-fill gameplay — recorded from user review (2026-08-25):
    - Hard mode: each option has only one error chance.
    - Hell mode: no error chances at all.
 3. **Me-page settings organization** — config items currently mix vocab-memory settings with grammar/challenge-mode settings. Group them by module (sections/blocks) so the page stays elegant and clear as items grow (grammar game-mode/difficulty selectors may join later). Alternative: split settings into a standalone page with a single entry point from Me — the common app pattern.
-4. **Challenge mode is still recognition, not substitution** — the challenge mode (and level drills) currently test mastery of existing example sentences: recognize the structure, fill blanks in a known sentence. That is recognition — grammar learning + example learning. Substitution is the real goal: actually using the grammar to build new sentences (swap subject/object/verb to generate novel ones), not memorizing examples. Challenge mode should evolve toward substitution — e.g. generative prompts (grammar skeleton + Chinese meaning, learner produces the English sentence).
+4. **Challenge mode is still recognition, not substitution** — ~50% of sentences in level drills and challenge mode are now whole-sentence English input (Chinese prompt → type English → lenient match against that sentence's `en`): recall production, not multiple-choice recognition. True **substitution** remains future work: generative prompts with a new target sentence (swap subject/object/verb), not comparing against the same example `en`.
 
 ## Week-1 out of scope
 
