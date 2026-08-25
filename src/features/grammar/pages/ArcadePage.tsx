@@ -1,5 +1,5 @@
 import { Link, Navigate } from 'react-router-dom'
-import { StageShell, STAGE_CHROME_OFFSET } from '../../../shared/StageShell'
+import { StageShell } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
 import trophyPassed from '../assets/trophy-passed.svg'
 import { ArcadeEmptyPlaceholder } from '../components/ArcadeEmptyPlaceholder'
@@ -51,10 +51,7 @@ export function ArcadePage() {
         />
       }
     >
-      <div
-        className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden pt-2"
-        style={{ maxHeight: `calc(100dvh - ${STAGE_CHROME_OFFSET} - 7rem)` }}
-      >
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden pt-2">
         <section className="flex flex-col gap-2">
           <h2 className="px-0.5 text-xs font-semibold tracking-[0.18em] text-day/45">
             累计奖杯
@@ -118,7 +115,7 @@ export function ArcadePage() {
 
         <Link
           to="/practice/grammar/play/run"
-          className="mb-4 mt-auto inline-flex min-h-14 shrink-0 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+          className="mt-auto inline-flex min-h-14 shrink-0 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
         >
           开始挑战
         </Link>

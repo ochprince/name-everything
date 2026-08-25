@@ -99,7 +99,7 @@ export function LearnPage() {
         <Link
           to={`/practice/grammar/learn/${level.id}/play`}
           onClick={() => playUiTap()}
-          className="mt-auto mb-4 inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 font-cue text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+          className="mt-auto inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 font-cue text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
         >
           开始游戏
         </Link>

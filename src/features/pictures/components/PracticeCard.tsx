@@ -3,6 +3,7 @@ import { playCardAudio, stopCardAudio } from '../lib/playAudio'
 import type { HintLang, ThinkHoldMs } from '../lib/storage'
 import type { Card } from '../../../types/card'
 import { StageHeader } from '../../../shared/StageHeader'
+import { STAGE_BOTTOM_PAD } from '../../../shared/StageShell'
 import { LangToggle } from '../../../components/LangToggle'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
@@ -208,9 +209,7 @@ export function PracticeCard({
     <article data-seed="af3fdd03" className="relative z-0 min-h-dvh overflow-x-clip font-cue">
       <div className="cyc-wash pointer-events-none absolute inset-0" />
       <div
-        className={`relative mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden px-4 ${
-          sheet ? 'pb-6' : 'pb-28'
-        }`}
+        className={`relative mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden px-4 ${STAGE_BOTTOM_PAD}`}
       >
         <div className="shrink-0 bg-cyc pb-2 pt-[max(1.25rem,env(safe-area-inset-top))]">
           <StageHeader

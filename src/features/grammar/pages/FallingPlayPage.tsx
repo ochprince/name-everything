@@ -4,6 +4,7 @@ import { StageShell, STAGE_CHROME_OFFSET } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
 import { ReportDialog } from '../components/ReportDialog'
 import { LivesHearts } from '../components/LivesHearts'
+import { FallingAnswerPad } from '../components/FallingAnswerPad'
 import {
   anchorForLevel,
   levelById,
@@ -66,11 +67,10 @@ type SentenceResult = {
 /** 提示底边落到底部蓝线时的进度（0→1 对应 start%→100%） */
 const FALL_START_PERCENT = 10
 
-/** 选项区到底部导航上沿的空隙（离底留白） */
+/** 选项区到屏幕底的空隙（离底留白；会话页无底栏） */
 const GAME_BOTTOM_GAP_PX = 32
 
-/** 底部导航高度（BottomNav：1px 线 + min-h-14 + max(0.5rem, safe-area) + 2px） */
-const BOTTOM_NAV_HEIGHT = 'calc(3.5rem + max(0.5rem, env(safe-area-inset-bottom)) + 3px)'
+const SAFE_BOTTOM = 'max(0.5rem, env(safe-area-inset-bottom))'
 
 function fallProgressToTop(progress: number): number {
   return FALL_START_PERCENT + progress * (100 - FALL_START_PERCENT)
@@ -539,7 +539,7 @@ function FallingBoard({
         className="absolute inset-x-0 flex min-h-0 flex-col"
         style={{
           top: STAGE_CHROME_OFFSET,
-          bottom: `calc(${BOTTOM_NAV_HEIGHT} + ${GAME_BOTTOM_GAP_PX}px)`,
+          bottom: `calc(${SAFE_BOTTOM} + ${GAME_BOTTOM_GAP_PX}px)`,
         }}
       >
         <div
@@ -571,48 +571,20 @@ function FallingBoard({
           ) : null}
         </div>
         <div className="mt-4">
-          <div className="rounded-2xl border border-day/20 bg-cyc/40 px-3 py-4">
-            {round.answerMode === 'produce' ? (
-              <form
-                className="flex flex-col gap-2"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  submitProduce()
-                }}
-              >
-                <input
-                  type="text"
-                  value={produceDraft}
-                  onChange={(event) => setProduceDraft(event.target.value)}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                  placeholder="输入英文句子"
-                  className="min-h-14 w-full rounded-2xl border border-day/75 bg-cyc px-3 text-lg font-semibold tracking-[0.02em] text-day placeholder:text-day/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day"
-                />
-                <button
-                  type="submit"
-                  className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-day px-3 text-base font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
-                >
-                  提交
-                </button>
-              </form>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {options.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => pick(option)}
-                    className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-day/75 bg-cyc px-3 text-lg font-semibold tracking-[0.04em] text-day transition-[filter,background-color] duration-200 ease-out hover:border-day hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {round.answerMode === 'produce' ? (
+            <FallingAnswerPad
+              mode="produce"
+              draft={produceDraft}
+              onDraftChange={setProduceDraft}
+              onSubmit={submitProduce}
+            />
+          ) : (
+            <FallingAnswerPad
+              mode="mcq"
+              options={options}
+              onPick={pick}
+            />
+          )}
         </div>
       </div>
       </StageShell>
@@ -707,7 +679,7 @@ function SentenceResultScreen({
           type="button"
           onClick={onNext}
           disabled={!nextReady}
-          className="mt-auto mb-4 inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 disabled:pointer-events-none"
+          className="mt-auto inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 disabled:pointer-events-none"
         >
           {showSettlement ? '查看结算' : '下一句'}
         </button>

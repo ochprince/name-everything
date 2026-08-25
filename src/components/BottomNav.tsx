@@ -7,6 +7,11 @@ const tabs = [
   { to: '/me', label: '我的' },
 ] as const
 
+/** Primary tabs only — nested practice stages keep a top-left back instead. */
+export function showsBottomNav(pathname: string): boolean {
+  return pathname === '/' || pathname === '/review' || pathname === '/me'
+}
+
 function tabOn(to: string, pathname: string): boolean {
   if (to === '/') return pathname === '/' || pathname.startsWith('/practice')
   return pathname === to || pathname.startsWith(`${to}/`)
@@ -16,6 +21,8 @@ export function BottomNav() {
   const { progress } = useProgress()
   const unseen = progress.reviewUnseenCount
   const { pathname } = useLocation()
+
+  if (!showsBottomNav(pathname)) return null
 
   return (
     <nav
