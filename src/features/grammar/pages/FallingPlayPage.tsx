@@ -63,11 +63,8 @@ type SentenceResult = {
 /** 提示底边落到底部蓝线时的进度（0→1 对应 start%→100%） */
 const FALL_START_PERCENT = 10
 
-/** 选项区固定定位参数：离底空隙 / 蓝线到选项区间隙 / 选项区估算总高 */
-const OPTIONS_BOTTOM_PX = 32
-const OPTIONS_GAP_PX = 16
-const OPTIONS_AREA_PX = 154 // border2 + py-4(32) + 两行按钮(min-h-14×2=112) + gap-2(8)
-const FALL_END_OFFSET_PX = OPTIONS_BOTTOM_PX + OPTIONS_AREA_PX + OPTIONS_GAP_PX
+/** 选项区到底部导航上沿的空隙（离底留白） */
+const GAME_BOTTOM_GAP_PX = 32
 
 /** 底部导航高度（BottomNav：1px 线 + min-h-14 + max(0.5rem, safe-area) + 2px） */
 const BOTTOM_NAV_HEIGHT = 'calc(3.5rem + max(0.5rem, env(safe-area-inset-bottom)) + 3px)'
@@ -502,18 +499,19 @@ function FallingBoard({
         }
       >
       <div
-        className="absolute inset-x-0"
-        style={{ top: STAGE_CHROME_OFFSET, bottom: BOTTOM_NAV_HEIGHT }}
+        className="absolute inset-x-0 flex min-h-0 flex-col"
+        style={{
+          top: STAGE_CHROME_OFFSET,
+          bottom: `calc(${BOTTOM_NAV_HEIGHT} + ${GAME_BOTTOM_GAP_PX}px)`,
+        }}
       >
         <div
           ref={fallZoneRef}
-          className="absolute inset-0 overflow-hidden"
-          style={{ paddingBottom: FALL_END_OFFSET_PX }}
+          className="relative min-h-0 flex-1 overflow-hidden"
         >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-cobalt to-transparent opacity-80"
-            style={{ bottom: FALL_END_OFFSET_PX }}
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cobalt to-transparent opacity-80"
           />
           {sentence ? (
             <div
@@ -535,10 +533,7 @@ function FallingBoard({
             </div>
           ) : null}
         </div>
-        <div
-          className="absolute inset-x-0"
-          style={{ bottom: `max(${OPTIONS_BOTTOM_PX}px, env(safe-area-inset-bottom))` }}
-        >
+        <div className="mt-4">
           <div className="rounded-2xl border border-day/20 bg-cyc/40 px-3 py-4">
             <div className="grid grid-cols-2 gap-2">
               {options.map((option) => (
