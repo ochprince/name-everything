@@ -51,6 +51,7 @@ import { gameTuning } from '../content/tuning'
 import { playUiCorrect, playUiFail, playUiSuccess, playUiTap, unlockUiSound } from '../../../shared/uiSound'
 import { GroupSpeedBanner } from '../components/GroupSpeedBanner'
 import { LevelPassTrophy } from '../components/LevelPassTrophy'
+import { fireMultiBurst, fireSingleBurst, playLetdown, shakeTitle } from '../lib/celebrate'
 
 type SentenceOutcome = 'cleared' | 'failed'
 
@@ -256,6 +257,23 @@ function FallingBoard({
     }
   }, [state, mode, levelId, threshold, queue, clearedIds, arcadePoolSize])
 
+  // 结算页动画：成功态（过关/挑战成功）多发烟花；失败态小失落。
+  const settleContentRef = useRef<HTMLDivElement>(null)
+  const settleTitleRef = useRef<HTMLParagraphElement>(null)
+  const sessionCleared = mode === 'arcade' && isQueueFullyCleared(queue, clearedIds)
+  const passed =
+    mode === 'level' && threshold !== undefined && (state?.score ?? 0) >= threshold
+
+  useEffect(() => {
+    if (state?.status !== 'over') return
+    if (passed || sessionCleared) {
+      fireMultiBurst(document.body, 3)
+    } else {
+      if (settleContentRef.current) playLetdown(settleContentRef.current)
+      if (settleTitleRef.current) shakeTitle(settleTitleRef.current)
+    }
+  }, [state?.status, passed, sessionCleared])
+
   if (!state || !firstId) {
     return <Navigate to={backTo} replace />
   }
@@ -378,10 +396,16 @@ function FallingBoard({
       <StageShell
         header={<StageHeader backTo={backTo} title="结算" />}
       >
-        <div className="flex flex-1 flex-col items-center justify-center gap-6">
+        <div
+          ref={settleContentRef}
+          className="flex flex-1 flex-col items-center justify-center gap-6"
+        >
           {mode === 'arcade' ? (
             <>
-              <p className="text-3xl font-semibold tracking-[0.04em] text-day">
+              <p
+                ref={settleTitleRef}
+                className="text-3xl font-semibold tracking-[0.04em] text-day"
+              >
                 {sessionCleared ? '挑战成功' : `本局 ${state.score} 句`}
               </p>
               {sessionCleared ? (
@@ -404,7 +428,10 @@ function FallingBoard({
               ) : null}
             </>
           ) : (
-            <p className="text-3xl font-semibold tracking-[0.04em] text-day">
+            <p
+              ref={settleTitleRef}
+              className="text-3xl font-semibold tracking-[0.04em] text-day"
+            >
               完成 {state.score} 句
             </p>
           )}
@@ -534,6 +561,8 @@ function SentenceResultScreen({
   // 失败页防误触：页面切换瞬间玩家连点的残余点击可能落到「下一句」上，
   // 导致来不及看正确答案。失败时按钮静默延迟 500ms 才可点；成功页无需延迟。
   const [nextReady, setNextReady] = useState(cleared)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
     if (outcome === 'cleared') {
@@ -549,6 +578,16 @@ function SentenceResultScreen({
     if (outcome !== 'failed') return
     playUiFail()
   }, [outcome, sentence.id])
+
+  // 动画：单句成功页单发烟花；失败页小失落（内容下沉 + 标题抖动）。
+  useEffect(() => {
+    if (cleared) {
+      fireSingleBurst(document.body)
+    } else {
+      if (contentRef.current) playLetdown(contentRef.current)
+      if (titleRef.current) shakeTitle(titleRef.current)
+    }
+  }, [cleared, sentence.id])
 
   return (
     <StageShell
@@ -569,8 +608,9 @@ function SentenceResultScreen({
         />
       }
     >
-      <div className="flex flex-1 flex-col gap-6 pt-10">
+      <div ref={contentRef} className="flex flex-1 flex-col gap-6 pt-10">
         <p
+          ref={titleRef}
           className={`text-center text-2xl font-semibold tracking-[0.04em] ${
             cleared ? 'text-day' : 'text-rose'
           }`}
