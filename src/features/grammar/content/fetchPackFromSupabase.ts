@@ -1,4 +1,5 @@
 import { getSupabase } from '../../../lib/supabase'
+import { mergeGameTuning } from './loadPackFromJson'
 import type {
   Chapter,
   GameTuning,
@@ -112,7 +113,7 @@ function mapSpan(row: SentenceSpanRow): SentenceSpan {
 
 function mapTuning(rows: GameTuningRow[]): GameTuning {
   const values = Object.fromEntries(rows.map((row) => [row.key, row.value]))
-  return values as GameTuning
+  return mergeGameTuning(values)
 }
 
 function resolveSentenceSlots(

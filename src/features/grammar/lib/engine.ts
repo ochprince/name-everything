@@ -22,7 +22,8 @@ export function pickAnswerMode(
   ratio: number = gameTuning.produce_answer_ratio,
   random: () => number = Math.random,
 ): AnswerMode {
-  return random() < ratio ? 'produce' : 'mcq'
+  const safeRatio = Number.isFinite(ratio) ? ratio : 0.5
+  return random() < safeRatio ? 'produce' : 'mcq'
 }
 
 export function fallDurationForAnswerMode(
@@ -30,7 +31,9 @@ export function fallDurationForAnswerMode(
   mode: AnswerMode,
 ): number {
   if (mode === 'produce') {
-    return Math.round(baseMs * gameTuning.produce_fall_duration_factor)
+    const factor = gameTuning.produce_fall_duration_factor
+    const safeFactor = Number.isFinite(factor) ? factor : 1.5
+    return Math.round(baseMs * safeFactor)
   }
   return baseMs
 }

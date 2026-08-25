@@ -125,6 +125,11 @@ describe('falling engine', () => {
     expect(pickAnswerMode(1, () => 0.99)).toBe('produce')
   })
 
+  it('pickAnswerMode falls back when ratio is not finite', () => {
+    expect(pickAnswerMode(Number.NaN, () => 0.49)).toBe('produce')
+    expect(pickAnswerMode(Number.NaN, () => 0.5)).toBe('mcq')
+  })
+
   it('fallDurationForAnswerMode stretches produce rounds', () => {
     expect(fallDurationForAnswerMode(8000, 'mcq')).toBe(8000)
     expect(fallDurationForAnswerMode(8000, 'produce')).toBe(

@@ -21,3 +21,8 @@ export function loadGrammarPackFromJson(): GrammarPack {
 export function loadGameTuningFromJson(): GameTuning {
   return gameTuningJson as GameTuning
 }
+
+/** Fill missing keys from checked-in JSON so stale Supabase rows stay safe. */
+export function mergeGameTuning(partial: Partial<GameTuning>): GameTuning {
+  return { ...loadGameTuningFromJson(), ...partial }
+}
