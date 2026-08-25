@@ -96,3 +96,54 @@ export function shakeTitle(el: HTMLElement): void {
     { x: 4, duration: 0.06, repeat: 5, yoyo: true, ease: 'power1.inOut', clearProps: 'x' },
   )
 }
+
+const HEART_COLOR = 'rgba(232, 165, 152, 0.9)' // rose
+
+/** 心碎：心形震碎放大淡出 + 碎片 Physics2D 散落（失败页掉命）。 */
+export function breakHeart(el: Element): void {
+  const rect = el.getBoundingClientRect()
+  const cx = rect.left + rect.width / 2
+  const cy = rect.top + rect.height / 2
+
+  // 心形本体：放大震碎 + 淡出
+  gsap.killTweensOf(el)
+  gsap.fromTo(
+    el,
+    { scale: 1, opacity: 1 },
+    {
+      scale: 1.3,
+      opacity: 0,
+      duration: 0.4,
+      ease: 'power2.out',
+      clearProps: 'scale,opacity',
+    },
+  )
+
+  // 碎片：方块/三角混合，从心位置向四周 Physics2D 散落旋转
+  const layer = makeLayer(document.body)
+  for (let i = 0; i < 12; i++) {
+    const shard = document.createElement('span')
+    const size = 3 + Math.random() * 4
+    const clip =
+      Math.random() < 0.5
+        ? `polygon(50% 0, 100% 100%, 0 100%)` // 三角
+        : undefined // 方块
+    shard.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;background:${HEART_COLOR};transform:translate(-50%,-50%)${
+      clip ? `;clip-path:${clip}` : ''
+    }`
+    layer.appendChild(shard)
+    gsap.to(shard, {
+      physics2D: {
+        angle: Math.random() * 360,
+        velocity: 70 + Math.random() * 130,
+        gravity: 520,
+      },
+      rotation: Math.random() * 200 - 100,
+      opacity: 0,
+      duration: 0.7 + Math.random() * 0.5,
+      ease: 'power1.out',
+      onComplete: () => shard.remove(),
+    })
+  }
+  gsap.delayedCall(1.3, () => layer.remove())
+}

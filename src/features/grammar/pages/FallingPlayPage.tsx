@@ -561,8 +561,6 @@ function SentenceResultScreen({
   // 失败页防误触：页面切换瞬间玩家连点的残余点击可能落到「下一句」上，
   // 导致来不及看正确答案。失败时按钮静默延迟 500ms 才可点；成功页无需延迟。
   const [nextReady, setNextReady] = useState(cleared)
-  const contentRef = useRef<HTMLDivElement>(null)
-  const titleRef = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
     if (outcome === 'cleared') {
@@ -579,14 +577,9 @@ function SentenceResultScreen({
     playUiFail()
   }, [outcome, sentence.id])
 
-  // 动画：单句成功页单发烟花；失败页小失落（内容下沉 + 标题抖动）。
+  // 动画：单句成功页单发烟花；失败页碎心由 LivesHearts 的 breakingIndex 触发。
   useEffect(() => {
-    if (cleared) {
-      fireSingleBurst(document.body)
-    } else {
-      if (contentRef.current) playLetdown(contentRef.current)
-      if (titleRef.current) shakeTitle(titleRef.current)
-    }
+    if (cleared) fireSingleBurst(document.body)
   }, [cleared, sentence.id])
 
   return (
@@ -608,9 +601,8 @@ function SentenceResultScreen({
         />
       }
     >
-      <div ref={contentRef} className="flex flex-1 flex-col gap-6 pt-10">
+      <div className="flex flex-1 flex-col gap-6 pt-10">
         <p
-          ref={titleRef}
           className={`text-center text-2xl font-semibold tracking-[0.04em] ${
             cleared ? 'text-day' : 'text-rose'
           }`}
@@ -625,7 +617,8 @@ function SentenceResultScreen({
         </div>
         {!cleared && !gameOver ? (
           <div className="flex justify-center">
-            <LivesHearts count={lives} max={maxLives} size="md" />
+            {/* 刚失去的心 = 下标 lives（第一颗灰心），由它触发碎心动画 */}
+            <LivesHearts count={lives} max={maxLives} size="md" breakingIndex={lives} />
           </div>
         ) : null}
         <button
