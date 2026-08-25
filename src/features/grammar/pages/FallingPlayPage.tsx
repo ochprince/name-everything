@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
-import { StageShell } from '../../../shared/StageShell'
+import { StageShell, STAGE_CHROME_OFFSET } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
 import { ReportDialog } from '../components/ReportDialog'
 import { LivesHearts } from '../components/LivesHearts'
@@ -62,6 +62,12 @@ type SentenceResult = {
 
 /** 提示底边落到底部蓝线时的进度（0→1 对应 start%→100%） */
 const FALL_START_PERCENT = 10
+
+/** 选项区固定定位参数：离底空隙 / 蓝线到选项区间隙 / 选项区估算总高 */
+const OPTIONS_BOTTOM_PX = 32
+const OPTIONS_GAP_PX = 16
+const OPTIONS_AREA_PX = 154 // border2 + py-4(32) + 两行按钮(min-h-14×2=112) + gap-2(8)
+const FALL_END_OFFSET_PX = OPTIONS_BOTTOM_PX + OPTIONS_AREA_PX + OPTIONS_GAP_PX
 
 function fallProgressToTop(progress: number): number {
   return FALL_START_PERCENT + progress * (100 - FALL_START_PERCENT)
@@ -492,11 +498,19 @@ function FallingBoard({
           />
         }
       >
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <div ref={fallZoneRef} className="relative min-h-[14rem] flex-1 overflow-hidden">
+      <div
+        className="absolute inset-x-0"
+        style={{ top: STAGE_CHROME_OFFSET, bottom: 0 }}
+      >
+        <div
+          ref={fallZoneRef}
+          className="absolute inset-0 overflow-hidden"
+          style={{ paddingBottom: FALL_END_OFFSET_PX }}
+        >
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cobalt to-transparent opacity-80"
+            className="pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-cobalt to-transparent opacity-80"
+            style={{ bottom: FALL_END_OFFSET_PX }}
           />
           {sentence ? (
             <div
@@ -518,18 +532,23 @@ function FallingBoard({
             </div>
           ) : null}
         </div>
-        <div className="mt-2 rounded-2xl border border-day/20 bg-cyc/40 px-3 py-4">
-          <div className="grid grid-cols-2 gap-2">
-            {options.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => pick(option)}
-                className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-day/75 bg-cyc px-3 text-lg font-semibold tracking-[0.04em] text-day transition-[filter,background-color] duration-200 ease-out hover:border-day hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
-              >
-                {option}
-              </button>
-            ))}
+        <div
+          className="absolute inset-x-0"
+          style={{ bottom: `max(${OPTIONS_BOTTOM_PX}px, env(safe-area-inset-bottom))` }}
+        >
+          <div className="rounded-2xl border border-day/20 bg-cyc/40 px-3 py-4">
+            <div className="grid grid-cols-2 gap-2">
+              {options.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => pick(option)}
+                  className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-day/75 bg-cyc px-3 text-lg font-semibold tracking-[0.04em] text-day transition-[filter,background-color] duration-200 ease-out hover:border-day hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
