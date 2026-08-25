@@ -28,6 +28,14 @@ describe('stage primary CTA bottom inset', () => {
     expect(STAGE_BOTTOM_PAD).toBe('pb-6')
   })
 
+  it('nested stages keep document scroll (min-h-dvh) so window scroll restore works', () => {
+    renderApp('/practice/pictures')
+    const main = document.querySelector('main')
+    expect(main).toHaveClass('min-h-dvh')
+    expect(main).not.toHaveClass('h-dvh')
+    expect(main).not.toHaveClass('overflow-hidden')
+  })
+
   it('词汇记忆 primary actions sit on STAGE_BOTTOM_PAD only', () => {
     renderApp('/practice/pictures')
     const row = screen.getByRole('button', { name: 'Aha!' }).parentElement
