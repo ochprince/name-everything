@@ -11,9 +11,15 @@ import {
   pinLayoutToTop,
   readKeyboardOverlapPx,
 } from '../../../shared/appViewport'
+import { isEditableTarget } from '../../../shared/keyboardOverlap'
 import { ReportDialog } from '../components/ReportDialog'
 import { LivesHearts } from '../components/LivesHearts'
 import { FallingAnswerPad } from '../components/FallingAnswerPad'
+import { sentenceHitBottom, shouldTrustDomLandCheck } from '../lib/fallingCollision'
+import {
+  clearsResultBeforeAdvance,
+  planAfterSentence,
+} from '../lib/afterSentencePlan'
 import {
   anchorForLevel,
   levelById,
@@ -83,13 +89,6 @@ const SAFE_BOTTOM = 'max(0.5rem, env(safe-area-inset-bottom))'
 
 function fallProgressToTop(progress: number): number {
   return FALL_START_PERCENT + progress * (100 - FALL_START_PERCENT)
-}
-
-function sentenceHitBottom(zoneEl: HTMLElement, wrapEl: HTMLElement): boolean {
-  return (
-    wrapEl.getBoundingClientRect().bottom >=
-    zoneEl.getBoundingClientRect().bottom - 2
-  )
 }
 
 export function FallingPlayPage({ mode }: { mode: 'level' | 'arcade' }) {
@@ -196,6 +195,11 @@ function FallingBoard({
   const keyboardOverlapPx = useKeyboardOverlapPx()
   usePinLayoutOnKeyboardDismiss()
 
+  useEffect(() => {
+    // SPA remount after produce can inherit iOS/visualViewport scroll leftovers.
+    pinLayoutToTop()
+  }, [])
+
   stateRef.current = state
   sentenceResultRef.current = sentenceResult
 
@@ -231,9 +235,7 @@ function FallingBoard({
     const pin = () => pinLayoutToTop()
 
     const onFocusIn = (event: FocusEvent) => {
-      const target = event.target
-      if (!(target instanceof HTMLElement)) return
-      if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') return
+      if (!isEditableTarget(event.target)) return
       pin()
       requestAnimationFrame(pin)
       window.setTimeout(pin, 50)
@@ -310,7 +312,12 @@ function FallingBoard({
     const hitByTime = current.remainingMs <= 0
     const zone = fallZoneRef.current
     const wrap = sentenceWrapRef.current
-    const hitByDom = zone && wrap ? sentenceHitBottom(zone, wrap) : false
+    const trustDom = shouldTrustDomLandCheck({
+      inputFocused: isEditableTarget(document.activeElement),
+      keyboardOverlapPx,
+    })
+    const hitByDom =
+      trustDom && zone && wrap ? sentenceHitBottom(zone, wrap) : false
 
     if (hitByTime || hitByDom) {
       triggerLandFail()
@@ -440,18 +447,28 @@ function FallingBoard({
   function continueAfterSentence() {
     if (!state || !sentenceResult) return
     playUiTap()
-    setSentenceResult(null)
 
     const hasMoreSentences = !allQueueCleared && state.status !== 'over'
-    if (
-      mode === 'arcade' &&
-      shouldShowGroupSpeedBanner(clearedIds.size, hasMoreSentences)
-    ) {
-      pendingAdvanceRef.current = advanceToNextSentence
-      setGroupBanner(arcadeGroupNumber(clearedIds.size))
+    const plan = planAfterSentence({
+      mode,
+      clearedCount: clearedIds.size,
+      hasMoreSentences,
+      groupNumber: arcadeGroupNumber(clearedIds.size),
+      shouldShowBanner: shouldShowGroupSpeedBanner,
+    })
+
+    // Keep the result screen until the banner finishes — clearing it while
+    // remainingMs is still 0 re-mounts the board and instantly re-fails.
+    if (!clearsResultBeforeAdvance(plan) && plan.kind === 'group_banner') {
+      pendingAdvanceRef.current = () => {
+        setSentenceResult(null)
+        advanceToNextSentence()
+      }
+      setGroupBanner(plan.groupNumber)
       return
     }
 
+    setSentenceResult(null)
     advanceToNextSentence()
   }
 
@@ -464,16 +481,24 @@ function FallingBoard({
 
   if (sentenceResult && resultSentence) {
     return (
-      <SentenceResultScreen
-        outcome={sentenceResult.outcome}
-        sentence={resultSentence}
-        lives={state.lives}
-        maxLives={maxLives}
-        gameOver={state.status === 'over'}
-        showSettlement={state.status === 'over' || allQueueCleared}
-        onNext={continueAfterSentence}
-        backTo={backTo}
-      />
+      <>
+        {groupBanner !== null ? (
+          <GroupSpeedBanner
+            groupNumber={groupBanner}
+            onComplete={handleGroupBannerComplete}
+          />
+        ) : null}
+        <SentenceResultScreen
+          outcome={sentenceResult.outcome}
+          sentence={resultSentence}
+          lives={state.lives}
+          maxLives={maxLives}
+          gameOver={state.status === 'over'}
+          showSettlement={state.status === 'over' || allQueueCleared}
+          onNext={continueAfterSentence}
+          backTo={backTo}
+        />
+      </>
     )
   }
 
