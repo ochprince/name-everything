@@ -531,6 +531,19 @@ function SentenceResultScreen({
   backTo: string
 }) {
   const cleared = outcome === 'cleared'
+  // 失败页防误触：页面切换瞬间玩家连点的残余点击可能落到「下一句」上，
+  // 导致来不及看正确答案。失败时按钮静默延迟 500ms 才可点；成功页无需延迟。
+  const [nextReady, setNextReady] = useState(cleared)
+
+  useEffect(() => {
+    if (outcome === 'cleared') {
+      setNextReady(true)
+      return
+    }
+    setNextReady(false)
+    const timer = setTimeout(() => setNextReady(true), 500)
+    return () => clearTimeout(timer)
+  }, [outcome, sentence.id])
 
   useEffect(() => {
     if (outcome !== 'failed') return
@@ -578,7 +591,8 @@ function SentenceResultScreen({
         <button
           type="button"
           onClick={onNext}
-          className="mt-auto mb-4 inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+          disabled={!nextReady}
+          className="mt-auto mb-4 inline-flex min-h-14 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 disabled:pointer-events-none"
         >
           {showSettlement ? '查看结算' : '下一句'}
         </button>

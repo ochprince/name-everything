@@ -66,12 +66,11 @@ Grammar reports are saved locally for export on **我的** and also inserted int
 Grammar falling-fill gameplay — recorded from user review (2026-08-25):
 
 1. **Brute-force exploit** — rapidly clicking all four options reveals the answer: a wrong pick does not kill the sentence immediately (3 strikes per sentence), so the 4th option always goes through. Scores can be farmed this way.
-2. **Failure-page click trap** — on a wrong answer or timeout the view swaps to the failure page, whose “next sentence” button sits at the same position as the four answer options. A user frantically clicking an option at that moment lands on “next” instead, and never gets to see the correct answer.
-3. **Idea — difficulty modes**:
+2. **Idea — difficulty modes**:
    - Hard mode: each option has only one error chance.
    - Hell mode: no error chances at all.
-4. **Settlement / mid-round page animations** — add a celebratory animation (e.g. fireworks) on success, and a contrasting "slight letdown" animation on failure, on both the settlement page and the mid-round (failure) page. Pages currently feel stiff and dull.
-5. **Me-page settings organization** — config items currently mix vocab-memory settings with grammar/challenge-mode settings. Group them by module (sections/blocks) so the page stays elegant and clear as items grow (grammar game-mode/difficulty selectors may join later). Alternative: split settings into a standalone page with a single entry point from Me — the common app pattern.
+3. **Settlement / mid-round page animations** — add a celebratory animation (e.g. fireworks) on success, and a contrasting "slight letdown" animation on failure, on both the settlement page and the mid-round (failure) page. Pages currently feel stiff and dull.
+4. **Me-page settings organization** — config items currently mix vocab-memory settings with grammar/challenge-mode settings. Group them by module (sections/blocks) so the page stays elegant and clear as items grow (grammar game-mode/difficulty selectors may join later). Alternative: split settings into a standalone page with a single entry point from Me — the common app pattern.
 
 ## Week-1 out of scope
 
