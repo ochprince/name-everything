@@ -112,12 +112,14 @@ describe('MePage', () => {
   })
 
   it('copies reports to the clipboard with one click', async () => {
+    const user = userEvent.setup()
+    // userEvent.setup() 会自行安装 navigator.clipboard（带 items 的 polyfill），
+    // 必须先 setup 再覆盖，否则我们的 stub 会被它的实现顶掉。
     const writeText = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText },
       configurable: true,
     })
-    const user = userEvent.setup()
     renderWithProgress(<MePage />)
     await user.click(screen.getByRole('button', { name: '复制报错' }))
     expect(writeText).toHaveBeenCalledTimes(1)
