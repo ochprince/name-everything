@@ -12,6 +12,7 @@ import {
 } from '../content/practicePool'
 import { useProgress } from '../hooks/useProgress'
 import { pickNextCard } from '../lib/deck'
+import { isPictureWordsReady } from '../lib/pictureWordsCatalog'
 import { StageShell } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
 import {
@@ -58,7 +59,7 @@ export function PracticePage() {
   const { progress, update } = useProgress()
   const [batchCards, setBatchCards] = useState<Card[]>([])
   const [warmExtra, setWarmExtra] = useState<Card[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => !isPictureWordsReady())
   const [loadError, setLoadError] = useState<string | null>(null)
   const [catalogDone, setCatalogDone] = useState(false)
   const [heldCard, setHeldCard] = useState<Card | null>(null)
@@ -96,7 +97,7 @@ export function PracticePage() {
   useEffect(() => {
     let cancelled = false
     async function load() {
-      setLoading(true)
+      if (!isPictureWordsReady()) setLoading(true)
       setLoadError(null)
       try {
         const batch = await fetchPictureWordBatch(

@@ -13,8 +13,9 @@ import {
 } from '../shared/stageMaterials'
 import { useGrammarProgress } from '../features/grammar/lib/storage'
 import { useChallengeWords } from '../features/pictures/lib/challengeCollection'
+import { ensurePictureWordsReady } from '../features/pictures/lib/pictureWordsCatalog'
 import { practiceTiles, type PracticeTile } from './practiceModules'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const BANNER_IMAGE = 'https://i.imgur.com/IcK6gJC.jpg'
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
@@ -45,6 +46,10 @@ export function PracticeHomePage() {
   useChallengeWords()
   const tiles = practiceTiles(progress)
   const { hint, showHint } = useStageHint()
+
+  useEffect(() => {
+    void ensurePictureWordsReady()
+  }, [])
 
   return (
     <>

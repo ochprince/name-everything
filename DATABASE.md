@@ -13,7 +13,7 @@
 
 ## 应用怎么读
 
-应用走 Data API，并用 IndexedDB 按表缓存：首次全量拉取后，之后只重拉 `content_table_versions` 有变化的表（内容写入时由 DB trigger bump 版本）。
+应用走 Data API，并用 IndexedDB 按表缓存：首次全量拉取后，之后只重拉 `content_table_versions` 有变化的表（内容写入时由 DB trigger bump 版本）。语法课包与 `picture_words` 词库都走这套版本缓存；词汇练习进页时优先读本地目录，后台再对版本。
 
 ## 不进库的数据
 

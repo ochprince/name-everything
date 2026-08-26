@@ -40,7 +40,7 @@ npm test         # 单元测试（Vitest）
 npm run build    # 生产构建
 ```
 
-词库与语法课包在远程，步骤见 [DATABASE.md](DATABASE.md)。
+词库与语法课包在远程，本地用 IndexedDB 按表版本缓存（见 [DATABASE.md](DATABASE.md)）。
 
 ## 路线图
 
