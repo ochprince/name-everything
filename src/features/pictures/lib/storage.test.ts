@@ -79,6 +79,7 @@ describe('progress storage', () => {
       autoSpeak: false,
       thinkHoldMs: 5000,
       uiSound: true,
+      produceRatio: 50,
     })
   })
 
@@ -109,6 +110,49 @@ describe('progress storage', () => {
       }),
     )
     expect(loadProgress().settings.thinkHoldMs).toBe(3000)
+  })
+
+  it('defaults produceRatio to 50 and keeps valid options', () => {
+    // 旧数据没有 produceRatio → 默认 50
+    localStorage.setItem(
+      'name-everything/progress/v1',
+      JSON.stringify({
+        ...defaultProgress(),
+        settings: {
+          hintLang: 'en',
+          autoSpeak: false,
+          thinkHoldMs: 5000,
+          uiSound: true,
+        },
+      }),
+    )
+    expect(loadProgress().settings.produceRatio).toBe(50)
+    // 非法档位 → 回落 50
+    localStorage.setItem(
+      'name-everything/progress/v1',
+      JSON.stringify({
+        ...defaultProgress(),
+        settings: { ...defaultProgress().settings, produceRatio: 30 },
+      }),
+    )
+    expect(loadProgress().settings.produceRatio).toBe(50)
+    // 合法档位保留（不启用 / 全部启用）
+    localStorage.setItem(
+      'name-everything/progress/v1',
+      JSON.stringify({
+        ...defaultProgress(),
+        settings: { ...defaultProgress().settings, produceRatio: 0 },
+      }),
+    )
+    expect(loadProgress().settings.produceRatio).toBe(0)
+    localStorage.setItem(
+      'name-everything/progress/v1',
+      JSON.stringify({
+        ...defaultProgress(),
+        settings: { ...defaultProgress().settings, produceRatio: 100 },
+      }),
+    )
+    expect(loadProgress().settings.produceRatio).toBe(100)
   })
 
   it('practice Got it graduates to strong and leaves forgot and warm', () => {

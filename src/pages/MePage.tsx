@@ -3,10 +3,13 @@ import { exportReports, clearReports, useGrammarReports } from '../features/gram
 import { useProgress } from '../features/pictures/hooks/useProgress'
 import {
   todayKey,
+  PRODUCE_RATIO_LABELS,
+  PRODUCE_RATIO_OPTIONS,
   THINK_HOLD_LABELS,
   THINK_HOLD_OPTIONS,
   type ThinkHoldMs,
   type HintLang,
+  type ProduceRatioPercent,
 } from '../features/pictures/lib/storage'
 import { StageHeader, StickyStageChrome } from '../shared/StageHeader'
 
@@ -114,6 +117,13 @@ export function MePage() {
     }))
   }
 
+  function setProduceRatio(produceRatio: ProduceRatioPercent) {
+    update((p) => ({
+      ...p,
+      settings: { ...p.settings, produceRatio },
+    }))
+  }
+
   return (
     <main
       data-seed="af3fdd03"
@@ -207,6 +217,34 @@ export function MePage() {
                   }`}
                 >
                   {THINK_HOLD_LABELS[ms]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-3">
+            <span className="text-lg font-medium tracking-[0.04em] text-day">
+              输入模式占比
+            </span>
+            <div
+              role="radiogroup"
+              aria-label="输入模式占比"
+              className="flex flex-wrap gap-1.5"
+            >
+              {PRODUCE_RATIO_OPTIONS.map((ratio) => (
+                <button
+                  key={ratio}
+                  type="button"
+                  role="radio"
+                  aria-checked={progress.settings.produceRatio === ratio}
+                  aria-label={PRODUCE_RATIO_LABELS[ratio]}
+                  onClick={() => setProduceRatio(ratio)}
+                  className={`${holdChip} ${
+                    progress.settings.produceRatio === ratio
+                      ? 'bg-day text-cyc hover:brightness-105'
+                      : 'border border-day/70 bg-transparent text-day/80 hover:border-day hover:text-day'
+                  }`}
+                >
+                  {PRODUCE_RATIO_LABELS[ratio]}
                 </button>
               ))}
             </div>

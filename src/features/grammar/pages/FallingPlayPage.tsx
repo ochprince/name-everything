@@ -68,6 +68,7 @@ import {
 import gsap from 'gsap'
 import { fallDurationFor, isLevelUnlocked, livesFor, nextLevelAfter, thresholdFor } from '../lib/unlock'
 import { gameTuning } from '../content/tuning'
+import { loadProgress } from '../../pictures/lib/storage'
 import { playUiCorrect, playUiFail, playUiSuccess, playUiTap, unlockUiSound } from '../../../shared/uiSound'
 import { GroupSpeedBanner } from '../components/GroupSpeedBanner'
 import { LevelPassTrophy } from '../components/LevelPassTrophy'
@@ -168,10 +169,17 @@ function FallingBoard({
     return buildQueue(pool.playables)
   }, [mode, pool.playables, queueSeed])
   const firstId = queue[0]
+  // 输入模式占比来自「我的」设置（0–100%，默认 50%）；游戏中途不会变更。
+  const produceRatio = useMemo(
+    () => loadProgress().settings.produceRatio / 100,
+    [],
+  )
   const initialFallMs =
     mode === 'arcade' ? arcadeFallDurationMs(0) : fallMs
   const [state, setState] = useState<FallingState | null>(() =>
-    firstId ? startRound(firstId, lives, initialFallMs, pickAnswerMode()) : null,
+    firstId
+      ? startRound(firstId, lives, initialFallMs, pickAnswerMode(produceRatio))
+      : null,
   )
   const [options, setOptions] = useState<string[]>([])
   const [produceDraft, setProduceDraft] = useState('')
@@ -455,7 +463,7 @@ function FallingBoard({
       mode === 'arcade'
         ? arcadeFallDurationMs(clearedIds.size)
         : fallMs
-    const answerMode = pickAnswerMode()
+    const answerMode = pickAnswerMode(produceRatio)
     setState((current) =>
       current ? beginSentence(current, nextId, nextFallMs, answerMode) : current,
     )

@@ -26,7 +26,7 @@ export function FallingAnswerPad(props: FallingAnswerPadProps) {
   const hintsKey =
     props.mode === 'produce' ? (props.hints?.join('\u0000') ?? '') : ''
 
-  // placeholder 轮播：新句子（hints 内容变化）从头播，3 秒一条，键盘开/关都播。
+  // placeholder 轮播：新句子（hints 内容变化）从头播，5 秒一条，键盘开/关都播。
   useEffect(() => {
     setHintIndex(0)
     const list = props.mode === 'produce' ? props.hints : undefined

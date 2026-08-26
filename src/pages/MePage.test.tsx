@@ -46,6 +46,7 @@ describe('MePage', () => {
       autoSpeak: false,
       thinkHoldMs: 5000,
       uiSound: true,
+      produceRatio: 50,
     })
     })
   })
@@ -90,6 +91,23 @@ describe('MePage', () => {
     expect(three).toHaveAttribute('aria-checked', 'true')
     await waitFor(() => {
       expect(loadProgress().settings.thinkHoldMs).toBe(3000)
+    })
+  })
+
+  it('writes produceRatio into progress.settings', async () => {
+    const user = userEvent.setup()
+    renderWithProgress(<MePage />)
+
+    const half = screen.getByRole('radio', { name: '50%' })
+    const all = screen.getByRole('radio', { name: '全部启用' })
+    expect(half).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('radio', { name: '不启用' })).toBeInTheDocument()
+    expect(screen.getByText('输入模式占比')).toBeInTheDocument()
+
+    await user.click(all)
+    expect(all).toHaveAttribute('aria-checked', 'true')
+    await waitFor(() => {
+      expect(loadProgress().settings.produceRatio).toBe(100)
     })
   })
 })

@@ -12,6 +12,16 @@ export const THINK_HOLD_LABELS: Record<ThinkHoldMs, string> = {
   15000: '15s',
 }
 
+/** 输入模式占比：不启用(0%) / 50% / 全部启用(100%)，默认 50%。 */
+export const PRODUCE_RATIO_OPTIONS = [0, 50, 100] as const
+export type ProduceRatioPercent = (typeof PRODUCE_RATIO_OPTIONS)[number]
+
+export const PRODUCE_RATIO_LABELS: Record<ProduceRatioPercent, string> = {
+  0: '不启用',
+  50: '50%',
+  100: '全部启用',
+}
+
 export type WrapKind = 'none' | 'daily' | 'pack'
 
 export type ProgressState = {
@@ -30,6 +40,7 @@ export type ProgressState = {
     autoSpeak: boolean
     thinkHoldMs: ThinkHoldMs
     uiSound: boolean
+    produceRatio: ProduceRatioPercent
   }
 }
 
@@ -52,12 +63,16 @@ export function defaultProgress(): ProgressState {
     currentCardId: null,
     recentPracticeTag: null,
     streaks: { lastActiveDate: null, count: 0 },
-    settings: { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000, uiSound: true },
+    settings: { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000, uiSound: true, produceRatio: 50 },
   }
 }
 
 function isThinkHold(value: unknown): value is ThinkHoldMs {
   return (THINK_HOLD_OPTIONS as readonly number[]).includes(value as number)
+}
+
+function isProduceRatio(value: unknown): value is ProduceRatioPercent {
+  return (PRODUCE_RATIO_OPTIONS as readonly number[]).includes(value as number)
 }
 
 function migrateThinkHold(raw: {
@@ -71,7 +86,7 @@ function migrateThinkHold(raw: {
 
 function normalizeSettings(raw: unknown): ProgressState['settings'] {
   if (!raw || typeof raw !== 'object') {
-    return { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000, uiSound: true }
+    return { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000, uiSound: true, produceRatio: 50 }
   }
   const settings = raw as {
     hintLang?: unknown
@@ -80,6 +95,7 @@ function normalizeSettings(raw: unknown): ProgressState['settings'] {
     thinkHoldMs?: unknown
     forgetHoldMs?: unknown
     uiSound?: unknown
+    produceRatio?: unknown
   }
   const hintLang: HintLang =
     settings.hintLang === 'en' || settings.hintLang === 'zh'
@@ -92,6 +108,7 @@ function normalizeSettings(raw: unknown): ProgressState['settings'] {
     autoSpeak: settings.autoSpeak === true,
     thinkHoldMs: migrateThinkHold(settings),
     uiSound: settings.uiSound !== false,
+    produceRatio: isProduceRatio(settings.produceRatio) ? settings.produceRatio : 50,
   }
 }
 

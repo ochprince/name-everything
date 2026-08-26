@@ -1,5 +1,5 @@
 /** 输入模式 placeholder 轮播间隔。 */
-export const PRODUCE_HINT_ROTATE_MS = 3000
+export const PRODUCE_HINT_ROTATE_MS = 5000
 
 /**
  * 输入模式 placeholder 轮播提示文案。
