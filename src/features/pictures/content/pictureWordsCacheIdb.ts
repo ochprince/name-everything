@@ -1,4 +1,4 @@
-import type { PictureWordRow } from '../mapPictureWord'
+import type { PictureWordRow } from './mapPictureWord'
 
 export type CachedPictureWords = {
   version: number

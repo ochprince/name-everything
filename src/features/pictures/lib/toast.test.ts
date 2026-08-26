@@ -14,10 +14,10 @@ describe('toast', () => {
     expect(seen[0]).toBeNull()
 
     pushToast('已加入我的挑战')
-    expect(seen.at(-1)?.text).toBe('已加入我的挑战')
+    expect(seen[seen.length - 1]?.text).toBe('已加入我的挑战')
 
     vi.advanceTimersByTime(2000)
-    expect(seen.at(-1)).toBeNull()
+    expect(seen[seen.length - 1]).toBeNull()
 
     unsubscribe()
   })
