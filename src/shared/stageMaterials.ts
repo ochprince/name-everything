@@ -28,7 +28,7 @@ export const framedDoorOuter =
 
 /** Inner fill for day doors inside the champagne frame. */
 export const dayDoorInner =
-  'flex h-full w-full items-center gap-4 rounded-[0.9rem] bg-day px-5 py-4 text-cyc'
+  'flex h-full w-full items-center gap-4 rounded-[0.9rem] bg-day px-5 py-4 text-cyc ring-1 ring-[#e5d9b5]'
 
 /** Inner fill for outline (champagne frame) doors — apply on child or use with outlineFrame. */
 export const outlineDoorInner =

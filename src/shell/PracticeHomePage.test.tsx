@@ -35,6 +35,15 @@ describe('practice home', () => {
     expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
   })
 
+  it('gives the day (vocab) door a visible champagne ring like the other doors', () => {
+    renderHome()
+    const link = screen.getByRole('link', { name: /词汇记忆/ })
+    // 白底 tile 在香槟渐变边框里边框不可见，需内层 ring 显式描边。
+    expect(link.firstElementChild?.getAttribute('class')).toContain(
+      'ring-[#e5d9b5]',
+    )
+  })
+
   it('contains scroll in the viewport like 复习 / 我的 so the bar stops above bottom nav', () => {
     renderHome()
     const main = document.querySelector('main')
