@@ -1,23 +1,16 @@
 # Agent notes
 
-## README localization
+## README
 
-This repo keeps **two** user-facing READMEs in sync:
+面向用户的说明只有一份：**中文写在 `README.md`**（GitHub 仓库首页默认展示这个文件）。产品给中文用户用，不要再维护英文版或 `README.zh.md`。
 
-| File | Language |
-|------|----------|
-| `README.md` | English (canonical for GitHub) |
-| `README.zh.md` | Chinese |
-
-**Whenever you add, change, or remove user-facing documentation for a new feature, behavior change, try-it link, setup step, scope note, or checklist item, update both files.** Do not edit only one.
+**Whenever you add, change, or remove user-facing documentation for a new feature, behavior change, try-it link, setup step, scope note, or checklist item, update `README.md`.**
 
 Guidelines:
 
-- Keep structure and meaning aligned; section order should match when practical.
-- `README.md` stays English-primary; `README.zh.md` stays Chinese-primary.
-- Exception: the **Disclaimer** block may stay bilingual in both files.
-- Proper nouns (e.g. Name Everything, Got it, Forgot, Vite, Vitest, T1, CDN URLs, paths, npm scripts) can remain as-is in either file.
-- Cross-links: English README points to `README.zh.md`; Chinese README points to `README.md`.
+- `README.md` 以中文为主。
+- Exception: the **Disclaimer** block may stay bilingual (rights holders may not read Chinese).
+- Proper nouns (e.g. Name Everything, Got it, Forgot, Vite, Vitest, T1, CDN URLs, paths, npm scripts) can remain as-is.
 
 ## Ask Me
 
