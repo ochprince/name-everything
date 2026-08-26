@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { playCardAudio, stopCardAudio } from '../lib/playAudio'
+import {
+  hasChallengeWord,
+  toggleChallengeWord,
+} from '../lib/challengeCollection'
+import { pushToast } from '../lib/toast'
 import type { HintLang, ThinkHoldMs } from '../lib/storage'
 import type { Card } from '../../../types/card'
 import { StageHeader } from '../../../shared/StageHeader'
 import { STAGE_BOTTOM_PAD } from '../../../shared/StageShell'
 import { LangToggle } from '../../../components/LangToggle'
+import { ReportDialog } from '../../grammar/components/ReportDialog'
 
 const FALLBACK_IMAGE = '/images/cards/fallback.svg'
 
@@ -41,6 +47,40 @@ function VolumeIcon({ className }: { className?: string }) {
       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
       <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
       <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+    </svg>
+  )
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+  )
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.25"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 12.5 9.5 17 19 7.5" />
     </svg>
   )
 }
@@ -94,6 +134,7 @@ export function PracticeCard({
     card.zh && hintLangDefault === 'zh' ? 'zh' : 'en',
   )
   const [remaining, setRemaining] = useState(Math.round(thinkHoldMs / 1000))
+  const [inChallenge, setInChallenge] = useState(() => hasChallengeWord(card.word))
   const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const onTimeoutRef = useRef(onTimeout)
   const autoSpeakRef = useRef(autoSpeak)
@@ -142,6 +183,12 @@ export function PracticeCard({
     onNext?.()
   }
 
+  function onToggleChallenge() {
+    const added = toggleChallengeWord(card.word)
+    setInChallenge(added)
+    pushToast(added ? '已加入我的挑战' : '已移出我的挑战')
+  }
+
   useEffect(() => {
     setImageSrc(card.image)
   }, [card.image])
@@ -151,12 +198,13 @@ export function PracticeCard({
     setTimeoutHold(false)
     setHintLang(card.zh && hintLangDefault === 'zh' ? 'zh' : 'en')
     setRemaining(Math.round(thinkHoldMs / 1000))
+    setInChallenge(hasChallengeWord(card.word))
     if (autoTimer.current !== null) {
       clearTimeout(autoTimer.current)
       autoTimer.current = null
     }
     stopCardAudio()
-  }, [card.id, card.zh, hintLangDefault, sheet, thinkHoldMs])
+  }, [card.id, card.word, card.zh, hintLangDefault, sheet, thinkHoldMs])
 
   useEffect(() => {
     if (sheet || revealed) return
@@ -217,11 +265,19 @@ export function PracticeCard({
             onBack={sheet ? onBack : undefined}
             title={sheet ? '复习' : stageTitle}
             trailing={
-              !sheet && progressLabel ? (
-                <p className="rounded-xl bg-day px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-cyc">
-                  {progressLabel}
-                </p>
-              ) : undefined
+              <div className="flex items-center gap-1.5">
+                <ReportDialog
+                  target={{ asset_type: 'picture_word', asset_id: card.word }}
+                  label="报错"
+                  tone="onCyc"
+                  size="sm"
+                />
+                {!sheet && progressLabel ? (
+                  <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
+                    {progressLabel}
+                  </p>
+                ) : null}
+              </div>
             }
           />
         </div>
@@ -312,7 +368,7 @@ export function PracticeCard({
           )}
         </div>
 
-        <div className="mt-auto flex shrink-0 gap-2.5 pt-4">
+        <div className="mt-auto flex shrink-0 items-center gap-2.5 pt-4">
           {timeoutHold ? (
             <button
               type="button"
@@ -336,6 +392,23 @@ export function PracticeCard({
                 className={`${cueButton} bg-day text-cyc hover:brightness-105`}
               >
                 Got it
+              </button>
+              <button
+                type="button"
+                aria-label={inChallenge ? '已加入' : '加入我的挑战'}
+                aria-pressed={inChallenge}
+                onClick={onToggleChallenge}
+                className={`inline-flex size-14 shrink-0 items-center justify-center rounded-2xl transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 ${
+                  inChallenge
+                    ? 'bg-day text-cyc hover:brightness-105'
+                    : 'bg-cobalt text-day hover:brightness-110'
+                }`}
+              >
+                {inChallenge ? (
+                  <CheckIcon className="size-5" />
+                ) : (
+                  <PlusIcon className="size-5" />
+                )}
               </button>
             </>
           ) : (

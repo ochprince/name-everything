@@ -12,6 +12,7 @@ import {
   type StageMaterial,
 } from '../shared/stageMaterials'
 import { useGrammarProgress } from '../features/grammar/lib/storage'
+import { useChallengeWords } from '../features/pictures/lib/challengeCollection'
 import { practiceTiles, type PracticeTile } from './practiceModules'
 import { useState } from 'react'
 
@@ -41,6 +42,7 @@ function HomeBanner() {
 
 export function PracticeHomePage() {
   const progress = useGrammarProgress()
+  useChallengeWords()
   const tiles = practiceTiles(progress)
   const { hint, showHint } = useStageHint()
 

@@ -8,14 +8,14 @@ export type AfterSentencePlan =
   | { kind: 'group_banner'; groupNumber: number }
 
 export function planAfterSentence(input: {
-  mode: 'level' | 'arcade'
+  mode: 'level' | 'arcade' | 'vocab'
   clearedCount: number
   hasMoreSentences: boolean
   groupNumber: number
   shouldShowBanner: (clearedCount: number, hasMore: boolean) => boolean
 }): AfterSentencePlan {
   if (
-    input.mode === 'arcade' &&
+    (input.mode === 'arcade' || input.mode === 'vocab') &&
     input.shouldShowBanner(input.clearedCount, input.hasMoreSentences)
   ) {
     return { kind: 'group_banner', groupNumber: input.groupNumber }

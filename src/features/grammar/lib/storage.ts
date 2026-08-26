@@ -21,7 +21,7 @@ export type ArcadeRecord = {
 
 export type AssetReport = {
   id: string
-  asset_type: 'sentence' | 'grammar_point' | 'sentence_slot'
+  asset_type: 'sentence' | 'grammar_point' | 'sentence_slot' | 'picture_word'
   asset_id: string
   level_id: string | null
   note: string

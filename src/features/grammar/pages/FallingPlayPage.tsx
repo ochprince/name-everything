@@ -28,13 +28,18 @@ import {
   sentenceById,
   slotsForSentence,
   grammarPack,
-  type Sentence,
 } from '../content/pack'
 import {
   recordArcadeRun,
   recordLevelScore,
   useGrammarProgress,
 } from '../lib/storage'
+import { recordMyChallengeRun } from '../../pictures/lib/myChallengeProgress'
+import {
+  pickVocabAnswerMode,
+  type VocabPlayable,
+} from '../../pictures/lib/vocabChallenge'
+import type { Sentence, SentenceSlot } from '../content/types'
 import {
   advanceSlot,
   applyCorrectBounce,
@@ -49,6 +54,7 @@ import {
   slotOptions,
   startRound,
   tick,
+  type AnswerMode,
   type FallingState,
 } from '../lib/engine'
 import { englishAnswersMatch } from '../lib/englishAnswerCompare'
@@ -93,13 +99,23 @@ function fallProgressToTop(progress: number): number {
   return FALL_START_PERCENT + progress * (100 - FALL_START_PERCENT)
 }
 
-export function FallingPlayPage({ mode }: { mode: 'level' | 'arcade' }) {
+export function FallingPlayPage({
+  mode,
+  vocabPlayables,
+}: {
+  mode: 'level' | 'arcade' | 'vocab'
+  vocabPlayables?: VocabPlayable[]
+}) {
   const { levelId = '' } = useParams()
   const location = useLocation()
   const progress = useGrammarProgress()
 
   if (mode === 'arcade' && progress.passedLevelIds.length === 0) {
     return <Navigate to="/" replace />
+  }
+
+  if (mode === 'vocab' && (!vocabPlayables || vocabPlayables.length === 0)) {
+    return <Navigate to="/practice/pictures/play" replace />
   }
 
   const level = mode === 'level' ? levelById(levelId) : undefined
@@ -110,17 +126,39 @@ export function FallingPlayPage({ mode }: { mode: 'level' | 'arcade' }) {
   const pool =
     mode === 'level' && level
       ? { playables: playablesForLevel(level.id) }
-      : {
-          playables: grammarPack.sentences.filter(
-            (sentence) =>
-              sentence.kind === 'playable' &&
-              progress.passedLevelIds.includes(sentence.level_id),
-          ),
-        }
+      : mode === 'vocab' && vocabPlayables
+        ? { playables: vocabPlayables.map((item) => item.sentence) }
+        : {
+            playables: grammarPack.sentences.filter(
+              (sentence) =>
+                sentence.kind === 'playable' &&
+                progress.passedLevelIds.includes(sentence.level_id),
+            ),
+          }
 
   if (pool.playables.length === 0) {
-    return <Navigate to="/" replace />
+    return <Navigate to={mode === 'vocab' ? '/practice/pictures/play' : '/'} replace />
   }
+
+  const content =
+    mode === 'vocab' && vocabPlayables
+      ? {
+          sentenceById: (id: string) =>
+            vocabPlayables.find((item) => item.sentence.id === id)?.sentence,
+          slotsForSentence: (id: string) => {
+            const slot = vocabPlayables.find((item) => item.sentence.id === id)?.slot
+            return slot ? [slot] : []
+          },
+          pickAnswerModeFor: (id: string, ratio: number) =>
+            pickVocabAnswerMode(
+              vocabPlayables.find((item) => item.sentence.id === id),
+              ratio,
+            ),
+        }
+      : {
+          sentenceById,
+          slotsForSentence,
+        }
 
   return (
     <FallingBoard
@@ -129,14 +167,19 @@ export function FallingPlayPage({ mode }: { mode: 'level' | 'arcade' }) {
       backTo={
         mode === 'level'
           ? `/practice/grammar/learn/${levelId}`
-          : '/practice/grammar/play'
+          : mode === 'vocab'
+            ? '/practice/pictures/play'
+            : '/practice/grammar/play'
       }
       lives={level ? livesFor(level) : undefined}
       fallMs={level ? fallDurationFor(level) : undefined}
       threshold={level ? thresholdFor(level) : undefined}
       queueSeed={`${mode}:${levelId}:${location.key}`}
       pool={pool}
-      arcadePoolSize={mode === 'arcade' ? pool.playables.length : undefined}
+      arcadePoolSize={
+        mode === 'arcade' || mode === 'vocab' ? pool.playables.length : undefined
+      }
+      content={content}
     />
   )
 }
@@ -151,8 +194,9 @@ function FallingBoard({
   queueSeed,
   pool,
   arcadePoolSize,
+  content,
 }: {
-  mode: 'level' | 'arcade'
+  mode: 'level' | 'arcade' | 'vocab'
   levelId?: string
   backTo: string
   lives?: number
@@ -160,12 +204,18 @@ function FallingBoard({
   threshold?: number
   queueSeed: string
   pool: {
-    playables: ReturnType<typeof playablesForLevel>
+    playables: Sentence[]
   }
   arcadePoolSize?: number
+  content: {
+    sentenceById: (id: string) => Sentence | undefined
+    slotsForSentence: (id: string) => SentenceSlot[]
+    /** Vocab (and future packs): gate MCQ per sentence from data readiness. */
+    pickAnswerModeFor?: (sentenceId: string, produceRatio: number) => AnswerMode
+  }
 }) {
   const queue = useMemo(() => {
-    if (mode === 'arcade') return buildArcadeQueue(pool.playables)
+    if (mode === 'arcade' || mode === 'vocab') return buildArcadeQueue(pool.playables)
     return buildQueue(pool.playables)
   }, [mode, pool.playables, queueSeed])
   const firstId = queue[0]
@@ -174,11 +224,14 @@ function FallingBoard({
     () => loadProgress().settings.produceRatio / 100,
     [],
   )
+  const resolveAnswerMode = (sentenceId: string) =>
+    content.pickAnswerModeFor?.(sentenceId, produceRatio) ??
+    pickAnswerMode(produceRatio)
   const initialFallMs =
-    mode === 'arcade' ? arcadeFallDurationMs(0) : fallMs
+    mode === 'arcade' || mode === 'vocab' ? arcadeFallDurationMs(0) : fallMs
   const [state, setState] = useState<FallingState | null>(() =>
     firstId
-      ? startRound(firstId, lives, initialFallMs, pickAnswerMode(produceRatio))
+      ? startRound(firstId, lives, initialFallMs, resolveAnswerMode(firstId))
       : null,
   )
   const [options, setOptions] = useState<string[]>([])
@@ -212,11 +265,13 @@ function FallingBoard({
   const allQueueCleared = isQueueFullyCleared(queue, clearedIds)
   const sentencesLeft = queue.filter((id) => !clearedIds.has(id)).length
 
-  const sentence = state?.sentenceId ? sentenceById(state.sentenceId) : undefined
-  const resultSentence = sentenceResult
-    ? sentenceById(sentenceResult.sentenceId)
+  const sentence = state?.sentenceId
+    ? content.sentenceById(state.sentenceId)
     : undefined
-  const slots = sentence ? slotsForSentence(sentence.id) : []
+  const resultSentence = sentenceResult
+    ? content.sentenceById(sentenceResult.sentenceId)
+    : undefined
+  const slots = sentence ? content.slotsForSentence(sentence.id) : []
   const slot = slots[state?.slotIndex ?? 0]
   // placeholder 轮播提示：中文例句 / 关卡名 / 首词提示 / 标杆例句（每条带前缀）。
   const produceHints = useMemo(() => {
@@ -357,12 +412,18 @@ function FallingBoard({
       const cleared = isQueueFullyCleared(queue, clearedIds)
       recordArcadeRun(state.score, queue.length, cleared, arcadePoolSize)
     }
+    if (mode === 'vocab' && arcadePoolSize !== undefined) {
+      const cleared = isQueueFullyCleared(queue, clearedIds)
+      recordMyChallengeRun(state.score, queue.length, cleared, arcadePoolSize)
+    }
   }, [state, mode, levelId, threshold, queue, clearedIds, arcadePoolSize])
 
   // 结算页动画：成功态（过关/挑战成功）多发烟花；失败态小失落。
   const settleContentRef = useRef<HTMLDivElement>(null)
   const settleTitleRef = useRef<HTMLParagraphElement>(null)
-  const sessionCleared = mode === 'arcade' && isQueueFullyCleared(queue, clearedIds)
+  const sessionCleared =
+    (mode === 'arcade' || mode === 'vocab') &&
+    isQueueFullyCleared(queue, clearedIds)
   const passed =
     mode === 'level' && threshold !== undefined && (state?.score ?? 0) >= threshold
 
@@ -460,10 +521,10 @@ function FallingBoard({
       usedRef.current = [...usedRef.current, nextId]
     }
     const nextFallMs =
-      mode === 'arcade'
+      mode === 'arcade' || mode === 'vocab'
         ? arcadeFallDurationMs(clearedIds.size)
         : fallMs
-    const answerMode = pickAnswerMode(produceRatio)
+    const answerMode = resolveAnswerMode(nextId)
     setState((current) =>
       current ? beginSentence(current, nextId, nextFallMs, answerMode) : current,
     )
@@ -534,9 +595,10 @@ function FallingBoard({
       mode === 'level' && passed && levelId ? nextLevelAfter(levelId) : null
     const nextTopic = nextLevel ? pointById(nextLevel.grammar_point_id) : undefined
     const sessionCleared =
-      mode === 'arcade' && isQueueFullyCleared(queue, clearedIds)
+      (mode === 'arcade' || mode === 'vocab') &&
+      isQueueFullyCleared(queue, clearedIds)
     const earnedTrophy =
-      mode === 'arcade' &&
+      (mode === 'arcade' || mode === 'vocab') &&
       arcadePoolSize !== undefined &&
       arcadeEarnedTrophy(sessionCleared, queue.length, arcadePoolSize)
 
@@ -548,7 +610,7 @@ function FallingBoard({
           ref={settleContentRef}
           className="flex flex-1 flex-col items-center justify-center gap-6"
         >
-          {mode === 'arcade' ? (
+          {mode === 'arcade' || mode === 'vocab' ? (
             <>
               <p
                 ref={settleTitleRef}
@@ -632,7 +694,7 @@ function FallingBoard({
           <StageHeader
             backTo={backTo}
             title={
-              mode === 'arcade'
+              mode === 'arcade' || mode === 'vocab'
                 ? `第 ${arcadeGroupNumber(clearedIds.size)} 组 · 还剩 ${sentencesLeft} 句`
                 : `还剩 ${sentencesLeft} 句`
             }

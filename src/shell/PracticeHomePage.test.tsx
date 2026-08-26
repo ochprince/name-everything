@@ -64,7 +64,7 @@ describe('practice home', () => {
     expect(scroller).toHaveClass('h-full')
   })
 
-  it('keeps 挑战模式 disabled until a level is passed', async () => {
+  it('keeps 挑战模式 disabled until a level is passed or words are collected', async () => {
     const user = userEvent.setup()
     renderHome()
     const tile = screen.getByTestId('tile-grammar-play')
@@ -72,7 +72,9 @@ describe('practice home', () => {
     // locked button must keep the same left-aligned text position as open tiles
     expect(tile.className).toContain('text-left')
     await user.click(tile)
-    expect(screen.getByRole('status')).toHaveTextContent('先去语法学习过一关')
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '先去语法学习过一关，或在词汇记忆加入例句',
+    )
     expect(screen.getByRole('heading', { name: '练习' })).toBeInTheDocument()
   })
 
@@ -85,7 +87,7 @@ describe('practice home', () => {
     renderHome()
     expect(screen.getByTestId('tile-grammar-play')).toHaveAttribute(
       'href',
-      '/practice/grammar/play',
+      '/practice/challenge',
     )
   })
 

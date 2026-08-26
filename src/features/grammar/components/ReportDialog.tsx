@@ -2,7 +2,7 @@ import { useId, useRef, useState } from 'react'
 import { addReport } from '../lib/storage'
 
 type ReportTarget = {
-  asset_type: 'sentence' | 'grammar_point' | 'sentence_slot'
+  asset_type: 'sentence' | 'grammar_point' | 'sentence_slot' | 'picture_word'
   asset_id: string
   level_id?: string | null
 }
@@ -12,12 +12,17 @@ export function ReportDialog({
   label = '报错',
   tone = 'onCyc',
   className = '',
+  variant = 'icon',
+  size = 'md',
 }: {
   target: ReportTarget
   label?: string
   /** onDay = dark icon on cream panels; onCyc = light icon on dark stage */
   tone?: 'onDay' | 'onCyc'
   className?: string
+  variant?: 'icon' | 'text'
+  /** md = size-9 (default elsewhere); sm = progress-pill height */
+  size?: 'md' | 'sm'
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const noteId = useId()
@@ -53,15 +58,28 @@ export function ReportDialog({
       ? 'border-cyc/30 text-cyc/75 hover:border-cyc/55 hover:text-cyc focus-visible:outline-cyc'
       : 'border-day/25 text-day/70 hover:border-day/50 hover:text-day focus-visible:outline-day'
 
+  const iconSizeClass = size === 'sm' ? 'size-7' : 'size-9'
+  const flagClass = size === 'sm' ? 'size-3.5' : 'size-4'
+
+  const triggerClass =
+    variant === 'text'
+      ? `inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[0.7rem] font-semibold tracking-[0.14em] text-rose transition-[color,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:brightness-95 ${
+          tone === 'onDay'
+            ? 'border-rose/50 focus-visible:outline-cyc'
+            : 'border-rose/55 focus-visible:outline-day'
+        } ${className}`
+      : `inline-flex ${iconSizeClass} shrink-0 items-center justify-center rounded-full border transition-[color,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:brightness-95 ${toneClass} ${className}`
+
   return (
     <>
       <button
         type="button"
         aria-label={label}
         onClick={open}
-        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-full border transition-[color,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:brightness-95 ${toneClass} ${className}`}
+        className={triggerClass}
       >
-        <FlagIcon />
+        <FlagIcon className={flagClass} />
+        {variant === 'text' ? <span>{label}</span> : null}
       </button>
 
       <dialog
@@ -124,12 +142,12 @@ export function ReportDialog({
   )
 }
 
-function FlagIcon() {
+function FlagIcon({ className = 'size-4' }: { className?: string }) {
   return (
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="size-4 fill-none stroke-current stroke-[1.75]"
+      className={`${className} fill-none stroke-current stroke-[1.75]`}
     >
       <path d="M5 5v14" strokeLinecap="round" />
       <path d="M5 5h11l-2 3 2 3H5" strokeLinejoin="round" />

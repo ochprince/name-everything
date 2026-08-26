@@ -96,7 +96,7 @@ CREATE INDEX idx_picture_words_sort_order ON picture_words (sort_order);
 
 CREATE TABLE asset_reports (
   id TEXT PRIMARY KEY,
-  asset_type TEXT NOT NULL CHECK (asset_type IN ('sentence', 'grammar_point', 'sentence_slot')),
+  asset_type TEXT NOT NULL CHECK (asset_type IN ('sentence', 'grammar_point', 'sentence_slot', 'picture_word')),
   asset_id TEXT NOT NULL,
   level_id TEXT REFERENCES levels(id) ON DELETE SET NULL,
   note TEXT NOT NULL,

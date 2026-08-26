@@ -3,6 +3,7 @@ import {
   levelById,
   pointById,
 } from '../features/grammar/content/pack'
+import { challengeWordCount } from '../features/pictures/lib/challengeCollection'
 
 export type PracticeTile = {
   id: string
@@ -23,8 +24,15 @@ function recentLevelTitle(progress: GrammarProgress): string | undefined {
 }
 
 export function practiceTiles(progress: GrammarProgress): PracticeTile[] {
-  const arcadeOpen = passedLevelCount(progress) > 0
+  const grammarArcadeOpen = passedLevelCount(progress) > 0
+  const mineOpen = challengeWordCount() > 0
+  const challengeOpen = grammarArcadeOpen || mineOpen
   const recentLevel = recentLevelTitle(progress)
+
+  let challengeDetail = '先去语法学习过一关，或收藏词汇例句。'
+  if (grammarArcadeOpen && mineOpen) challengeDetail = '语法综合局，或我的例句挑战。'
+  else if (grammarArcadeOpen) challengeDetail = '限时挑战，赢取奖杯'
+  else if (mineOpen) challengeDetail = '用收藏的例句开局挑战'
 
   return [
     {
@@ -45,10 +53,10 @@ export function practiceTiles(progress: GrammarProgress): PracticeTile[] {
     {
       id: 'grammar-play',
       title: '挑战模式',
-      detail: arcadeOpen ? '限时挑战，赢取奖杯' : '先去语法学习过一关。',
-      to: arcadeOpen ? '/practice/grammar/play' : null,
-      available: arcadeOpen,
-      unavailableHint: '先去语法学习过一关',
+      detail: challengeDetail,
+      to: challengeOpen ? '/practice/challenge' : null,
+      available: challengeOpen,
+      unavailableHint: '先去语法学习过一关，或在词汇记忆加入例句',
     },
   ]
 }

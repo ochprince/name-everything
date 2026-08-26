@@ -1,11 +1,12 @@
 import { Link, Navigate } from 'react-router-dom'
 import { StageShell } from '../../../shared/StageShell'
 import { StageHeader } from '../../../shared/StageHeader'
-import trophyPassed from '../assets/trophy-passed.svg'
-import { ArcadeEmptyPlaceholder } from '../components/ArcadeEmptyPlaceholder'
-import { ChallengeRulesDialog } from '../components/ChallengeRulesDialog'
-import { ARCADE_SESSION_SIZE } from '../lib/arcadeChallenge'
-import { useGrammarProgress, type ArcadeRecord } from '../lib/storage'
+import trophyPassed from '../../grammar/assets/trophy-passed.svg'
+import { ArcadeEmptyPlaceholder } from '../../grammar/components/ArcadeEmptyPlaceholder'
+import { ARCADE_SESSION_SIZE } from '../../grammar/lib/arcadeChallenge'
+import type { ArcadeRecord } from '../../grammar/lib/storage'
+import { challengeWordCount, useChallengeWords } from '../lib/challengeCollection'
+import { useMyChallengeProgress } from '../lib/myChallengeProgress'
 
 function entryEarnedTrophy(entry: ArcadeRecord): boolean {
   return entry.cleared && entry.total >= ARCADE_SESSION_SIZE
@@ -29,13 +30,16 @@ function HistoryScore({ entry }: { entry: ArcadeRecord }) {
   )
 }
 
-export function ArcadePage() {
-  const progress = useGrammarProgress()
-  if (progress.passedLevelIds.length === 0) {
-    return <Navigate to="/" replace />
+export function MyChallengePage() {
+  useChallengeWords()
+  const progress = useMyChallengeProgress()
+  const count = challengeWordCount()
+
+  if (count === 0) {
+    return <Navigate to="/practice/challenge" replace />
   }
 
-  const hasHistory = progress.arcadeHistory.length > 0
+  const hasHistory = progress.history.length > 0
 
   return (
     <StageShell
@@ -43,11 +47,11 @@ export function ArcadePage() {
       header={
         <StageHeader
           backTo="/practice/challenge"
-          title="语法挑战"
+          title="我的挑战"
           trailing={
-            <div className="flex items-center gap-1">
-              <ChallengeRulesDialog />
-            </div>
+            <p className="rounded-xl bg-day px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-cyc">
+              {count} 句
+            </p>
           }
         />
       }
@@ -66,10 +70,13 @@ export function ArcadePage() {
             />
             <div className="min-w-0">
               <p className="text-4xl font-semibold tabular-nums leading-none tracking-[0.04em] text-day">
-                {progress.arcadeTrophyCount}
+                {progress.trophyCount}
               </p>
             </div>
           </div>
+          <p className="px-0.5 text-sm font-medium tracking-[0.02em] text-day/55">
+            从收藏例句中抽取最多 {ARCADE_SESSION_SIZE} 句；当前以输入作答为主。库满且全部过完才给奖杯。
+          </p>
         </section>
 
         <section className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
@@ -79,7 +86,7 @@ export function ArcadePage() {
                 最近
               </h2>
               <ol className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-y-contain">
-                {progress.arcadeHistory.map((entry) => {
+                {progress.history.map((entry) => {
                   const earnedTrophy = entryEarnedTrophy(entry)
                   return (
                     <li
@@ -115,7 +122,7 @@ export function ArcadePage() {
         </section>
 
         <Link
-          to="/practice/grammar/play/run"
+          to="/practice/pictures/play/run"
           className="mt-auto inline-flex min-h-14 shrink-0 items-center justify-center rounded-2xl bg-day px-6 text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
         >
           开始挑战

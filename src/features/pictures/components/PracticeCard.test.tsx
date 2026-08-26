@@ -97,7 +97,26 @@ describe('PracticeCard', () => {
     )
     expect(screen.getByRole('button', { name: 'Forgot' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '加入我的挑战' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '报错' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
+  })
+
+  it('hides challenge control during think but keeps header report', () => {
+    render(<PracticeCard {...props} progressLabel="3/10" />)
+    expect(screen.queryByRole('button', { name: '加入我的挑战' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '报错' })).toBeInTheDocument()
+  })
+
+  it('toggles challenge membership from the sentence action', async () => {
+    localStorage.clear()
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} />)
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
+    await user.click(screen.getByRole('button', { name: '加入我的挑战' }))
+    expect(screen.getByRole('button', { name: '已加入' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '已加入' }))
+    expect(screen.getByRole('button', { name: '加入我的挑战' })).toBeInTheDocument()
   })
 
   it('stays revealed after Aha! when the cue panel is clicked', async () => {
