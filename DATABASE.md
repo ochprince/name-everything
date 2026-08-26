@@ -1,6 +1,20 @@
 # 数据库与备份
 
-权威源是托管 Postgres，不是 git 里的第二份内容包。语法表：`chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`。词汇表：`picture_words`。应用走 Data API，并用 **IndexedDB 按表缓存**：首次全量拉取后，之后只重拉 `content_table_versions` 有变化的表（内容写入时由 DB trigger bump 版本）。表结构以 `supabase/schema.sql` 为准。仓库不维护 `supabase/seed.sql`——**不要把大批量行数据写进 migration**。
+权威源是托管 Postgres，不是 git 里的第二份内容包。表结构以 `supabase/schema.sql` 为准。仓库不维护 `supabase/seed.sql`，也不要把大批量行数据写进 migration。练习不再使用本地小包 `t1-cards.json`。
+
+## 有哪些表
+
+- **语法：** `chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`
+- **词汇：** `picture_words`
+- **报错：** `asset_reports`（「我的」可导出本机记录；配置了密钥也会写入此表）
+
+## 应用怎么读
+
+应用走 Data API，并用 IndexedDB 按表缓存：首次全量拉取后，之后只重拉 `content_table_versions` 有变化的表（内容写入时由 DB trigger bump 版本）。
+
+## 不进库的数据
+
+词汇练习进度（strong / warm / forgot / 批次 offset）只存在浏览器。
 
 ## 表结构 / DDL
 

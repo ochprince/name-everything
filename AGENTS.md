@@ -4,7 +4,7 @@
 
 面向用户的说明只有一份：**中文写在 `README.md`**（GitHub 仓库首页默认展示这个文件）。产品给中文用户用，不要再维护英文版或 `README.zh.md`。
 
-**Whenever you add, change, or remove user-facing documentation for a new feature, behavior change, try-it link, setup step, scope note, or checklist item, update `README.md`.**
+**Whenever you add, change, or remove user-facing documentation for a new feature, behavior change, try-it link, setup step, scope note, or checklist item, update `README.md`.** 已实现/更新的能力细节写 `MANIFEST.md`；数据库相关变更写 `DATABASE.md`；内部备忘写 `NOTES.md`。
 
 Guidelines:
 
