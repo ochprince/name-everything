@@ -14,6 +14,8 @@ max_rows = 1000
 port = 54322
 major_version = 15
 
+# Local `supabase db reset` only. Disabled: content lives in remote Postgres +
+# `migrations/` (already applied on production). Restore from a DB backup if
+# you need a full snapshot. Do not reintroduce supabase/seed.sql.
 [db.seed]
-enabled = true
-sql_paths = ["./seed.sql"]
+enabled = false

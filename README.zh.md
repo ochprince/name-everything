@@ -46,7 +46,7 @@ Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-desi
 | 语法学习 | `/practice/grammar/learn` | 章节 → 关卡 → 学习页 → 下落填槽 |
 | 挑战模式 | `/practice/grammar/play` | 限时挑战，赢取奖杯；池 ≥ 30 且 30/30 通关得奖杯 |
 
-语法课程内容存放在 **Supabase**（`chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`）。应用通过 Data API 加载，并用 **IndexedDB 按表缓存**：首次全量拉取后，之后优先读缓存，只重拉 `content_table_versions` 有变化的表（内容表写入时由 DB trigger 自动 bump 版本）。新课写成 `supabase/migrations/` 下的 SQL migration（见 `.cursor/skills/grammar-content-pack`），push 后由 GitHub 关联的 Supabase 自动应用。用 `npm run grammar:validate` 与 `npm run grammar:coverage` 校验。
+语法课程内容存放在 **Supabase**（`chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`）。应用通过 Data API 加载，并用 **IndexedDB 按表缓存**：首次全量拉取后，之后优先读缓存，只重拉 `content_table_versions` 有变化的表（内容表写入时由 DB trigger 自动 bump 版本）。新课写成 `supabase/migrations/` 下的 SQL migration（见 `.cursor/skills/grammar-content-pack`），push 后由 GitHub 关联的 Supabase 自动应用。用 `npm run grammar:validate` 与 `npm run grammar:coverage` 校验。仓库不维护 `supabase/seed.sql`；完整快照从数据库备份恢复，不要在 git 里再放一份课包拷贝。
 
 本地开发：复制 `.env.example` 为 `.env.local`，填写 `VITE_SUPABASE_URL` 与 `VITE_SUPABASE_PUBLISHABLE_KEY`。GitHub Pages 构建需在仓库 Secrets 中配置同名变量（见 `deploy-pages.yml`）。数据库密码仅用于 Supabase CLI / 直连 Postgres（在 shell 中设置 `SUPABASE_DB_PASSWORD`，不要放进 Vite 环境变量）。
 

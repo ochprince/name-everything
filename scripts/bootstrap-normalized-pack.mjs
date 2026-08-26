@@ -2,6 +2,7 @@
 /**
  * One-time bootstrap: flatten JSON pack → normalized slots + sentence_slot_refs SQL.
  * After baseline ships, authoring is SQL-only (do not re-run against edited JSON).
+ * Writes the historical 40001 migration only — never supabase/seed.sql.
  *
  * Usage:
  *   node scripts/bootstrap-normalized-pack.mjs
@@ -456,13 +457,11 @@ mkdirSync(MIG, { recursive: true })
 
 const schemaPath = join(MIG, '20260823140000_grammar_content.sql')
 const seedPath = join(MIG, '20260823140001_grammar_content_seed.sql')
-const seedCopy = join(ROOT, 'supabase/seed.sql')
 const canonicalSchema = join(ROOT, 'supabase/schema.sql')
 
 const seedBody = buildSeedBody()
 writeFileSync(schemaPath, schemaSql, 'utf8')
 writeFileSync(seedPath, seedBody, 'utf8')
-writeFileSync(seedCopy, seedBody, 'utf8')
 writeFileSync(canonicalSchema, schemaSql, 'utf8')
 writeFileSync(join(CONTENT, 'schema.sql'), `-- Canonical copy: see supabase/schema.sql\n` + schemaSql, 'utf8')
 
@@ -470,5 +469,4 @@ console.log(`slots definitions: ${slots.length} (from ${flatSlots.length} flat r
 console.log(`sentence_slot_refs: ${refs.length}`)
 console.log(`Wrote ${schemaPath}`)
 console.log(`Wrote ${seedPath}`)
-console.log(`Wrote ${seedCopy}`)
 console.log(`Wrote ${canonicalSchema}`)

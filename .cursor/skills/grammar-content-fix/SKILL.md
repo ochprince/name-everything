@@ -141,7 +141,7 @@ COMMIT;
 
 Rules:
 
-- Prefer **`UPDATE slots` / `UPDATE sentences` / … `WHERE id = …`**. Never rewrite the baseline seed.
+- Prefer **`UPDATE slots` / `UPDATE sentences` / … `WHERE id = …`**. Never rewrite already-applied migrations.
 - Escape quotes (`''`). JSONB distractors: `'[…]'::jsonb`.
 - Quote span end column: `"end"`.
 - Changing a shared `slots` row affects every sentence that refs it — intended for reusable fixes.

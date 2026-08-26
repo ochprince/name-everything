@@ -20,7 +20,7 @@ Skills themselves are markdown + Node scripts under `.cursor/skills/`. Another m
 | Deploy path | GitHub ↔ Supabase **Deploy to production**, **or** `supabase` CLI + `SUPABASE_DB_PASSWORD` / `--db-url` | apply migrations |
 | Optional | `npm run grammar:validate` / `grammar:coverage` scripts in `package.json` | convenience wrappers |
 
-Not required for authoring SQL text alone: Vite app running, publishable key in the browser, or local Postgres.
+Not required for authoring SQL text alone: Vite app running, publishable key in the browser, or local Postgres. Do not create `supabase/seed.sql`; live Postgres is canonical and already-applied migrations stay as history.
 
 Publishable/anon key is enough for **read** validation. Writing content is via **migrations**, not the anon key.
 
@@ -34,7 +34,7 @@ User provides one or more of:
 
 ## Outputs
 
-Append content with a **new SQL migration** (never rewrite historical seed migrations wholesale):
+Append content with a **new SQL migration** (never rewrite already-applied migrations wholesale):
 
 | Table | Role |
 |------|------|
@@ -197,7 +197,7 @@ Rules:
 - Rely on DB constraints: PK, FKs, `CHECK (kind…)`, PK `(sentence_id, slot_index)` on refs, one-anchor-per-level index.
 - Escape single quotes (`''`). `slots.distractors` is **JSONB**.
 - `sentence_spans."end"` must be quoted.
-- Do **not** regenerate or overwrite the baseline seed for routine content adds.
+- Do **not** rewrite already-applied migrations. There is no `supabase/seed.sql`; do not recreate it.
 - Do **not** recreate a denormalized `sentence_slots` table.
 Example fragment:
 
