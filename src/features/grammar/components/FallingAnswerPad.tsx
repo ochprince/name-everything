@@ -42,7 +42,8 @@ export function FallingAnswerPad(props: FallingAnswerPadProps) {
           />
           <button
             type="submit"
-            className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-2xl bg-day px-3 text-base font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+            disabled={!props.draft.trim()}
+            className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-2xl bg-day px-3 text-base font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 disabled:pointer-events-none disabled:opacity-40"
           >
             提交
           </button>

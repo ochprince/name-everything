@@ -52,6 +52,7 @@ import {
   type FallingState,
 } from '../lib/engine'
 import { englishAnswersMatch } from '../lib/englishAnswerCompare'
+import { marqueeDurationMs } from '../lib/marquee'
 import {
   arcadeEarnedTrophy,
   arcadeFallDurationMs,
@@ -182,6 +183,11 @@ function FallingBoard({
   const [sentenceResult, setSentenceResult] = useState<SentenceResult | null>(null)
   const [clearedIds, setClearedIds] = useState<Set<string>>(() => new Set())
   const [groupBanner, setGroupBanner] = useState<number | null>(null)
+  const [marquee, setMarquee] = useState<{
+    overflow: boolean
+    durationMs: number
+  }>({ overflow: false, durationMs: 0 })
+  const marqueeWrapRef = useRef<HTMLDivElement>(null)
   const usedRef = useRef<string[]>(firstId ? [firstId] : [])
   const settled = useRef(false)
   const pendingAdvanceRef = useRef<(() => void) | null>(null)
@@ -193,6 +199,8 @@ function FallingBoard({
   const sentenceResultRef = useRef(sentenceResult)
   // Shrink the absolute board above the soft keyboard so fall % / land line retarget.
   const keyboardOverlapPx = useKeyboardOverlapPx()
+  // 输入模式：键盘弹出时句子单行不换行、超长横向循环滚动；正常模式可换行。
+  const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
   usePinLayoutOnKeyboardDismiss()
 
   useEffect(() => {
@@ -224,6 +232,23 @@ function FallingBoard({
   useEffect(() => {
     setProduceDraft('')
   }, [state?.sentenceId])
+
+  // 键盘模式下长句自动横向循环滚动：单行不换行，只有超宽才滚动。
+  useLayoutEffect(() => {
+    if (state?.answerMode !== 'produce' || !keyboardOpen || !sentence) {
+      setMarquee({ overflow: false, durationMs: 0 })
+      return
+    }
+    const p = sentenceRef.current
+    const wrap = marqueeWrapRef.current
+    if (!p || !wrap) return
+    const textWidth = p.scrollWidth
+    const overflow = textWidth > wrap.clientWidth
+    setMarquee({
+      overflow,
+      durationMs: overflow ? marqueeDurationMs(textWidth) : 0,
+    })
+  }, [state?.answerMode, keyboardOpen, sentence?.id, sentence?.zh])
 
   // iOS focuses the produce field by scrolling the page up. That parks the fall
   // start above the visible viewport (long wait to see text) and leaves a black
@@ -287,6 +312,8 @@ function FallingBoard({
 
   useEffect(() => {
     if (!state || state.status !== 'playing' || sentenceResult) return
+    // 输入模式无下落倒计时：不跑计时循环。
+    if (state.answerMode === 'produce') return
 
     let frame = 0
     let last = performance.now()
@@ -301,12 +328,14 @@ function FallingBoard({
     }
     frame = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(frame)
-  }, [state?.status, state?.sentenceId, sentenceResult])
+  }, [state?.status, state?.sentenceId, state?.answerMode, sentenceResult])
 
   useLayoutEffect(() => {
     if (sentenceResultRef.current) return
     const current = stateRef.current
     if (!current || current.status !== 'playing') return
+    // 输入模式不因落底/超时失败（无下落）。
+    if (current.answerMode === 'produce') return
     if (bottomHandledRef.current) return
 
     const hitByTime = current.remainingMs <= 0
@@ -400,9 +429,11 @@ function FallingBoard({
     if (!trimmed) return
 
     if (!englishAnswersMatch(trimmed, sentence.en)) {
+      // 只比对一次：错误直接失败（-1 心 → 失败页看正确答案），不再允许重输。
       playUiFail()
       if (sentenceRef.current) gsap.killTweensOf(sentenceRef.current)
-      setState((current) => (current ? applyWrong(current) : current))
+      setState((current) => (current ? land(current) : current))
+      setSentenceResult({ outcome: 'failed', sentenceId: sentence.id })
       return
     }
 
@@ -626,28 +657,82 @@ function FallingBoard({
           ref={fallZoneRef}
           className="relative min-h-0 flex-1 overflow-hidden"
         >
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cobalt to-transparent opacity-80"
-          />
-          {sentence ? (
+          {round.answerMode === 'mcq' ? (
             <div
-              ref={sentenceWrapRef}
-              className="pointer-events-none absolute inset-x-4"
-              style={{
-                top: `${fallProgressToTop(fallT)}%`,
-                transform: 'translateY(-100%)',
-              }}
-            >
-              <p
-                ref={sentenceRef}
-                className={`text-center text-2xl font-medium leading-snug tracking-[0.01em] will-change-transform ${
-                  state.lastWrong ? 'text-rose' : 'text-day'
-                }`}
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cobalt to-transparent opacity-80"
+            />
+          ) : null}
+          {sentence ? (
+            round.answerMode === 'produce' ? (
+              <div className="pt-6">
+                <div
+                  ref={marqueeWrapRef}
+                  className={
+                    keyboardOpen
+                      ? 'overflow-hidden whitespace-nowrap'
+                      : 'whitespace-normal'
+                  }
+                >
+                  {keyboardOpen ? (
+                    <div
+                      className={`flex w-max will-change-transform ${
+                        marquee.overflow ? 'marquee-track' : ''
+                      }`}
+                      style={
+                        marquee.overflow
+                          ? { animationDuration: `${marquee.durationMs}ms` }
+                          : undefined
+                      }
+                    >
+                      <p
+                        ref={sentenceRef}
+                        className={`shrink-0 pr-8 text-center text-2xl font-medium leading-snug tracking-[0.01em] ${
+                          state.lastWrong ? 'text-rose' : 'text-day'
+                        }`}
+                      >
+                        {sentence.zh}
+                      </p>
+                      <p
+                        aria-hidden="true"
+                        className={`shrink-0 pr-8 text-center text-2xl font-medium leading-snug tracking-[0.01em] ${
+                          state.lastWrong ? 'text-rose' : 'text-day'
+                        }`}
+                      >
+                        {sentence.zh}
+                      </p>
+                    </div>
+                  ) : (
+                    <p
+                      ref={sentenceRef}
+                      className={`text-center text-2xl font-medium leading-snug tracking-[0.01em] ${
+                        state.lastWrong ? 'text-rose' : 'text-day'
+                      }`}
+                    >
+                      {sentence.zh}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div
+                ref={sentenceWrapRef}
+                className="pointer-events-none absolute inset-x-4"
+                style={{
+                  top: `${fallProgressToTop(fallT)}%`,
+                  transform: 'translateY(-100%)',
+                }}
               >
-                {sentence.zh}
-              </p>
-            </div>
+                <p
+                  ref={sentenceRef}
+                  className={`text-center text-2xl font-medium leading-snug tracking-[0.01em] will-change-transform ${
+                    state.lastWrong ? 'text-rose' : 'text-day'
+                  }`}
+                >
+                  {sentence.zh}
+                </p>
+              </div>
+            )
           ) : null}
         </div>
         <div className="mt-4">

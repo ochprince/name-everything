@@ -60,4 +60,36 @@ describe('FallingAnswerPad', () => {
     await user.click(screen.getByRole('button', { name: '提交' }))
     expect(onSubmit).toHaveBeenCalledTimes(1)
   })
+
+  it('disables submit while the draft is empty or blank', () => {
+    const { rerender } = render(
+      <FallingAnswerPad
+        mode="produce"
+        draft=""
+        onDraftChange={() => {}}
+        onSubmit={() => {}}
+      />,
+    )
+    expect(screen.getByRole('button', { name: '提交' })).toBeDisabled()
+
+    rerender(
+      <FallingAnswerPad
+        mode="produce"
+        draft="   "
+        onDraftChange={() => {}}
+        onSubmit={() => {}}
+      />,
+    )
+    expect(screen.getByRole('button', { name: '提交' })).toBeDisabled()
+
+    rerender(
+      <FallingAnswerPad
+        mode="produce"
+        draft="She runs fast"
+        onDraftChange={() => {}}
+        onSubmit={() => {}}
+      />,
+    )
+    expect(screen.getByRole('button', { name: '提交' })).toBeEnabled()
+  })
 })

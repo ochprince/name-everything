@@ -158,12 +158,27 @@ dialog.cue-sheet::backdrop {
   background: #05060a;
 }
 
+/* 输入模式键盘弹出时：长句单行横向循环滚动（不换行） */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll 8s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fold-panel,
   .cue-raise,
   .cue-raise-late,
   .fold-chevron,
-  dialog.cue-sheet[open] {
+  dialog.cue-sheet[open],
+  .marquee-track {
     animation: none;
     transition: none;
   }
