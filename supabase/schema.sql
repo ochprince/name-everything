@@ -76,6 +76,24 @@ CREATE TABLE content_table_versions (
   version BIGINT NOT NULL DEFAULT 1
 );
 
+CREATE TABLE picture_words (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  word TEXT NOT NULL UNIQUE,
+  sort_order INTEGER NOT NULL UNIQUE,
+  word_level_id TEXT NOT NULL,
+  word_audio TEXT NOT NULL,
+  image_file TEXT NOT NULL,
+  accent TEXT,
+  mean_cn TEXT,
+  mean_en TEXT,
+  sentence_phrase TEXT,
+  sentence TEXT NOT NULL,
+  sentence_trans TEXT,
+  sentence_audio TEXT NOT NULL
+);
+
+CREATE INDEX idx_picture_words_sort_order ON picture_words (sort_order);
+
 CREATE TABLE asset_reports (
   id TEXT PRIMARY KEY,
   asset_type TEXT NOT NULL CHECK (asset_type IN ('sentence', 'grammar_point', 'sentence_slot')),
@@ -129,6 +147,10 @@ CREATE TRIGGER trg_game_tuning_bump_version
   AFTER INSERT OR UPDATE OR DELETE ON game_tuning
   FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
 
+CREATE TRIGGER trg_picture_words_bump_version
+  AFTER INSERT OR UPDATE OR DELETE ON picture_words
+  FOR EACH STATEMENT EXECUTE FUNCTION bump_content_table_version();
+
 ALTER TABLE chapters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE grammar_points ENABLE ROW LEVEL SECURITY;
 ALTER TABLE levels ENABLE ROW LEVEL SECURITY;
@@ -138,6 +160,7 @@ ALTER TABLE slots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sentence_slot_refs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE game_tuning ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_table_versions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE picture_words ENABLE ROW LEVEL SECURITY;
 ALTER TABLE asset_reports ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "chapters_public_read" ON chapters
@@ -158,9 +181,11 @@ CREATE POLICY "game_tuning_public_read" ON game_tuning
   FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "content_table_versions_public_read" ON content_table_versions
   FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "picture_words_public_read" ON picture_words
+  FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "asset_reports_public_insert" ON asset_reports
   FOR INSERT TO anon, authenticated WITH CHECK (true);
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT SELECT ON chapters, grammar_points, levels, sentences, sentence_spans, slots, sentence_slot_refs, game_tuning, content_table_versions TO anon, authenticated;
+GRANT SELECT ON chapters, grammar_points, levels, sentences, sentence_spans, slots, sentence_slot_refs, game_tuning, content_table_versions, picture_words TO anon, authenticated;
 GRANT INSERT ON asset_reports TO anon, authenticated;

@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { screen, act, fireEvent } from '@testing-library/react'
+import { screen, act, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProgress } from '../../../test/renderWithProgress'
-import { loadCards } from '../content/loadCards'
+import { TEST_PICTURE_CARDS } from '../content/testCards'
 import {
   defaultProgress,
   loadProgress,
@@ -11,6 +11,15 @@ import {
   todayKey,
 } from '../lib/storage'
 import { PracticePage } from './PracticePage'
+
+vi.mock('../content/fetchPictureWords', () => ({
+  fetchPictureWordBatch: vi.fn(async (offset: number, limit: number) =>
+    TEST_PICTURE_CARDS.slice(offset, offset + limit),
+  ),
+  fetchPictureWordsByWords: vi.fn(async (words: string[]) =>
+    TEST_PICTURE_CARDS.filter((c) => words.includes(c.id)),
+  ),
+}))
 
 beforeEach(() => {
   localStorage.clear()
@@ -25,7 +34,9 @@ describe('PracticePage', () => {
     const user = userEvent.setup()
     renderWithProgress(<PracticePage />)
 
-    expect(screen.getByText('0 / 10')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('0 / 10')).toBeInTheDocument()
+    })
     expect(
       screen.queryByRole('button', { name: '记录' }),
     ).not.toBeInTheDocument()
@@ -43,6 +54,9 @@ describe('PracticePage', () => {
   it('keeps the same card after remount until Got it / Forgot / timeout', async () => {
     const user = userEvent.setup()
     const first = renderWithProgress(<PracticePage />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
+    })
     await user.click(screen.getByRole('button', { name: 'Aha!' }))
     const word = screen.getByRole('heading', { level: 2 }).textContent
     const id = loadProgress().currentCardId
@@ -50,32 +64,42 @@ describe('PracticePage', () => {
     first.unmount()
 
     renderWithProgress(<PracticePage />)
-    expect(loadProgress().currentCardId).toBe(id)
+    await waitFor(() => {
+      expect(loadProgress().currentCardId).toBe(id)
+    })
     await user.click(screen.getByRole('button', { name: 'Aha!' }))
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(word!)
   })
 
   it('restores a saved currentCardId on first paint', async () => {
     const user = userEvent.setup()
-    const card = loadCards()[0]
+    const card = TEST_PICTURE_CARDS[0]
     saveProgress({
       ...defaultProgress(),
       currentCardId: card.id,
       recentPracticeTag: card.tags[0] ?? null,
     })
     renderWithProgress(<PracticePage />)
-    expect(loadProgress().currentCardId).toBe(card.id)
+    await waitFor(() => {
+      expect(loadProgress().currentCardId).toBe(card.id)
+    })
     await user.click(screen.getByRole('button', { name: 'Aha!' }))
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
       card.word,
     )
   })
 
-  it('timeout enqueues Forgot and waits for Next before advancing', () => {
+  it('timeout enqueues Forgot and waits for Next before advancing', async () => {
     vi.useFakeTimers()
     renderWithProgress(<PracticePage />)
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
     const id = loadProgress().currentCardId
     expect(id).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
+
     act(() => {
       vi.advanceTimersByTime(5000)
     })
@@ -92,25 +116,33 @@ describe('PracticePage', () => {
     expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
   })
 
-  it('does not restore a timeout card after leaving practice', () => {
+  it('does not restore a timeout card after leaving practice', async () => {
     vi.useFakeTimers()
     const first = renderWithProgress(<PracticePage />)
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
     const id = loadProgress().currentCardId
     expect(id).toBeTruthy()
+
     act(() => {
       vi.advanceTimersByTime(5000)
     })
     expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
     first.unmount()
+    vi.useRealTimers()
 
     renderWithProgress(<PracticePage />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
+    })
     expect(loadProgress().currentCardId).not.toBe(id)
-    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
   })
 
   it('shows 今日已完成 after 10 practice Got its and Continue starts the next set', async () => {
     const user = userEvent.setup()
-    const catalog = loadCards()
+    const catalog = TEST_PICTURE_CARDS
     const today = todayKey()
     let progress = defaultProgress()
     for (const card of catalog.slice(0, 10)) {
@@ -124,23 +156,36 @@ describe('PracticePage', () => {
     saveProgress(progress)
     renderWithProgress(<PracticePage />)
 
-    expect(screen.getByText('今日已完成')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('今日已完成')).toBeInTheDocument()
+    })
     expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '继续' }))
     expect(screen.getByText('10 / 10')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
   })
 
-  it('shows 这一批都会了 when every card is 较好记忆', () => {
-    const catalog = loadCards()
-    const today = todayKey()
-    let progress = defaultProgress()
-    for (const card of catalog) {
-      progress = markGotIt(progress, card.id, today)
-    }
-    saveProgress(progress)
+  it('shows 这一批都会了 when every card is strong and no next batch', async () => {
+    const catalog = TEST_PICTURE_CARDS
+    saveProgress({
+      ...defaultProgress(),
+      strongIds: catalog.map((card) => card.id),
+    })
     renderWithProgress(<PracticePage />)
-    expect(screen.getByText('这一批都会了')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('这一批都会了')).toBeInTheDocument()
+    })
     expect(screen.queryByRole('button', { name: '继续' })).not.toBeInTheDocument()
+  })
+
+  it('shows 请先复习 when the batch is only forgot', async () => {
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: TEST_PICTURE_CARDS.map((c) => c.id),
+    })
+    renderWithProgress(<PracticePage />)
+    await waitFor(() => {
+      expect(screen.getByText('请先复习')).toBeInTheDocument()
+    })
   })
 })

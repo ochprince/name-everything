@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PracticeCard } from '../features/pictures/components/PracticeCard'
-import { loadCards } from '../features/pictures/content/loadCards'
+import { fetchPictureWordsByWords } from '../features/pictures/content/fetchPictureWords'
 import { useProgress } from '../features/pictures/hooks/useProgress'
 import { markForgot, markReviewGotIt, clearReviewUnseen, todayKey } from '../features/pictures/lib/storage'
 import { highlightParts } from '../features/pictures/lib/highlightWord'
@@ -25,14 +25,6 @@ function CueThumb({ src }: { src: string }) {
       onError={() => setImageSrc(FALLBACK_IMAGE)}
     />
   )
-}
-
-function cardsForIds(ids: string[]): Card[] {
-  const catalog = loadCards()
-  return ids.flatMap((id) => {
-    const card = catalog.find((item) => item.id === id)
-    return card ? [card] : []
-  })
 }
 
 function SentenceHighlight({
@@ -63,16 +55,43 @@ function SentenceHighlight({
 export function ReviewPage() {
   const { progress, update } = useProgress()
   const [openId, setOpenId] = useState<string | null>(null)
+  const [listed, setListed] = useState<Card[]>([])
+  const [loading, setLoading] = useState(true)
 
   const sheetRef = useRef<HTMLDialogElement>(null)
-  const listed = cardsForIds(progress.forgotIds)
   const openCard = openId
-    ? loadCards().find((card) => card.id === openId) ?? null
+    ? listed.find((card) => card.id === openId) ?? null
     : null
 
   useLayoutEffect(() => {
     update(clearReviewUnseen)
   }, [update])
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      setLoading(true)
+      try {
+        const cards = await fetchPictureWordsByWords(progress.forgotIds)
+        if (cancelled) return
+        const byId = new Map(cards.map((c) => [c.id, c]))
+        setListed(
+          progress.forgotIds.flatMap((id) => {
+            const card = byId.get(id)
+            return card ? [card] : []
+          }),
+        )
+      } catch {
+        if (!cancelled) setListed([])
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [progress.forgotIds])
 
   useEffect(() => {
     const sheet = sheetRef.current
@@ -82,7 +101,6 @@ export function ReviewPage() {
     } else {
       sheet.setAttribute('open', '')
     }
-    // Keep initial focus on the dialog shell so 「返回」 does not look selected.
     sheet.focus()
   }, [openCard])
 
@@ -110,7 +128,13 @@ export function ReviewPage() {
         </p>
 
         <div id="review-queue" className="pb-40">
-          {listed.length === 0 ? (
+          {loading ? (
+            <div className="mt-16 rounded-2xl border border-gold/50 bg-cyc/80 px-4 py-5">
+              <p className="text-center text-lg font-medium leading-snug tracking-[0.01em] text-day/85">
+                加载中…
+              </p>
+            </div>
+          ) : listed.length === 0 ? (
             <div className="mt-16 rounded-2xl border border-gold/50 bg-cyc/80 px-4 py-5">
               <p className="text-center text-lg font-medium leading-snug tracking-[0.01em] text-day/85">
                 暂时没有 Forgot，去练习里诚实点一下吧

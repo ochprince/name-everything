@@ -31,5 +31,9 @@ dist-ssr
 # Supabase CLI local cache
 supabase/.temp/
 
+# Local Postgres dumps (Free plan has no hosted daily backups)
+supabase/backups/*
+!supabase/backups/.gitignore
+
 # Impeccable design artifacts / local runtime
 .impeccable/

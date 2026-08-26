@@ -1,6 +1,15 @@
-import { useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PracticeCard } from '../components/PracticeCard'
-import { loadCards } from '../content/loadCards'
+import {
+  fetchPictureWordBatch,
+  fetchPictureWordsByWords,
+} from '../content/fetchPictureWords'
+import {
+  BATCH_SIZE,
+  batchFullyStrong,
+  buildPracticePool,
+  needsReviewPrompt,
+} from '../content/practicePool'
 import { useProgress } from '../hooks/useProgress'
 import { pickNextCard } from '../lib/deck'
 import { StageShell } from '../../../shared/StageShell'
@@ -11,26 +20,12 @@ import {
   markForgot,
   markGotIt,
   remainingPracticeCount,
+  setBatchOffset,
   setPracticeCursor,
   todayKey,
   type ProgressState,
 } from '../lib/storage'
 import type { Card } from '../../../types/card'
-
-function findCard(id: string | null): Card | null {
-  if (!id) return null
-  return loadCards().find((card) => card.id === id) ?? null
-}
-
-function pickAndCursor(progress: ProgressState): ProgressState {
-  const picked = pickNextCard(
-    loadCards(),
-    progress,
-    progress.recentPracticeTag,
-  )
-  if (!picked) return setPracticeCursor(progress, null, null)
-  return setPracticeCursor(progress, picked.card.id, picked.recentTag)
-}
 
 function WrapScreen({
   title,
@@ -61,23 +56,165 @@ function WrapScreen({
 
 export function PracticePage() {
   const { progress, update } = useProgress()
-  const catalog = loadCards()
-  const current = findCard(progress.currentCardId)
-  const remaining = remainingPracticeCount(catalog, progress)
-  const today = todayKey()
-  const view = currentSetView(progress, remaining, today)
+  const [batchCards, setBatchCards] = useState<Card[]>([])
+  const [warmExtra, setWarmExtra] = useState<Card[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [catalogDone, setCatalogDone] = useState(false)
   const [heldCard, setHeldCard] = useState<Card | null>(null)
+  const advancingRef = useRef(false)
+
+  const practicePool = useMemo(
+    () => buildPracticePool(batchCards, warmExtra, progress),
+    [batchCards, warmExtra, progress],
+  )
+
+  const batchRemaining = remainingPracticeCount(batchCards, progress)
+  const remainingForView =
+    catalogDone || batchCards.length === 0
+      ? batchRemaining
+      : batchFullyStrong(batchCards, progress)
+        ? 1
+        : batchRemaining
+  const today = todayKey()
+  const view = currentSetView(progress, remainingForView, today)
+  const reviewPrompt = needsReviewPrompt(batchCards, practicePool, progress)
+
+  const cardById = useMemo(() => {
+    const map = new Map<string, Card>()
+    for (const card of [...batchCards, ...warmExtra]) map.set(card.id, card)
+    return map
+  }, [batchCards, warmExtra])
+
+  const current = progress.currentCardId
+    ? (cardById.get(progress.currentCardId) ?? null)
+    : null
   const shown = heldCard ?? current
 
+  const warmIdsKey = progress.warmIds.join('\0')
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      setLoading(true)
+      setLoadError(null)
+      try {
+        const batch = await fetchPictureWordBatch(
+          progress.batchOffset,
+          BATCH_SIZE,
+        )
+        if (cancelled) return
+        setBatchCards(batch)
+        setCatalogDone(batch.length === 0)
+
+        const batchIds = new Set(batch.map((c) => c.id))
+        const warmMissing = progress.warmIds.filter((id) => !batchIds.has(id))
+        const extras =
+          warmMissing.length > 0
+            ? await fetchPictureWordsByWords(warmMissing)
+            : []
+        if (cancelled) return
+        setWarmExtra(extras)
+      } catch (err) {
+        if (cancelled) return
+        setLoadError(err instanceof Error ? err.message : String(err))
+        setBatchCards([])
+        setWarmExtra([])
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+    // warmIdsKey: stable string so Got it / Forgot array identity does not refetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional warmIdsKey
+  }, [progress.batchOffset, warmIdsKey])
+
   useLayoutEffect(() => {
+    if (loading || loadError || catalogDone) return
     if (view.wrap !== 'none') return
-    if (current && !progress.strongIds.includes(current.id)) return
-    if (remaining === 0) return
-    update((p) => pickAndCursor(p))
-  }, [current, progress.strongIds, remaining, update, view.wrap])
+
+    if (batchFullyStrong(batchCards, progress) && batchCards.length > 0) {
+      if (advancingRef.current) return
+      advancingRef.current = true
+      void (async () => {
+        try {
+          const next = await fetchPictureWordBatch(
+            progress.batchOffset + BATCH_SIZE,
+            BATCH_SIZE,
+          )
+          if (next.length > 0) {
+            update((p) => setBatchOffset(p, p.batchOffset + BATCH_SIZE))
+          } else {
+            setCatalogDone(true)
+          }
+        } catch (err) {
+          setLoadError(err instanceof Error ? err.message : String(err))
+        } finally {
+          advancingRef.current = false
+        }
+      })()
+      return
+    }
+
+    if (reviewPrompt) return
+
+    const inPool =
+      current && practicePool.some((card) => card.id === current.id)
+    if (inPool) return
+    if (practicePool.length === 0) return
+
+    update((p) => {
+      const picked = pickNextCard(practicePool, p, p.recentPracticeTag)
+      if (!picked) return setPracticeCursor(p, null, null)
+      return setPracticeCursor(p, picked.card.id, picked.recentTag)
+    })
+  }, [
+    loading,
+    loadError,
+    catalogDone,
+    view.wrap,
+    batchCards,
+    progress,
+    practicePool,
+    current,
+    reviewPrompt,
+    update,
+  ])
 
   function advanceAfter(mutate: (p: ProgressState) => ProgressState) {
-    update((p) => pickAndCursor(mutate(p)))
+    update((p) => {
+      const next = mutate(p)
+      const pool = buildPracticePool(batchCards, warmExtra, next)
+      const picked = pickNextCard(pool, next, next.recentPracticeTag)
+      if (!picked) return setPracticeCursor(next, null, null)
+      return setPracticeCursor(next, picked.card.id, picked.recentTag)
+    })
+  }
+
+  if (loading) {
+    return <WrapScreen title="加载中…" />
+  }
+
+  if (loadError) {
+    return <WrapScreen title="词库加载失败" />
+  }
+
+  if (
+    catalogDone &&
+    (batchCards.length === 0 || batchFullyStrong(batchCards, progress))
+  ) {
+    return <WrapScreen title="这一批都会了" />
+  }
+
+  if (
+    batchFullyStrong(batchCards, progress) &&
+    batchCards.length > 0 &&
+    !catalogDone
+  ) {
+    return <WrapScreen title="加载中…" />
   }
 
   if (view.wrap === 'pack') {
@@ -91,11 +228,21 @@ export function PracticePage() {
         action={{
           label: '继续',
           onClick: () => {
-            update((p) => pickAndCursor(ackDailyContinue(p, today)))
+            update((p) => {
+              const next = ackDailyContinue(p, today)
+              const pool = buildPracticePool(batchCards, warmExtra, next)
+              const picked = pickNextCard(pool, next, next.recentPracticeTag)
+              if (!picked) return setPracticeCursor(next, null, null)
+              return setPracticeCursor(next, picked.card.id, picked.recentTag)
+            })
           },
         }}
       />
     )
+  }
+
+  if (reviewPrompt) {
+    return <WrapScreen title="请先复习" />
   }
 
   return (
@@ -120,7 +267,13 @@ export function PracticePage() {
           }}
           onTimeout={() => {
             setHeldCard(shown)
-            update((p) => pickAndCursor(markForgot(p, shown.id, today)))
+            update((p) => {
+              const next = markForgot(p, shown.id, today)
+              const pool = buildPracticePool(batchCards, warmExtra, next)
+              const picked = pickNextCard(pool, next, next.recentPracticeTag)
+              if (!picked) return setPracticeCursor(next, null, null)
+              return setPracticeCursor(next, picked.card.id, picked.recentTag)
+            })
           }}
           onNext={() => {
             setHeldCard(null)

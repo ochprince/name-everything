@@ -46,7 +46,7 @@ The **练习** tab opens a module picker at `/` (no countdown until you enter a 
 | 语法学习 | `/practice/grammar/learn` | Chapters → levels → learn page → falling-fill |
 | 挑战模式 | `/practice/grammar/play` | Timed challenge from passed levels; trophy on full clear when pool ≥ 30 |
 
-Grammar content is stored in **Supabase** (`chapters`, `grammar_points`, `levels`, `sentences`, `sentence_spans`, `slots`, `sentence_slot_refs`, `game_tuning`). The app loads it via the Data API with **IndexedDB per-table cache**: after the first full fetch, later visits reuse cache and only re-download tables whose `content_table_versions` entry changed (DB triggers bump versions on content writes). Author new lessons as SQL migrations under `supabase/migrations/` (see `.cursor/skills/grammar-content-pack`), then push so GitHub-linked Supabase applies them. Validate with `npm run grammar:validate` and `npm run grammar:coverage`. There is no `supabase/seed.sql`; recover a full snapshot from a database backup, not from a second copy in git.
+Grammar content is stored in **Supabase** (`chapters`, `grammar_points`, `levels`, `sentences`, `sentence_spans`, `slots`, `sentence_slot_refs`, `game_tuning`). The app loads it via the Data API with **IndexedDB per-table cache**: after the first full fetch, later visits reuse cache and only re-download tables whose `content_table_versions` entry changed (DB triggers bump versions on content writes). Author new lessons as SQL migrations under `supabase/migrations/` (see `.cursor/skills/grammar-content-pack`), then push so GitHub-linked Supabase applies them. Validate with `npm run grammar:validate` and `npm run grammar:coverage`. There is no `supabase/seed.sql`; recover a full snapshot from a database backup, not from a second copy in git. On the Free plan, dump locally to `supabase/backups/` (gitignored): `npx supabase db dump --linked -f supabase/backups/schema.YYYYMMDD.sql` and `npx supabase db dump --linked --data-only -f supabase/backups/data.YYYYMMDD.sql`.
 
 Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY` for local dev. GitHub Pages builds need the same keys as repository secrets (`deploy-pages.yml`). Database password is only for Supabase CLI / direct Postgres (`SUPABASE_DB_PASSWORD` in your shell, not in the Vite app).
 
@@ -84,15 +84,18 @@ Product ideas above live on the Roadmap, not in week 1.
 - Formal spaced-repetition (SRS) scheduling
 - Copying Baicizhan jpeg / mp3 binaries into this repo
 
-## Regenerate T1 cards
+## Upload picture words
 
-From the repo root (requires a sibling `my_app` checkout with `assets/data/words/cet4-all`):
+From the repo root (requires a sibling `my_app` checkout with `assets/data/words/cet4-all`, plus `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`):
 
 ```bash
-node scripts/build-t1-pack.mjs
+# apply migration first (supabase db push / link deploy), then:
+node scripts/upload-picture-words.mjs
+# optional full replace:
+node scripts/upload-picture-words.mjs --replace
 ```
 
-Writes `src/features/pictures/content/t1-cards.json` with CDN URLs for images and audio.
+Upserts all CET4 rows into Supabase `picture_words` (filenames only; CDN prefix is applied in the app). Does not write a local JSON pack.
 
 ## Media notes
 

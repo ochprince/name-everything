@@ -1,9 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App'
 import { saveGrammarProgress, defaultGrammarProgress } from '../features/grammar/lib/storage'
+import { TEST_PICTURE_CARDS } from '../features/pictures/content/testCards'
+
+vi.mock('../features/pictures/content/fetchPictureWords', () => ({
+  fetchPictureWordBatch: vi.fn(async (offset: number, limit: number) =>
+    TEST_PICTURE_CARDS.slice(offset, offset + limit),
+  ),
+  fetchPictureWordsByWords: vi.fn(async (words: string[]) =>
+    TEST_PICTURE_CARDS.filter((c) => words.includes(c.id)),
+  ),
+}))
 
 beforeEach(() => {
   localStorage.clear()
@@ -108,6 +118,8 @@ describe('practice home', () => {
     renderHome()
     await user.click(screen.getByRole('link', { name: /词汇记忆/ }))
     expect(screen.getByRole('link', { name: '返回' })).toHaveAttribute('href', '/')
-    expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
+    })
   })
 })

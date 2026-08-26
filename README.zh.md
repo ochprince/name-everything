@@ -46,7 +46,7 @@ Grammar Everything：[`docs/superpowers/specs/2026-08-22-grammar-everything-desi
 | 语法学习 | `/practice/grammar/learn` | 章节 → 关卡 → 学习页 → 下落填槽 |
 | 挑战模式 | `/practice/grammar/play` | 限时挑战，赢取奖杯；池 ≥ 30 且 30/30 通关得奖杯 |
 
-语法课程内容存放在 **Supabase**（`chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`）。应用通过 Data API 加载，并用 **IndexedDB 按表缓存**：首次全量拉取后，之后优先读缓存，只重拉 `content_table_versions` 有变化的表（内容表写入时由 DB trigger 自动 bump 版本）。新课写成 `supabase/migrations/` 下的 SQL migration（见 `.cursor/skills/grammar-content-pack`），push 后由 GitHub 关联的 Supabase 自动应用。用 `npm run grammar:validate` 与 `npm run grammar:coverage` 校验。仓库不维护 `supabase/seed.sql`；完整快照从数据库备份恢复，不要在 git 里再放一份课包拷贝。
+语法课程内容存放在 **Supabase**（`chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`）。应用通过 Data API 加载，并用 **IndexedDB 按表缓存**：首次全量拉取后，之后优先读缓存，只重拉 `content_table_versions` 有变化的表（内容表写入时由 DB trigger 自动 bump 版本）。新课写成 `supabase/migrations/` 下的 SQL migration（见 `.cursor/skills/grammar-content-pack`），push 后由 GitHub 关联的 Supabase 自动应用。用 `npm run grammar:validate` 与 `npm run grammar:coverage` 校验。仓库不维护 `supabase/seed.sql`；完整快照从数据库备份恢复，不要在 git 里再放一份课包拷贝。Free 套餐请把 dump 放到 `supabase/backups/`（已 gitignore）：`npx supabase db dump --linked -f supabase/backups/schema.YYYYMMDD.sql` 以及 `npx supabase db dump --linked --data-only -f supabase/backups/data.YYYYMMDD.sql`。
 
 本地开发：复制 `.env.example` 为 `.env.local`，填写 `VITE_SUPABASE_URL` 与 `VITE_SUPABASE_PUBLISHABLE_KEY`。GitHub Pages 构建需在仓库 Secrets 中配置同名变量（见 `deploy-pages.yml`）。数据库密码仅用于 Supabase CLI / 直连 Postgres（在 shell 中设置 `SUPABASE_DB_PASSWORD`，不要放进 Vite 环境变量）。
 
@@ -84,15 +84,18 @@ Grammar 限时下落填槽玩法——用户评审记录（2026-08-25）：
 - 正式间隔重复（SRS）调度
 - 把百词斩的 jpeg / mp3 二进制拷进本仓库
 
-## 重新生成 T1 卡片
+## 上传词汇记忆词库
 
-在仓库根目录执行（需要同级目录中有 `my_app`，且含 `assets/data/words/cet4-all`）：
+在仓库根目录执行（需要同级目录中有 `my_app`，且含 `assets/data/words/cet4-all`；`.env.local` 中配置 `SUPABASE_SERVICE_ROLE_KEY`）：
 
 ```bash
-node scripts/build-t1-pack.mjs
+# 先应用 migration（supabase db push / 控制台 Deploy），然后：
+node scripts/upload-picture-words.mjs
+# 可选：先清空再全量写入
+node scripts/upload-picture-words.mjs --replace
 ```
 
-会写入 `src/features/pictures/content/t1-cards.json`（图片与音频为 CDN 地址）。
+将全部 CET4 词条 upsert 到 Supabase `picture_words`（只存文件名；CDN 前缀由前端拼接）。**不**再生成本地 `t1-cards.json`。
 
 ## 媒体说明
 

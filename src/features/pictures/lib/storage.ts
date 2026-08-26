@@ -34,6 +34,8 @@ export type ProgressState = {
   reviewUnseenCount: number
   currentCardId: string | null
   recentPracticeTag: string | null
+  /** Offset into picture_words.sort_order for the current 50-card batch. */
+  batchOffset: number
   streaks: { lastActiveDate: string | null; count: number }
   settings: {
     hintLang: HintLang
@@ -62,6 +64,7 @@ export function defaultProgress(): ProgressState {
     reviewUnseenCount: 0,
     currentCardId: null,
     recentPracticeTag: null,
+    batchOffset: 0,
     streaks: { lastActiveDate: null, count: 0 },
     settings: { hintLang: 'en', autoSpeak: false, thinkHoldMs: 5000, uiSound: true, produceRatio: 50 },
   }
@@ -164,6 +167,12 @@ export function loadProgress(): ProgressState {
         typeof parsed.recentPracticeTag === 'string'
           ? parsed.recentPracticeTag
           : null,
+      batchOffset:
+        typeof parsed.batchOffset === 'number' &&
+        Number.isFinite(parsed.batchOffset) &&
+        parsed.batchOffset >= 0
+          ? Math.floor(parsed.batchOffset)
+          : 0,
       streaks:
         parsed.streaks && typeof parsed.streaks === 'object'
           ? {
@@ -249,6 +258,18 @@ export function setPracticeCursor(
     ...state,
     currentCardId: cardId,
     recentPracticeTag: recentTag,
+  }
+}
+
+export function setBatchOffset(
+  state: ProgressState,
+  batchOffset: number,
+): ProgressState {
+  return {
+    ...state,
+    batchOffset: Math.max(0, Math.floor(batchOffset)),
+    currentCardId: null,
+    recentPracticeTag: null,
   }
 }
 

@@ -1,6 +1,5 @@
 export { PracticePage } from './pages/PracticePage'
 export { PracticeCard } from './components/PracticeCard'
-export { loadCards } from './content/loadCards'
 export { ProgressProvider, useProgress } from './hooks/useProgress'
 export { pickNextCard } from './lib/deck'
 export { highlightParts } from './lib/highlightWord'

@@ -35,6 +35,14 @@ describe('pickNextCard', () => {
     p = markForgot(p, 'b', t)
     const result = pickNextCard(cards, p, null, () => 0.9)
     expect(result?.card.id).not.toBe('a')
+    expect(result?.card.id).not.toBe('b')
+  })
+
+  it('excludes forgot cards from the practice pool', () => {
+    const t = todayKey()
+    const p = markForgot(defaultProgress(), 'a', t)
+    const result = pickNextCard(cards, p, null, () => 0.9)
+    expect(result?.card.id).not.toBe('a')
   })
 
   it('picks warm when rng lands in the warm band', () => {

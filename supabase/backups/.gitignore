@@ -1,0 +1,3 @@
+# Keep this directory; ignore dump files.
+*
+!.gitignore

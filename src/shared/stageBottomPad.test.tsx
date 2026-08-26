@@ -1,12 +1,22 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import App from '../App'
 import {
   defaultGrammarProgress,
   saveGrammarProgress,
 } from '../features/grammar/lib/storage'
 import { STAGE_BOTTOM_PAD } from './StageShell'
+import { TEST_PICTURE_CARDS } from '../features/pictures/content/testCards'
+
+vi.mock('../features/pictures/content/fetchPictureWords', () => ({
+  fetchPictureWordBatch: vi.fn(async (offset: number, limit: number) =>
+    TEST_PICTURE_CARDS.slice(offset, offset + limit),
+  ),
+  fetchPictureWordsByWords: vi.fn(async (words: string[]) =>
+    TEST_PICTURE_CARDS.filter((c) => words.includes(c.id)),
+  ),
+}))
 
 beforeEach(() => {
   localStorage.clear()
@@ -28,16 +38,22 @@ describe('stage primary CTA bottom inset', () => {
     expect(STAGE_BOTTOM_PAD).toBe('pb-6')
   })
 
-  it('nested stages keep document scroll (min-h-dvh) so window scroll restore works', () => {
+  it('nested stages keep document scroll (min-h-dvh) so window scroll restore works', async () => {
     renderApp('/practice/pictures')
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
+    })
     const main = document.querySelector('main')
     expect(main).toHaveClass('min-h-dvh')
     expect(main).not.toHaveClass('h-dvh')
     expect(main).not.toHaveClass('overflow-hidden')
   })
 
-  it('词汇记忆 primary actions sit on STAGE_BOTTOM_PAD only', () => {
+  it('词汇记忆 primary actions sit on STAGE_BOTTOM_PAD only', async () => {
     renderApp('/practice/pictures')
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Aha!' })).toBeInTheDocument()
+    })
     const row = screen.getByRole('button', { name: 'Aha!' }).parentElement
     expect(row?.parentElement?.className).toContain(STAGE_BOTTOM_PAD)
   })

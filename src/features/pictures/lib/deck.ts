@@ -1,10 +1,6 @@
 import type { Card } from '../../../types/card'
 import type { ProgressState } from './storage'
 
-function primaryTag(card: Card): string {
-  return card.tags[0] ?? ''
-}
-
 export function pickNextCard(
   cards: Card[],
   progress: ProgressState,
@@ -14,8 +10,11 @@ export function pickNextCard(
   if (cards.length === 0) return null
 
   const strong = new Set(progress.strongIds)
+  const forgot = new Set(progress.forgotIds)
   const warmSet = new Set(progress.warmIds)
-  const available = cards.filter((card) => !strong.has(card.id))
+  const available = cards.filter(
+    (card) => !strong.has(card.id) && !forgot.has(card.id),
+  )
   if (available.length === 0) return null
 
   const cold = available.filter((card) => !warmSet.has(card.id))
@@ -33,10 +32,11 @@ export function pickNextCard(
     if (withoutCurrent.length) pool = withoutCurrent
   }
 
+  // tags optional; empty tags make this a no-op
   const rotated = recentTag
-    ? pool.filter((card) => primaryTag(card) !== recentTag)
+    ? pool.filter((card) => (card.tags[0] ?? '') !== recentTag)
     : pool
   const finalPool = rotated.length ? rotated : pool
   const card = finalPool[Math.floor(rng() * finalPool.length)]
-  return { card, recentTag: primaryTag(card) }
+  return { card, recentTag: card.tags[0] ?? '' }
 }
