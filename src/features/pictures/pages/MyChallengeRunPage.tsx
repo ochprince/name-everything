@@ -34,9 +34,13 @@ export function MyChallengeRunPage() {
         const ordered = words
           .map((word) => byWord.get(word))
           .filter((card): card is NonNullable<typeof card> => Boolean(card))
+        if (ordered.length === 0) {
+          setError('收藏的词在词库里找不到，请重新添加后再试。')
+          return
+        }
         const next = buildVocabPlayables(ordered)
         if (next.length === 0) {
-          setEmpty(true)
+          setError('这些收藏暂时无法生成题目（缺少例句）。')
           return
         }
         setPlayables(next)

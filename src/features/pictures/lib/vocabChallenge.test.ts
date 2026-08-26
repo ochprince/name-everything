@@ -105,12 +105,29 @@ describe('buildVocabPlayable', () => {
     expect(isVocabMcqReady(built!)).toBe(false)
   })
 
-  it('skips cards whose word is not in the sentence', () => {
+  it('still builds when the lemma only appears in an inflected form', () => {
+    const built = buildVocabPlayable({
+      id: 'deed',
+      word: 'deed',
+      sentence: 'The kind man did many good deeds for people.',
+      image: '',
+      imageSource: 'baicizhan',
+      sentenceZh: '这个善良的男人为人们做了很多好事。',
+      tags: [],
+      tier: 'T1',
+    })
+    expect(built).not.toBeNull()
+    expect(built!.sentence.en).toBe('The kind man did many good deeds for people.')
+    expect(built!.slot.correct).toBe('deed')
+    expect(isVocabMcqReady(built!)).toBe(false)
+  })
+
+  it('skips cards with empty sentence or word', () => {
     expect(
       buildVocabPlayable({
         id: 'x',
-        word: 'missing',
-        sentence: 'No match here.',
+        word: 'ok',
+        sentence: '   ',
         image: '',
         imageSource: 'baicizhan',
         tags: [],
@@ -153,7 +170,7 @@ describe('pickVocabAnswerMode', () => {
 })
 
 describe('buildVocabPlayables', () => {
-  it('drops unusable cards and keeps order of usable ones', () => {
+  it('keeps collection order and drops only empty sentences', () => {
     const cards = [
       {
         id: 'cup',
@@ -168,7 +185,7 @@ describe('buildVocabPlayables', () => {
       {
         id: 'bad',
         word: 'zzz',
-        sentence: 'Nothing useful.',
+        sentence: '',
         image: '',
         imageSource: 'baicizhan' as const,
         tags: [],

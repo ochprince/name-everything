@@ -4,7 +4,7 @@ import { pickAnswerMode, type AnswerMode } from '../../grammar/lib/engine'
 
 export const VOCAB_CHALLENGE_LEVEL_ID = 'vocab-challenge'
 
-/** runtime = dig-the-word only; curated = AI/manual distractors ready for MCQ. */
+/** runtime = no curated distractors (produce); curated = ready for MCQ. */
 export type VocabSlotSource = 'runtime' | 'curated'
 
 export type VocabPlayable = {
@@ -83,21 +83,25 @@ export function buildVocabPlayable(
   card: Card,
   options: BuildVocabPlayableOptions = {},
 ): VocabPlayable | null {
-  const span = findWordSpan(card.sentence, card.word)
-  if (!span) return null
+  const word = card.word.trim()
+  const en = card.sentence.trim()
+  if (!word || !en) return null
 
-  const distractors = normalizeDistractors(card.word, options.distractors)
+  // Produce grades the full English sentence — no blank/span required.
+  // Span is only useful later for MCQ blanking; lemma may appear as deeds/etc.
+  const span = findWordSpan(en, word)
+  const distractors = normalizeDistractors(word, options.distractors)
   const slotSource: VocabSlotSource = distractors.length >= 3 ? 'curated' : 'runtime'
 
-  const sentenceId = `pw:${card.word}`
+  const sentenceId = `pw:${word}`
   const sentenceZh = card.sentenceZh?.trim()
   const sentence: Sentence = {
     id: sentenceId,
     level_id: VOCAB_CHALLENGE_LEVEL_ID,
     kind: 'playable',
-    en: card.sentence,
+    en,
     // Prompt the sentence sense, not the isolated word gloss.
-    zh: sentenceZh || card.word,
+    zh: sentenceZh || word,
     prompt_kind: sentenceZh ? 'zh' : 'image',
     image_url: card.image || undefined,
     sort_order: 0,
@@ -107,7 +111,7 @@ export function buildVocabPlayable(
     sentence_id: sentenceId,
     slot_index: 0,
     role: 'target',
-    correct: span.surface,
+    correct: span?.surface ?? word,
     // Empty until curated/AI distractors arrive — MCQ stays gated off.
     distractors: slotSource === 'curated' ? distractors : [],
   }
