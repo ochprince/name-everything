@@ -55,15 +55,9 @@ export function shuffle<T>(items: T[]): T[] {
   return next
 }
 
-export function buildQueue(
-  mode: FallingMode,
-  anchor: Sentence | undefined,
-  playables: Sentence[],
-): string[] {
-  const playableIds = playables.map((sentence) => sentence.id)
-  if (mode === 'arcade') return shuffle(playableIds)
-  if (!anchor) return shuffle(playableIds)
-  return [anchor.id, ...shuffle(playableIds)]
+/** 关卡游戏队列：只含练习句（anchor 标杆句不进游戏环节，仅作学习页/轮播参考）。 */
+export function buildQueue(playables: Sentence[]): string[] {
+  return shuffle(playables.map((sentence) => sentence.id))
 }
 
 export function nextSentenceId(

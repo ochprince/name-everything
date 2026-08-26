@@ -5,8 +5,8 @@ import {
   isGrammarPackLoaded,
   levelById,
   pointById,
+  playablesForLevel,
   sentenceById,
-  sentencesForLevel,
   slotsForSentence,
 } from '../content/pack'
 import { arcadeEarnedTrophy } from './arcadeChallenge'
@@ -171,7 +171,7 @@ export function recordLevelScore(levelId: string, score: number, threshold: numb
       : current.passedLevelIds
   const passedSentenceCounts = { ...current.passedSentenceCounts }
   if (passed && score >= threshold) {
-    passedSentenceCounts[levelId] = sentencesForLevel(levelId).length
+    passedSentenceCounts[levelId] = playablesForLevel(levelId).length
   }
   saveGrammarProgress({
     ...current,

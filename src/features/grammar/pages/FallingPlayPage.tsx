@@ -108,12 +108,8 @@ export function FallingPlayPage({ mode }: { mode: 'level' | 'arcade' }) {
 
   const pool =
     mode === 'level' && level
-      ? {
-          anchor: anchorForLevel(level.id),
-          playables: playablesForLevel(level.id),
-        }
+      ? { playables: playablesForLevel(level.id) }
       : {
-          anchor: undefined,
           playables: grammarPack.sentences.filter(
             (sentence) =>
               sentence.kind === 'playable' &&
@@ -121,7 +117,7 @@ export function FallingPlayPage({ mode }: { mode: 'level' | 'arcade' }) {
           ),
         }
 
-  if (pool.playables.length === 0 && !pool.anchor) {
+  if (pool.playables.length === 0) {
     return <Navigate to="/" replace />
   }
 
@@ -163,15 +159,14 @@ function FallingBoard({
   threshold?: number
   queueSeed: string
   pool: {
-    anchor: ReturnType<typeof anchorForLevel>
     playables: ReturnType<typeof playablesForLevel>
   }
   arcadePoolSize?: number
 }) {
   const queue = useMemo(() => {
     if (mode === 'arcade') return buildArcadeQueue(pool.playables)
-    return buildQueue(mode, pool.anchor, pool.playables)
-  }, [mode, pool.anchor, pool.playables, queueSeed])
+    return buildQueue(pool.playables)
+  }, [mode, pool.playables, queueSeed])
   const firstId = queue[0]
   const initialFallMs =
     mode === 'arcade' ? arcadeFallDurationMs(0) : fallMs

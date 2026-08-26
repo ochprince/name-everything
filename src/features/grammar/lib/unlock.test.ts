@@ -5,7 +5,7 @@ import {
   levelListScoreLabel,
   levelUnlockHint,
   nextLevelAfter,
-  sentenceCountForLevel,
+  playableCountForLevel,
   thresholdFor,
 } from './unlock'
 import {
@@ -56,7 +56,7 @@ describe('level unlock', () => {
       ...defaultGrammarProgress(),
       passedLevelIds: [nonfiniteFirst.id],
       highScores: {
-        [nonfiniteFirst.id]: sentenceCountForLevel(nonfiniteFirst.id),
+        [nonfiniteFirst.id]: playableCountForLevel(nonfiniteFirst.id),
       },
     })
     const progress = loadGrammarProgress()
@@ -84,7 +84,7 @@ describe('level unlock', () => {
 
   it('shows 有更新 when sentence count grows after a pass', () => {
     const level = first!
-    const total = sentenceCountForLevel(level.id)
+    const total = playableCountForLevel(level.id)
     saveGrammarProgress({
       ...defaultGrammarProgress(),
       passedLevelIds: [level.id],
@@ -101,7 +101,7 @@ describe('level unlock', () => {
 
   it('shows 最高 x/y before clear and 最高 x · 已过关 when score meets total', () => {
     const level = first!
-    const total = sentenceCountForLevel(level.id)
+    const total = playableCountForLevel(level.id)
     expect(thresholdFor(level)).toBe(total)
 
     saveGrammarProgress({
@@ -120,7 +120,7 @@ describe('level unlock', () => {
 
   it('shows 有更新 when historically passed under a lower score than current total', () => {
     const level = first!
-    const total = sentenceCountForLevel(level.id)
+    const total = playableCountForLevel(level.id)
     saveGrammarProgress({
       ...defaultGrammarProgress(),
       passedLevelIds: [level.id],

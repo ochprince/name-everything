@@ -94,13 +94,13 @@ describe('falling engine', () => {
     expect(isQueueFullyCleared(queue, new Set(['a', 'b', 'c']))).toBe(true)
   })
 
-  it('level queue starts with anchor then shuffled playables', () => {
+  it('level queue contains only playable sentences (anchor not in game rounds)', () => {
     const levelId = 'dative-1'
     const anchor = anchorForLevel(levelId)!
     const playables = playablesForLevel(levelId)
-    const queue = buildQueue('level', anchor, playables)
-    expect(queue[0]).toBe(anchor.id)
-    expect(queue.slice(1).sort()).toEqual(playables.map((p) => p.id).sort())
+    const queue = buildQueue(playables)
+    expect(queue.sort()).toEqual(playables.map((p) => p.id).sort())
+    expect(queue).not.toContain(anchor.id)
   })
 
   it('arcade queue uses stratified playable sentences without anchors', () => {
