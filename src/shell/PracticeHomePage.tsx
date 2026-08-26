@@ -92,7 +92,6 @@ function ModuleTile({
     material === 'cobalt' || material === 'day' ? ' active:brightness-95' : ''
   }`
   const detailClass = secondaryOnMaterial(material)
-  const openDoor = tile.id === 'grammar-play' && tile.available
 
   const body = (
     <>
@@ -110,7 +109,7 @@ function ModuleTile({
         ) : null}
       </span>
       <DoorIcon
-        open={openDoor}
+        open={tile.available}
         className={`size-[5.75rem] shrink-0 ${
           material === 'day' ? 'text-cyc' : 'text-day'
         }`}
