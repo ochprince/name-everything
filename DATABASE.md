@@ -1,12 +1,15 @@
 # 数据库与备份
 
-权威源是托管 Postgres，不是 git 里的第二份内容包。表结构以 `supabase/schema.sql` 为准。仓库不维护 `supabase/seed.sql`，也不要把大批量行数据写进 migration。练习不再使用本地小包 `t1-cards.json`。
+词库和语法课存在线上的 Supabase 数据库。打开应用后从那里拉取。
+
+- **表结构**以 `supabase/schema.sql` 为准。
+- **不要**在仓库里再放一份内容种子（没有 `supabase/seed.sql`），也**不要**把成千上万行数据写进 migration。词汇用上传脚本写入远程表；语法课包写成 `supabase/migrations/` 下的新 SQL。
 
 ## 有哪些表
 
 - **语法：** `chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`
 - **词汇：** `picture_words`
-- **报错：** `asset_reports`（「我的」可导出本机记录；配置了密钥也会写入此表）
+- **报错：** `asset_reports`。用户在语法或词汇练习里提交报错时，本机一定会记下，「我的」可复制或下载。配了读库用的 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_PUBLISHABLE_KEY` 时，会同时写入此表。
 
 ## 应用怎么读
 
@@ -14,7 +17,7 @@
 
 ## 不进库的数据
 
-词汇练习进度（strong / warm / forgot / 批次 offset）只存在浏览器。
+词汇练习进度（strong / warm / forgot / 批次 offset）只存在浏览器。「我的挑战」里收藏的例句和最近几次挑战记录也只存在本机。
 
 ## 表结构 / DDL
 
@@ -35,7 +38,7 @@ npm run grammar:coverage
 
 1. 复制 `.env.example` → `.env.local`（真实值勿提交）。
 2. 应用读库：`VITE_SUPABASE_URL`、`VITE_SUPABASE_PUBLISHABLE_KEY`（Dashboard → **Project Settings → API** → publishable / anon）。
-3. 仅上传脚本需要：`SUPABASE_SERVICE_ROLE_KEY`（同一页 → **service_role**）。不要加 `VITE_` 前缀，不要放进 GitHub Pages Secrets，不要 commit。
+3. 仅上传脚本需要：`SUPABASE_SERVICE_ROLE_KEY`（同一页 → **service_role**）。不要加 `VITE`_ 前缀，不要放进 GitHub Pages Secrets，不要 commit。
 4. 执行：
 
 ```bash
