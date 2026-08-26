@@ -99,9 +99,9 @@ describe('MePage', () => {
     renderWithProgress(<MePage />)
 
     const half = screen.getByRole('radio', { name: '50%' })
-    const all = screen.getByRole('radio', { name: '全部启用' })
+    const all = screen.getByRole('radio', { name: '100%' })
     expect(half).toHaveAttribute('aria-checked', 'true')
-    expect(screen.getByRole('radio', { name: '不启用' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: '0%' })).toBeInTheDocument()
     expect(screen.getByText('输入模式占比')).toBeInTheDocument()
 
     await user.click(all)

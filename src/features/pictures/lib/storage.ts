@@ -12,14 +12,14 @@ export const THINK_HOLD_LABELS: Record<ThinkHoldMs, string> = {
   15000: '15s',
 }
 
-/** 输入模式占比：不启用(0%) / 50% / 全部启用(100%)，默认 50%。 */
+/** 输入模式占比：0% / 50% / 100%（默认 50%）。 */
 export const PRODUCE_RATIO_OPTIONS = [0, 50, 100] as const
 export type ProduceRatioPercent = (typeof PRODUCE_RATIO_OPTIONS)[number]
 
 export const PRODUCE_RATIO_LABELS: Record<ProduceRatioPercent, string> = {
-  0: '不启用',
+  0: '0%',
   50: '50%',
-  100: '全部启用',
+  100: '100%',
 }
 
 export type WrapKind = 'none' | 'daily' | 'pack'

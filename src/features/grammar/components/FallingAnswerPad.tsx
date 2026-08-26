@@ -9,7 +9,7 @@ type ProduceProps = {
   draft: string
   onDraftChange: (value: string) => void
   onSubmit: () => void
-  /** placeholder 轮播提示（每条带前缀，中文例句在最后）；缺省用默认文案。 */
+  /** placeholder 轮播提示（第一条 = 中文例句，每条带前缀）；缺省用默认文案。 */
   hints?: string[]
 }
 
@@ -68,6 +68,8 @@ export function FallingAnswerPad(props: FallingAnswerPadProps) {
           <button
             type="submit"
             disabled={!props.draft.trim()}
+            // 防止点击提交时 textarea 失焦：iOS 会收起键盘、布局位移吞掉本次点击。
+            onMouseDown={(event) => event.preventDefault()}
             className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-2xl bg-day px-3 text-base font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 disabled:pointer-events-none disabled:opacity-40"
           >
             提交

@@ -218,7 +218,7 @@ function FallingBoard({
     : undefined
   const slots = sentence ? slotsForSentence(sentence.id) : []
   const slot = slots[state?.slotIndex ?? 0]
-  // placeholder 轮播提示：关卡名 / 首词提示 / 标杆例句 / 中文例句（每条带前缀）。
+  // placeholder 轮播提示：中文例句 / 关卡名 / 首词提示 / 标杆例句（每条带前缀）。
   const produceHints = useMemo(() => {
     if (!sentence || state?.answerMode !== 'produce') return undefined
     const level = sentence.level_id ? levelById(sentence.level_id) : undefined
