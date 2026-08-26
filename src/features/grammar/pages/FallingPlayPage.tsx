@@ -52,6 +52,7 @@ import {
   type FallingState,
 } from '../lib/engine'
 import { englishAnswersMatch } from '../lib/englishAnswerCompare'
+import { buildProduceHints } from '../lib/produceHints'
 import {
   arcadeEarnedTrophy,
   arcadeFallDurationMs,
@@ -193,6 +194,8 @@ function FallingBoard({
   const sentenceResultRef = useRef(sentenceResult)
   // Shrink the absolute board above the soft keyboard so fall % / land line retarget.
   const keyboardOverlapPx = useKeyboardOverlapPx()
+  // 输入模式：键盘弹出时顶部中文隐藏，中文例句改由 placeholder 轮播提示。
+  const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
   usePinLayoutOnKeyboardDismiss()
 
   useEffect(() => {
@@ -212,6 +215,19 @@ function FallingBoard({
     : undefined
   const slots = sentence ? slotsForSentence(sentence.id) : []
   const slot = slots[state?.slotIndex ?? 0]
+  // placeholder 轮播提示：中文例句 / 所在 level 名称 / 英文首词+… / 标杆句。
+  const produceHints = useMemo(() => {
+    if (!sentence || state?.answerMode !== 'produce') return undefined
+    const level = sentence.level_id ? levelById(sentence.level_id) : undefined
+    const point = level ? pointById(level.grammar_point_id) : undefined
+    const anchor = level ? anchorForLevel(level.id) : undefined
+    return buildProduceHints({
+      zh: sentence.zh,
+      en: sentence.en,
+      levelTitle: point?.title_zh,
+      anchorEn: anchor?.en,
+    })
+  }, [sentence?.id, sentence?.zh, sentence?.en, state?.answerMode])
 
   useEffect(() => {
     if (!slot || state?.answerMode === 'produce') {
@@ -640,16 +656,18 @@ function FallingBoard({
           ) : null}
           {sentence ? (
             round.answerMode === 'produce' ? (
-              <div className="pt-6">
-                <p
-                  ref={sentenceRef}
-                  className={`text-center text-2xl font-medium leading-snug tracking-[0.01em] ${
-                    state.lastWrong ? 'text-rose' : 'text-day'
-                  }`}
-                >
-                  {sentence.zh}
-                </p>
-              </div>
+              keyboardOpen ? null : (
+                <div className="pt-6">
+                  <p
+                    ref={sentenceRef}
+                    className={`text-center text-2xl font-medium leading-snug tracking-[0.01em] ${
+                      state.lastWrong ? 'text-rose' : 'text-day'
+                    }`}
+                  >
+                    {sentence.zh}
+                  </p>
+                </div>
+              )
             ) : (
               <div
                 ref={sentenceWrapRef}
@@ -678,6 +696,7 @@ function FallingBoard({
               draft={produceDraft}
               onDraftChange={setProduceDraft}
               onSubmit={submitProduce}
+              hints={produceHints}
             />
           ) : (
             <FallingAnswerPad

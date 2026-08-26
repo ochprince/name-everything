@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react'
+import { PRODUCE_HINT_ROTATE_MS } from '../lib/produceHints'
+
 /** Matches MCQ: two min-h-14 rows + gap-2. */
 export const FALLING_ANSWER_BODY_MIN_H = 'min-h-[7.5rem]'
 
@@ -6,6 +9,8 @@ type ProduceProps = {
   draft: string
   onDraftChange: (value: string) => void
   onSubmit: () => void
+  /** placeholder 轮播提示（第一条 = 中文例句）；缺省用默认文案。 */
+  hints?: string[]
 }
 
 type McqProps = {
@@ -17,6 +22,26 @@ type McqProps = {
 export type FallingAnswerPadProps = ProduceProps | McqProps
 
 export function FallingAnswerPad(props: FallingAnswerPadProps) {
+  const [hintIndex, setHintIndex] = useState(0)
+  const hintsKey =
+    props.mode === 'produce' ? (props.hints?.join('\u0000') ?? '') : ''
+
+  // placeholder 轮播：新句子（hints 内容变化）从头播，3 秒一条，键盘开/关都播。
+  useEffect(() => {
+    setHintIndex(0)
+    const list = props.mode === 'produce' ? props.hints : undefined
+    if (!list || list.length === 0) return
+    const timer = window.setInterval(() => {
+      setHintIndex((index) => (index + 1) % list.length)
+    }, PRODUCE_HINT_ROTATE_MS)
+    return () => window.clearInterval(timer)
+  }, [props.mode, hintsKey])
+
+  const placeholder =
+    props.mode === 'produce' && props.hints && props.hints.length > 0
+      ? props.hints[hintIndex]
+      : '输入英文句子'
+
   return (
     <div className="rounded-2xl border border-day/20 bg-cyc/40 px-3 py-4">
       {props.mode === 'produce' ? (
@@ -37,7 +62,7 @@ export function FallingAnswerPad(props: FallingAnswerPadProps) {
             spellCheck={false}
             rows={3}
             aria-label="输入英文句子"
-            placeholder="输入英文句子"
+            placeholder={placeholder}
             className="min-h-0 w-full flex-1 resize-none rounded-2xl border border-day/75 bg-cyc px-3 py-2.5 text-lg font-semibold leading-snug tracking-[0.02em] text-day placeholder:text-day/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day"
           />
           <button
