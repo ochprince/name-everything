@@ -110,4 +110,19 @@ describe('MePage', () => {
       expect(loadProgress().settings.produceRatio).toBe(100)
     })
   })
+
+  it('copies reports to the clipboard with one click', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    })
+    const user = userEvent.setup()
+    renderWithProgress(<MePage />)
+    await user.click(screen.getByRole('button', { name: '复制报错' }))
+    expect(writeText).toHaveBeenCalledTimes(1)
+    expect(writeText).toHaveBeenCalledWith(expect.any(String))
+    expect(screen.getByRole('button', { name: '已复制' })).toBeInTheDocument()
+    Reflect.deleteProperty(navigator, 'clipboard')
+  })
 })

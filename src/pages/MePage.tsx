@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { LangToggle } from '../components/LangToggle'
 import { exportReports, clearReports, useGrammarReports } from '../features/grammar'
 import { useProgress } from '../features/pictures/hooks/useProgress'
@@ -53,15 +54,37 @@ function CueHold({
 
 function GrammarReports() {
   const reports = useGrammarReports()
+  const [copied, setCopied] = useState(false)
+  const copiedTimer = useRef<number | null>(null)
 
-  async function copyAndDownload() {
+  useEffect(() => {
+    return () => {
+      if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
+    }
+  }, [])
+
+  async function copyReports() {
     const text = exportReports()
     try {
       await navigator.clipboard.writeText(text)
     } catch {
-      /* clipboard may be unavailable */
+      // 降级：隐藏 textarea + execCommand（部分 iOS / 非安全上下文无 clipboard API）
+      const area = document.createElement('textarea')
+      area.value = text
+      area.style.position = 'fixed'
+      area.style.opacity = '0'
+      document.body.appendChild(area)
+      area.select()
+      document.execCommand('copy')
+      area.remove()
     }
-    const blob = new Blob([text], { type: 'application/json' })
+    setCopied(true)
+    if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
+    copiedTimer.current = window.setTimeout(() => setCopied(false), 1500)
+  }
+
+  function downloadReports() {
+    const blob = new Blob([exportReports()], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -79,10 +102,17 @@ function GrammarReports() {
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => void copyAndDownload()}
+          onClick={() => void copyReports()}
+          className={`${holdButton} bg-day text-cyc hover:brightness-105`}
+        >
+          {copied ? '已复制' : '复制报错'}
+        </button>
+        <button
+          type="button"
+          onClick={downloadReports}
           className={`${holdButton} border border-day/75 bg-cyc text-day hover:border-day`}
         >
-          导出语法报错
+          下载文件
         </button>
         {reports.length > 0 ? (
           <button
