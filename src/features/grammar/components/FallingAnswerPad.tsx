@@ -9,7 +9,7 @@ type ProduceProps = {
   draft: string
   onDraftChange: (value: string) => void
   onSubmit: () => void
-  /** placeholder 轮播提示（第一条 = 中文例句）；缺省用默认文案。 */
+  /** placeholder 轮播提示（每条带前缀，中文例句在最后）；缺省用默认文案。 */
   hints?: string[]
 }
 
