@@ -8,6 +8,8 @@ export interface Card {
   image: string
   imageSource: ImageSource
   zh?: string
+  /** Chinese gloss of the example sentence (picture_words.sentence_trans). */
+  sentenceZh?: string
   tags: string[]
   tier: CardTier
   wordAudio?: string

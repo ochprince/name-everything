@@ -35,19 +35,35 @@ describe('buildVocabPlayable', () => {
       image: 'https://example.com/dish.jpg',
       imageSource: 'baicizhan',
       zh: '菜肴',
+      sentenceZh: '往这道菜里加一片柠檬提味。',
       tags: [],
       tier: 'T1',
     })
 
     expect(built).not.toBeNull()
     expect(built!.sentence.en).toBe('Add a slice of lemon to flavor the dish.')
-    expect(built!.sentence.zh).toBe('菜肴')
+    expect(built!.sentence.zh).toBe('往这道菜里加一片柠檬提味。')
     expect(built!.sentence.prompt_kind).toBe('zh')
     expect(built!.sentence.image_url).toBe('https://example.com/dish.jpg')
     expect(built!.slot.correct).toBe('dish')
     expect(built!.slot.distractors).toEqual([])
     expect(built!.slotSource).toBe('runtime')
     expect(isVocabMcqReady(built!)).toBe(false)
+  })
+
+  it('falls back to image prompt when sentence Chinese is missing', () => {
+    const built = buildVocabPlayable({
+      id: 'dish',
+      word: 'dish',
+      sentence: 'Wash the dish.',
+      image: 'https://example.com/dish.jpg',
+      imageSource: 'baicizhan',
+      zh: '盘子',
+      tags: [],
+      tier: 'T1',
+    })
+    expect(built!.sentence.prompt_kind).toBe('image')
+    expect(built!.sentence.zh).toBe('dish')
   })
 
   it('marks MCQ ready when curated distractors are supplied', () => {

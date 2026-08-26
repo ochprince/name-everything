@@ -29,6 +29,7 @@ export function mapPictureWordRow(row: PictureWordRow): Card {
     image: cdnUrl(row.image_file),
     imageSource: 'baicizhan',
     zh: row.mean_cn ?? undefined,
+    sentenceZh: row.sentence_trans?.trim() || undefined,
     tags: [],
     tier: 'T1',
     wordAudio: cdnUrl(row.word_audio),

@@ -27,6 +27,7 @@ describe('mapPictureWordRow', () => {
     expect(card.sentenceAudio).toBe(cdnUrl(row.sentence_audio))
     expect(card.imageSource).toBe('baicizhan')
     expect(card.zh).toBe(row.mean_cn)
+    expect(card.sentenceZh).toBe(row.sentence_trans)
     expect(card.tags).toEqual([])
     expect(card.tier).toBe('T1')
   })

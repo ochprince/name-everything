@@ -90,13 +90,15 @@ export function buildVocabPlayable(
   const slotSource: VocabSlotSource = distractors.length >= 3 ? 'curated' : 'runtime'
 
   const sentenceId = `pw:${card.word}`
+  const sentenceZh = card.sentenceZh?.trim()
   const sentence: Sentence = {
     id: sentenceId,
     level_id: VOCAB_CHALLENGE_LEVEL_ID,
     kind: 'playable',
     en: card.sentence,
-    zh: card.zh?.trim() || card.word,
-    prompt_kind: card.zh?.trim() ? 'zh' : 'image',
+    // Prompt the sentence sense, not the isolated word gloss.
+    zh: sentenceZh || card.word,
+    prompt_kind: sentenceZh ? 'zh' : 'image',
     image_url: card.image || undefined,
     sort_order: 0,
   }

@@ -77,6 +77,7 @@ export function ChallengeHubPage() {
   )
 }
 
+/** Same door shell as PracticeHome ModuleTile — equal geometry, shared materials. */
 function ChallengeDoor({
   door,
   onBlocked,
@@ -89,7 +90,7 @@ function ChallengeDoor({
     material === 'cobalt' || material === 'day' ? ' active:brightness-95' : ''
   }`
   const detailClass = secondaryOnMaterial(material)
-  const inner =
+  const innerClass =
     material === 'day'
       ? dayDoorInner
       : material === 'cobalt'
@@ -106,31 +107,38 @@ function ChallengeDoor({
           {door.detail}
         </span>
       </span>
-      <DoorIcon open={door.available} className="size-7 shrink-0 opacity-90" />
+      <DoorIcon
+        open={door.available}
+        className={`size-[5.75rem] shrink-0 ${
+          material === 'day' ? 'text-cyc' : 'text-day'
+        }`}
+      />
     </>
   )
 
-  if (door.to && door.available) {
+  const content = <span className={`${innerClass} min-h-[7.5rem]`}>{body}</span>
+
+  if (!door.available || !door.to) {
     return (
-      <Link
-        to={door.to}
+      <button
+        type="button"
         data-testid={`challenge-door-${door.id}`}
-        className={outerClass}
+        aria-disabled="true"
+        onClick={onBlocked}
+        className={`${outerClass} cursor-not-allowed text-left text-day/45`}
       >
-        <span className={inner}>{body}</span>
-      </Link>
+        {content}
+      </button>
     )
   }
 
   return (
-    <button
-      type="button"
+    <Link
+      to={door.to}
       data-testid={`challenge-door-${door.id}`}
-      aria-disabled="true"
-      onClick={onBlocked}
-      className={`${outerClass} text-left`}
+      className={outerClass}
     >
-      <span className={inner}>{body}</span>
-    </button>
+      {content}
+    </Link>
   )
 }
