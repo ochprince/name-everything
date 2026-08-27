@@ -401,23 +401,25 @@ export function PracticeCard({
               >
                 Got it
               </button>
-              <button
-                type="button"
-                aria-label={inChallenge ? '已加入' : '加入我的挑战'}
-                aria-pressed={inChallenge}
-                onClick={onToggleChallenge}
-                className={`inline-flex size-14 shrink-0 items-center justify-center rounded-2xl transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 ${
-                  inChallenge
-                    ? 'bg-day text-cyc hover:brightness-105'
-                    : 'bg-cobalt text-day hover:brightness-110'
-                }`}
-              >
-                {inChallenge ? (
-                  <CheckIcon className="size-5" />
-                ) : (
-                  <PlusIcon className="size-5" />
-                )}
-              </button>
+              {!sheet && (
+                <button
+                  type="button"
+                  aria-label={inChallenge ? '已加入' : '加入我的挑战'}
+                  aria-pressed={inChallenge}
+                  onClick={onToggleChallenge}
+                  className={`inline-flex size-14 shrink-0 items-center justify-center rounded-2xl transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95 ${
+                    inChallenge
+                      ? 'bg-day text-cyc hover:brightness-105'
+                      : 'bg-cobalt text-day hover:brightness-110'
+                  }`}
+                >
+                  {inChallenge ? (
+                    <CheckIcon className="size-5" />
+                  ) : (
+                    <PlusIcon className="size-5" />
+                  )}
+                </button>
+              )}
             </>
           ) : (
             <button

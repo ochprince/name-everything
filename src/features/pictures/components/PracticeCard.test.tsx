@@ -231,6 +231,8 @@ describe('PracticeCard', () => {
     expect(screen.getByText('This is a cup.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Got it' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Aha!' })).not.toBeInTheDocument()
+    // 复习（sheet）模式不展示「加入我的挑战」按钮
+    expect(screen.queryByRole('button', { name: '加入我的挑战' })).not.toBeInTheDocument()
     act(() => {
       vi.advanceTimersByTime(3000)
     })
