@@ -8,12 +8,6 @@
 
 夸克浏览器在输入模式下（整句输入），点击输入框弹出键盘后，输入框没有被挤到页面上方，导致上方看不到输入框；苹果 Safari 无此问题。疑似夸克对键盘高度 / visualViewport 的交互与 Safari 不同，待查。
 
-## 例句显示不全：全库 251 条被逗号截断（2026-08-27 已定位根因，待修复）
-
-「makeup」「climate」等词的例句显示不完整。已定位：**系统性数据损坏，全库 251 条 sentence 被截断在第一个英文逗号前，且开头残留原句左引号**（如 makeup 原句 `"In order to be cute, Miss Panda wears makeup every day."` 存成了 `"In order to be cute`）。疑似入库脚本按逗号 split 导致。中文翻译 `sentence_trans` 完整未损坏。
-
-修复路径：原始完整例句在 `/data/english_bot_resources/baicizhan/cet4_core/*.json`（每词一个 JSON，sentence 字段完整），可用 `scripts/upload-picture-words.mjs --replace` 重传修复（该脚本源目录默认 `my_app/assets/data/words/cet4-all`，需确认源路径或改用 cet4_core）。
-
 ## 夸克浏览器暗黑模式适配（2026-08-27）
 
 夸克浏览器自带的暗黑模式（网页强制暗黑）会影响样式渲染，并导致开门/关门图标（DoorIcon）显示异常——问题已定位，根因不是代码。处理方向（用户定调）：**不是对抗暗黑模式强行还原原样式，而是把暗黑模式适配做好**；至少保证门图标能正常展示。门图标已本地化（2026-08-27，imgur → `public/images/doors/*.png`，`import.meta.env.BASE_URL` 引用），剩余工作仅为暗黑模式适配本身。
