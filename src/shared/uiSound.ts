@@ -57,6 +57,10 @@ function playTones(
   }>,
 ) {
   if (!uiSoundEnabled()) return
+  // 页面不可见时不调度：iOS Safari 切后台 AudioContext 自动 suspend，
+  // 此时调度的音效会排队到切回前台 resume 后才响——用户实测"切出再切回
+  // 突然听到游戏失败声音"。后台静音后，切回不会再有补响。
+  if (document.hidden) return
 
   const ctx = getContext()
   if (!ctx) return
