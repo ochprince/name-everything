@@ -7,6 +7,9 @@
  *   node scripts/upload-picture-words.mjs
  *   node scripts/upload-picture-words.mjs --replace
  *
+ * Rows with ai_corrected=true are skipped (content and flag kept).
+ * --replace deletes only ai_corrected=false rows.
+ *
  * Env (.env.local or shell):
  *   VITE_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY
@@ -15,8 +18,12 @@
 
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  assignSortOrders,
+  excludeAiCorrected,
+} from './pictureWordsUpload.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = join(__dirname, '..')
@@ -130,14 +137,43 @@ function readSourceRows(sourceDir) {
     }
   }
 
-  return seededShuffle(rows).map((row, index) => ({
-    ...row,
-    sort_order: index + 1,
-  }))
+  return seededShuffle(rows)
 }
 
-async function deleteAll(url, key) {
-  const res = await fetch(`${url}/rest/v1/picture_words?word=neq.`, {
+async function fetchAiCorrected(url, key) {
+  const rows = []
+  let from = 0
+  for (;;) {
+    const to = from + PAGE - 1
+    const res = await fetch(
+      `${url}/rest/v1/picture_words?ai_corrected=eq.true&select=word,sort_order&order=sort_order.asc`,
+      {
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          Range: `${from}-${to}`,
+        },
+      },
+    )
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(
+        `Fetch ai_corrected failed: HTTP ${res.status} ${text.slice(0, 500)}`,
+      )
+    }
+    const page = await res.json()
+    if (!Array.isArray(page)) {
+      throw new Error('Fetch ai_corrected: expected an array')
+    }
+    rows.push(...page)
+    if (page.length < PAGE) break
+    from += PAGE
+  }
+  return rows
+}
+
+async function deleteUncorrected(url, key) {
+  const res = await fetch(`${url}/rest/v1/picture_words?ai_corrected=eq.false`, {
     method: 'DELETE',
     headers: {
       apikey: key,
@@ -184,19 +220,32 @@ async function main() {
     throw new Error(`Source dir not found: ${sourceDir}`)
   }
   const { url, key } = supabaseConfig()
-  const rows = readSourceRows(sourceDir)
+  const sourceRows = readSourceRows(sourceDir)
+  const corrected = await fetchAiCorrected(url, key)
+  const skippedWords = corrected.map((row) => row.word)
+  const reservedOrders = corrected.map((row) => row.sort_order)
+  const rows = assignSortOrders(
+    excludeAiCorrected(sourceRows, skippedWords),
+    reservedOrders,
+  )
   console.log(
-    `Prepared ${rows.length} rows (seed=${SHUFFLE_SEED}); uploading to ${url}`,
+    `Prepared ${sourceRows.length} source rows; uploading ${rows.length} (skipped ${skippedWords.length} ai_corrected); seed=${SHUFFLE_SEED}; ${url}`,
   )
   if (replace) {
-    console.log('Deleting existing picture_words…')
-    await deleteAll(url, key)
+    console.log('Deleting picture_words where ai_corrected is false…')
+    await deleteUncorrected(url, key)
   }
   await upsertAll(url, key, rows)
   console.log('Done.')
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+const isDirectRun =
+  Boolean(process.argv[1]) &&
+  fileURLToPath(import.meta.url) === resolve(process.argv[1])
+
+if (isDirectRun) {
+  main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
+}

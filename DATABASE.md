@@ -8,7 +8,7 @@
 ## 有哪些表
 
 - **语法：** `chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`
-- **词汇：** `picture_words`
+- **词汇：** `picture_words`。`ai_corrected` 为 `true` 表示该行的图 / 例句 / 例句音频已按报错替换过，不再是百词斩原始资料。
 - **报错：** `asset_reports`。用户在语法或词汇练习里提交报错时，本机一定会记下，「我的」可复制或下载。配了读库用的 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_PUBLISHABLE_KEY` 时，会同时写入此表。
 
 ## 应用怎么读
@@ -47,7 +47,7 @@ npm run pictures:upload
 npm run pictures:upload -- --replace
 ```
 
-脚本只写入媒体文件名，CDN 前缀由前端拼接。可用 `PICTURE_WORDS_SOURCE_DIR` 覆盖源目录。源 JSON 变更后重新上传；表结构变更仍走 migration + GitHub。
+脚本只写入媒体文件名，CDN 前缀由前端拼接。可用 `PICTURE_WORDS_SOURCE_DIR` 覆盖源目录。源 JSON 变更后重新上传；表结构变更仍走 migration + GitHub。上传会跳过 `ai_corrected = true` 的行（内容与标记都保留）；`--replace` 也只删除未纠正行。
 
 另设 `SUPABASE_PROJECT_REF` 供 CLI link / dump。GitHub Pages 构建只需仓库 Secrets 中的 Vite 变量（见 `deploy-pages.yml`）。`SUPABASE_DB_PASSWORD` 只给 Supabase CLI / `psql` dump：写在 shell 或 `.env.local`，不要用 `VITE_*`。
 

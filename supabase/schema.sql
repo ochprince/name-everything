@@ -89,7 +89,8 @@ CREATE TABLE picture_words (
   sentence_phrase TEXT,
   sentence TEXT NOT NULL,
   sentence_trans TEXT,
-  sentence_audio TEXT NOT NULL
+  sentence_audio TEXT NOT NULL,
+  ai_corrected BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE INDEX idx_picture_words_sort_order ON picture_words (sort_order);
