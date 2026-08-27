@@ -183,7 +183,11 @@ export function ReviewPage() {
             thinkHoldMs={progress.settings.thinkHoldMs}
             onGotIt={() => {
               update((p) => markReviewGotIt(p, openCard.id, todayKey()))
-              closeSheet()
+              // 直接切到下一个待复习词，不返回列表；没有下一个才关闭
+              const index = progress.forgotIds.indexOf(openCard.id)
+              const nextId =
+                index >= 0 ? progress.forgotIds[index + 1] : undefined
+              setOpenId(nextId ?? null)
             }}
             onForgot={() => {
               update((p) => markForgot(p, openCard.id, todayKey()))

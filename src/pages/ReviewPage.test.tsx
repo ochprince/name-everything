@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProgress } from '../test/renderWithProgress'
 import { TEST_PICTURE_CARDS } from '../features/pictures/content/testCards'
@@ -48,6 +48,31 @@ describe('ReviewPage', () => {
     expect(
       screen.getByText('暂时没有 Forgot，去练习里诚实点一下吧'),
     ).toBeInTheDocument()
+  })
+
+  it('moves to the next review card on Got it instead of closing', async () => {
+    const user = userEvent.setup()
+    const [first, second] = TEST_PICTURE_CARDS
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: [first.id, second.id],
+    })
+    renderWithProgress(<ReviewPage />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: first.sentence })).toBeInTheDocument()
+    })
+    await user.click(screen.getByRole('button', { name: first.sentence }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Got it' }))
+
+    // 不返回列表：对话框仍打开并展示下一张卡
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText(second.word)).toBeInTheDocument()
+    expect(within(dialog).getByText(second.sentence)).toBeInTheDocument()
+    // 第一张已从列表移除，第二张仍在列表
+    expect(screen.queryByRole('button', { name: first.sentence })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: second.sentence })).toBeInTheDocument()
   })
 
   it('returns to the list from the overlay close control', async () => {
