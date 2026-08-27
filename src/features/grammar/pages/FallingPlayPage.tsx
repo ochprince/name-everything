@@ -95,6 +95,13 @@ const GAME_BOTTOM_GAP_PX = 32
 
 const SAFE_BOTTOM = 'max(0.5rem, env(safe-area-inset-bottom))'
 
+/**
+ * rAF 单帧增量上限（毫秒）。iOS Safari 后台时 rAF 暂停，恢复首帧的
+ * now - last 等于后台全部时长；超出此上限视为「后台挂起恢复」，不计入
+ * 下落时间，防止剩余时间被一次扣光触发落底失败（切回前台突然播失败音效）。
+ */
+const MAX_FRAME_DT_MS = 250
+
 function fallProgressToTop(progress: number): number {
   return FALL_START_PERCENT + progress * (100 - FALL_START_PERCENT)
 }
@@ -367,7 +374,11 @@ function FallingBoard({
     let frame = 0
     let last = performance.now()
     const loop = (now: number) => {
-      const dt = now - last
+      // iOS Safari 后台时 rAF 暂停，恢复首帧 now - last = 后台全部时长；
+      // 直接按 dt 扣减会把剩余下落时间一次扣光 → 落底失败 → 切回前台
+      // 瞬间突然听到失败音效（用户实测偶发）。钳制单帧增量上限，
+      // 后台时长不计入下落——切回时句子从切走位置继续。
+      const dt = Math.min(now - last, MAX_FRAME_DT_MS)
       last = now
       setState((current) => {
         if (!current || current.status !== 'playing') return current
