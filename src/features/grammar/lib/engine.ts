@@ -5,6 +5,12 @@ export type FallingMode = 'level' | 'arcade'
 
 export type AnswerMode = 'mcq' | 'produce'
 
+/**
+ * 每格最多允许选错一次：第 2 次选错立即失败（防连点试答案刷分，
+ * 同时作为统一难度规则）。错第 1 次仍按旧行为加速下落。
+ */
+export const MAX_WRONG_PER_SENTENCE = 2
+
 export type FallingState = {
   lives: number
   score: number
@@ -15,6 +21,8 @@ export type FallingState = {
   fallSpeed: number
   status: 'playing' | 'over'
   lastWrong: boolean
+  /** 当前格已选错次数（最多允许选错一次，错第二次立即失败） */
+  wrongCount: number
   answerMode: AnswerMode
 }
 
@@ -107,6 +115,7 @@ export function startRound(
     fallSpeed: 1,
     status: 'playing',
     lastWrong: false,
+    wrongCount: 0,
     answerMode,
   }
 }
@@ -151,7 +160,8 @@ export function applyWrong(state: FallingState): FallingState {
     state.fallSpeed / gameTuning.wrong_speed_factor,
     maxFallSpeed(state.fallDurationMs),
   )
-  return { ...state, fallSpeed, lastWrong: true }
+  // 本格选错计数 +1；是否达到上限立即失败由页面判定（需联动出结果页）
+  return { ...state, fallSpeed, lastWrong: true, wrongCount: state.wrongCount + 1 }
 }
 
 export function applyCorrectBounce(state: FallingState): FallingState {
@@ -179,6 +189,7 @@ export function beginSentence(
     fallDurationMs,
     fallSpeed: 1,
     lastWrong: false,
+    wrongCount: 0,
     answerMode,
   }
 }
@@ -186,7 +197,8 @@ export function beginSentence(
 export function advanceSlot(state: FallingState, slotCount: number): FallingState {
   const nextIndex = state.slotIndex + 1
   if (nextIndex >= slotCount) return markCleared(state)
-  return { ...state, slotIndex: nextIndex, lastWrong: false }
+  // 进入新格：重置本格选错计数（每格最多允许选错一次）
+  return { ...state, slotIndex: nextIndex, lastWrong: false, wrongCount: 0 }
 }
 
 export function slotOptions(slot: SentenceSlot): string[] {

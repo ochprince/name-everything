@@ -11,6 +11,8 @@ import {
   buildQueue,
   fallDurationForAnswerMode,
   pickAnswerMode,
+  advanceSlot,
+  MAX_WRONG_PER_SENTENCE,
 } from './engine'
 import { buildArcadeQueue } from './arcadeChallenge'
 import { gameTuning } from '../content/tuning'
@@ -27,6 +29,29 @@ describe('falling engine', () => {
     const wrongNearBottom = applyWrong(nearBottom)
     expect(wrongNearBottom.remainingMs).toBe(500)
     expect(wrongNearBottom.fallSpeed).toBeGreaterThan(1)
+  })
+
+  it('counts wrong picks per slot and resets on new slot / sentence', () => {
+    // 每格最多允许选错一次：第 2 次选错达到上限（页面据此立即失败）
+    let state = startRound('s1', 3, 8000)
+    expect(state.wrongCount).toBe(0)
+
+    state = applyWrong(state)
+    expect(state.wrongCount).toBe(1)
+    state = applyWrong(state)
+    expect(state.wrongCount).toBe(MAX_WRONG_PER_SENTENCE)
+    state = applyWrong(state)
+    expect(state.wrongCount).toBe(MAX_WRONG_PER_SENTENCE + 1)
+
+    // 进入新格重置
+    state = advanceSlot(state, 2)
+    expect(state.wrongCount).toBe(0)
+
+    // 新句子重置
+    state = applyWrong(state)
+    expect(state.wrongCount).toBe(1)
+    state = beginSentence(state, 's2')
+    expect(state.wrongCount).toBe(0)
   })
 
   it('caps wrong-pick acceleration at min fall duration', () => {

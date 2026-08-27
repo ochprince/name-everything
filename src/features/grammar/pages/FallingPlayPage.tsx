@@ -56,6 +56,7 @@ import {
   tick,
   type AnswerMode,
   type FallingState,
+  MAX_WRONG_PER_SENTENCE,
 } from '../lib/engine'
 import { englishAnswersMatch } from '../lib/englishAnswerCompare'
 import { buildProduceHints } from '../lib/produceHints'
@@ -466,6 +467,19 @@ function FallingBoard({
     if (option !== slot.correct) {
       playUiFail()
       if (sentenceRef.current) gsap.killTweensOf(sentenceRef.current)
+      // 本格已错满一次：第 2 次选错立即失败（最多允许选错一次）
+      if ((stateRef.current?.wrongCount ?? 0) + 1 >= MAX_WRONG_PER_SENTENCE) {
+        const current = stateRef.current
+        if (!current || current.status !== 'playing' || !current.sentenceId) return
+        bottomHandledRef.current = true
+        const failId = current.sentenceId
+        const landed = land({ ...current, wrongCount: current.wrongCount + 1 })
+        stateRef.current = landed
+        setState(landed)
+        if (sentenceRef.current) shatterSentence(sentenceRef.current)
+        setSentenceResult({ outcome: 'failed', sentenceId: failId })
+        return
+      }
       setState((current) => (current ? applyWrong(current) : current))
       return
     }
