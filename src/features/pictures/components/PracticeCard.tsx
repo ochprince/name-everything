@@ -12,7 +12,7 @@ import { STAGE_BOTTOM_PAD } from '../../../shared/StageShell'
 import { LangToggle } from '../../../components/LangToggle'
 import { ReportDialog } from '../../grammar/components/ReportDialog'
 
-const FALLBACK_IMAGE = '/images/cards/fallback.svg'
+const FALLBACK_IMAGE = `${import.meta.env.BASE_URL}images/cards/fallback.svg`
 
 export interface PracticeCardProps {
   card: Card

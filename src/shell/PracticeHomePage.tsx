@@ -17,8 +17,8 @@ import { ensurePictureWordsReady } from '../features/pictures/lib/pictureWordsCa
 import { practiceTiles, type PracticeTile } from './practiceModules'
 import { useEffect, useState } from 'react'
 
-const BANNER_IMAGE = 'https://i.imgur.com/IcK6gJC.jpg'
-const FALLBACK_IMAGE = '/images/cards/fallback.svg'
+const BANNER_IMAGE = `${import.meta.env.BASE_URL}images/home/banner-cup.jpg`
+const FALLBACK_IMAGE = `${import.meta.env.BASE_URL}images/cards/fallback.svg`
 
 const materialById: Record<string, StageMaterial> = {
   vocab: 'day',

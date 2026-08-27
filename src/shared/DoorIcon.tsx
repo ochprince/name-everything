@@ -1,7 +1,7 @@
 /** Prototype stage doors — raster masks from approved icon art, tinted via currentColor. */
 
-const closedSrc = 'https://i.imgur.com/pjMvbtS.png'
-const openSrc = 'https://i.imgur.com/5FebuZ0.png'
+const closedSrc = `${import.meta.env.BASE_URL}images/doors/closed.png`
+const openSrc = `${import.meta.env.BASE_URL}images/doors/open.png`
 
 export function DoorIcon({
   open = false,

@@ -7,7 +7,7 @@ import { highlightParts } from '../features/pictures/lib/highlightWord'
 import type { Card } from '../types/card'
 import { StageHeader, StickyStageChrome } from '../shared/StageHeader'
 
-const FALLBACK_IMAGE = '/images/cards/fallback.svg'
+const FALLBACK_IMAGE = `${import.meta.env.BASE_URL}images/cards/fallback.svg`
 
 function CueThumb({ src }: { src: string }) {
   const [imageSrc, setImageSrc] = useState(src)
