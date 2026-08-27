@@ -9,10 +9,31 @@ import {
   todayKey,
 } from '../features/pictures/lib/storage'
 import { MePage } from './MePage'
+import { subscribeToasts } from '../features/pictures/lib/toast'
 
 beforeEach(() => {
   localStorage.clear()
 })
+
+const QUARK_UA =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7_8 like Mac OS X; zh-cn) ' +
+  'AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/22H352 Quark/10.16.0.3166 Mobile'
+
+async function withUA(ua: string, fn: () => void | Promise<void>) {
+  const original = navigator.userAgent
+  Object.defineProperty(navigator, 'userAgent', {
+    configurable: true,
+    value: ua,
+  })
+  try {
+    await fn()
+  } finally {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value: original,
+    })
+  }
+}
 
 describe('MePage', () => {
   it('shows today got-it count and streak count', () => {
@@ -75,6 +96,31 @@ describe('MePage', () => {
     await waitFor(() => {
       expect(loadProgress().settings.autoSpeak).toBe(true)
     })
+  })
+
+  it('forces autoSpeak off and toasts when clicked on Quark', async () => {
+    const user = userEvent.setup()
+    const toasts: string[] = []
+    const unsubscribe = subscribeToasts((t) => {
+      if (t) toasts.push(t.text)
+    })
+    await withUA(QUARK_UA, async () => {
+      saveProgress({
+        ...defaultProgress(),
+        settings: { ...defaultProgress().settings, autoSpeak: true },
+      })
+      renderWithProgress(<MePage />)
+
+      const toggle = screen.getByRole('switch', { name: '自动发音' })
+      expect(toggle).toHaveAttribute('aria-checked', 'false')
+      expect(toggle).toHaveClass('opacity-40')
+
+      await user.click(toggle)
+      expect(toasts).toContain('当前浏览器暂不支持该功能')
+      expect(toggle).toHaveAttribute('aria-checked', 'false')
+      expect(loadProgress().settings.autoSpeak).toBe(true)
+    })
+    unsubscribe()
   })
 
   it('writes thinkHoldMs into progress.settings', async () => {

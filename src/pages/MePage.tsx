@@ -13,6 +13,8 @@ import {
   type ProduceRatioPercent,
 } from '../features/pictures/lib/storage'
 import { StageHeader, StickyStageChrome } from '../shared/StageHeader'
+import { isQuark } from '../shared/isQuark'
+import { pushToast } from '../features/pictures/lib/toast'
 
 const holdButton =
   'min-h-11 min-w-[4.75rem] rounded-2xl px-3 font-cue text-base font-semibold tracking-[0.14em] transition-[filter,background-color,border-color] duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95'
@@ -24,29 +26,44 @@ function CueHold({
   label,
   on,
   onToggle,
+  disabled = false,
+  disabledHint,
 }: {
   label: string
   on: boolean
   onToggle: () => void
+  disabled?: boolean
+  disabledHint?: string
 }) {
+  const effectiveOn = on && !disabled
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-lg font-medium tracking-[0.04em] text-day">
+      <span
+        className={`text-lg font-medium tracking-[0.04em] ${
+          disabled ? 'text-day/40' : 'text-day'
+        }`}
+      >
         {label}
       </span>
       <button
         type="button"
         role="switch"
-        aria-checked={on}
+        aria-checked={effectiveOn}
         aria-label={label}
-        onClick={onToggle}
+        onClick={() => {
+          if (disabled) {
+            if (disabledHint) pushToast(disabledHint)
+            return
+          }
+          onToggle()
+        }}
         className={`${holdButton} ${
-          on
+          effectiveOn
             ? 'bg-day text-cyc hover:brightness-105'
             : 'border border-day/75 bg-cyc text-day hover:border-day hover:brightness-110'
-        }`}
+        } ${disabled ? 'opacity-40 hover:brightness-100' : ''}`}
       >
-        {on ? '开' : '关'}
+        {effectiveOn ? '开' : '关'}
       </button>
     </div>
   )
@@ -200,6 +217,8 @@ export function MePage() {
           <CueHold
             label="自动发音"
             on={progress.settings.autoSpeak}
+            disabled={isQuark()}
+            disabledHint="当前浏览器暂不支持该功能"
             onToggle={() =>
               update((p) => ({
                 ...p,

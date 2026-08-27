@@ -36,4 +36,25 @@ describe('speak', () => {
   it('does nothing when speechSynthesis is missing', () => {
     expect(() => speak('silent')).not.toThrow()
   })
+
+  it('stays silent on Quark (black-screen defense)', () => {
+    const { speakFn, cancelFn } = stubSpeech()
+    const original = navigator.userAgent
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7_8 like Mac OS X; zh-cn) ' +
+        'AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/22H352 Quark/10.16.0.3166 Mobile',
+    })
+    try {
+      speak('This is a cup.')
+      expect(cancelFn).not.toHaveBeenCalled()
+      expect(speakFn).not.toHaveBeenCalled()
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', {
+        configurable: true,
+        value: original,
+      })
+    }
+  })
 })

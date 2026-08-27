@@ -57,6 +57,13 @@ function stubAudio() {
   return { instances }
 }
 
+function stubUserGesture(active: boolean) {
+  Object.defineProperty(navigator, 'userActivation', {
+    configurable: true,
+    value: { isActive: active, hasBeenActive: true },
+  })
+}
+
 describe('PracticeCard', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
@@ -361,5 +368,61 @@ describe('PracticeCard', () => {
       vi.advanceTimersByTime(3000)
     })
     expect(speakFn).not.toHaveBeenCalled()
+  })
+
+  it('skips all auto-play on Quark (black-screen bug)', () => {
+    vi.useFakeTimers()
+    stubUserGesture(true)
+    const original = navigator.userAgent
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 18_7_8 like Mac OS X; zh-cn) ' +
+        'AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/22H352 Quark/10.16.0.3166 Mobile',
+    })
+    try {
+      // 倒计时结束（含 autoSpeak 中途开启）：不自动播
+      const { speakFn } = stubSpeech()
+      const { instances } = stubAudio()
+      const { rerender } = render(
+        <PracticeCard {...props} autoSpeak={false} thinkHoldMs={3000} />,
+      )
+      rerender(<PracticeCard {...props} autoSpeak thinkHoldMs={3000} />)
+      act(() => {
+        vi.advanceTimersByTime(3000)
+      })
+      expect(instances).toHaveLength(0)
+      expect(speakFn).not.toHaveBeenCalled()
+
+      // 复习 sheet：不自动播
+      const sheetInstances = stubAudio().instances
+      render(<PracticeCard {...props} chrome="sheet" autoSpeak />)
+      expect(sheetInstances).toHaveLength(0)
+
+      // Aha! 点击栈内：只播 word，3 秒后的句子（点击栈外）不播
+      const ahaInstances = stubAudio().instances
+      render(
+        <PracticeCard
+          {...props}
+          card={{
+            ...card,
+            wordAudio: 'https://cdn.example/cup_w.mp3',
+            sentenceAudio: 'https://cdn.example/cup_s.mp3',
+          }}
+          autoSpeak
+        />,
+      )
+      fireEvent.click(screen.getByRole('button', { name: 'Aha!' }))
+      expect(ahaInstances).toHaveLength(1)
+      act(() => {
+        vi.advanceTimersByTime(4000)
+      })
+      expect(ahaInstances).toHaveLength(1)
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', {
+        configurable: true,
+        value: original,
+      })
+    }
   })
 })

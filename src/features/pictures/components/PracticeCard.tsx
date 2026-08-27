@@ -9,6 +9,7 @@ import type { HintLang, ThinkHoldMs } from '../lib/storage'
 import type { Card } from '../../../types/card'
 import { StageHeader } from '../../../shared/StageHeader'
 import { STAGE_BOTTOM_PAD } from '../../../shared/StageShell'
+import { isQuark } from '../../../shared/isQuark'
 import { LangToggle } from '../../../components/LangToggle'
 import { ReportDialog } from '../../grammar/components/ReportDialog'
 
@@ -157,6 +158,7 @@ export function PracticeCard({
     if (!autoSpeakRef.current) return
     const next = cardRef.current
     playCardAudio(next.wordAudio, next.word)
+    if (isQuark()) return // 夸克：3 秒后的句子播放是点击栈外调用，会黑屏
     autoTimer.current = setTimeout(() => {
       autoTimer.current = null
       playCardAudio(next.sentenceAudio, next.sentence)
@@ -224,6 +226,11 @@ export function PracticeCard({
 
   useEffect(() => {
     if (!timeoutHold) return
+    if (isQuark()) {
+      // 夸克：倒计时结束的自动朗读是点击栈外调用，会整屏黑屏——静默跳过
+      onTimeoutRef.current?.()
+      return
+    }
     startAutoSpeak()
     onTimeoutRef.current?.()
     // Speak + enqueue once per timeout-hold, using the current card.
@@ -232,6 +239,7 @@ export function PracticeCard({
 
   useEffect(() => {
     if (!sheet || !autoSpeak) return
+    if (isQuark()) return // 夸克：复习打开的自动朗读是点击栈外调用，会黑屏
     playCardAudio(card.wordAudio, card.word)
     autoTimer.current = setTimeout(() => {
       autoTimer.current = null
