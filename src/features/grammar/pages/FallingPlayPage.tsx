@@ -231,7 +231,9 @@ function FallingBoard({
   // 且句子结算 recordSentenceOutcome → saveGrammarProgress → 父组件重渲染 →
   // 若队列随引用重建，shuffle/抽样会换出已答句子，剩余计数与出题顺序全乱。
   const queueRef = useRef<string[]>([])
-  const queueSeedRef = useRef(queueSeed)
+  // 初始值必须为 null：useRef(queueSeed) 首次渲染时与当前值相等，
+  // if 分支被跳过 → 队列保持空数组 → 误判"全部掌握"直接跳 ArcadeEmptyPool。
+  const queueSeedRef = useRef<string | null>(null)
   if (queueSeedRef.current !== queueSeed) {
     queueSeedRef.current = queueSeed
     queueRef.current =
