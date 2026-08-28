@@ -4,12 +4,13 @@ user-approved learning priority (词性优先级 + 词频), so incremental batch
 (fetched by sort_order) match the full-catalog ordering (WORD_PRIORITY).
 
 Reads baicizhan cet4_core JSON (word + mean_cn) and wordfreq zipf scores —
-same source as scripts/generate-word-priority.py.
+same source as scripts/generate-word-priority.py. Dominant POS from Brown
+corpus decides the group for multi-POS words (user decision 2026-08-28).
 
 Sort key: [posRank, -zipf(round 2), word] — must match hydratePictureWords
 (WORD_PRIORITY rank asc, zipf desc; stable sort keeps word order on ties).
 
-Usage: uv run --with wordfreq python scripts/generate-sort-order-migration.py
+Usage: uv run --with wordfreq --with nltk python scripts/generate-sort-order-migration.py
 """
 import json
 import os
@@ -17,9 +18,10 @@ import re
 from pathlib import Path
 
 from wordfreq import zipf_frequency
+from nltk.corpus import brown
 
 SOURCE = Path('/data/english_bot_resources/baicizhan/cet4_core')
-OUT = Path('/data/name-everything/supabase/migrations/20260828120000_reorder_picture_words_by_priority.sql')
+OUT = Path('/data/name-everything/supabase/migrations/20260828150000_reorder_picture_words_by_dominant_pos.sql')
 
 POS_RANK = {
     'v': 0,      # 动词：句子骨架
@@ -38,6 +40,19 @@ UNKNOWN_RANK = 7
 
 POS_RE = re.compile(r'\b(n|v|adj|adv|prep|pron|art|conj|num|int|aux)\.')
 
+BROWN_TO_POS = {
+    'VERB': 'v',
+    'NOUN': 'n',
+    'PRON': 'pron',
+    'DET': 'art',
+    'ADP': 'prep',
+    'ADJ': 'adj',
+    'ADV': 'adv',
+    'CONJ': 'conj',
+    'NUM': 'num',
+    'X': 'int',
+}
+
 
 def pos_rank(mean_cn: str) -> int:
     matches = set(POS_RE.findall(mean_cn or ''))
@@ -47,13 +62,28 @@ def pos_rank(mean_cn: str) -> int:
 
 
 def main() -> None:
+    # 预构建 Brown 词性频率表（一次遍历）
+    from collections import Counter, defaultdict
+    pos_freq: dict[str, Counter[str]] = defaultdict(Counter)
+    for w, tag in brown.tagged_words(tagset='universal'):
+        pos_freq[w.lower()][tag] += 1
+
+    def dominant_rank(word: str, mean_cn: str) -> int:
+        counter = pos_freq.get(word)
+        if counter:
+            pos = BROWN_TO_POS.get(counter.most_common(1)[0][0])
+            if pos:
+                return POS_RANK[pos]
+        return pos_rank(mean_cn)
+
     entries = []
     for f in sorted(os.listdir(SOURCE)):
         if not f.endswith('.json'):
             continue
         word = f[:-5]
         data = json.load(open(SOURCE / f))
-        rank = pos_rank(str(data.get('mean_cn') or ''))
+        mean_cn = str(data.get('mean_cn') or '')
+        rank = dominant_rank(word, mean_cn)
         zipf = round(zipf_frequency(word, 'en'), 2)
         entries.append((word, rank, zipf))
 
@@ -65,10 +95,12 @@ def main() -> None:
     print(dict(sorted(Counter(r for _, r, _ in ordered).items())))
 
     lines = [
-        '-- 重排 picture_words.sort_order：按词性优先级（动词>名词>代词&冠词>介词>形容词>副词）',
+        '-- 重排 picture_words.sort_order：按主导词性优先级（动词>名词>代词&冠词>介词>形容词>副词）',
         '-- + 同词性内词频降序（wordfreq zipf）。与前端 hydratePictureWords / WORD_PRIORITY 一致，',
         '-- 使增量批次（按 sort_order 拉取）与全量目录排序统一。',
-        '-- 自动生成：uv run --with wordfreq python scripts/generate-sort-order-migration.py',
+        '-- 兼类词（forward/even 等多词性）按 Brown 语料中实际最高频的词性归组，',
+        '-- 如 forward 84% 副词 → 副词组；even 95% 副词 → 副词组。',
+        '-- 自动生成：uv run --with wordfreq --with nltk python scripts/generate-sort-order-migration.py',
         '-- 触发器 trg_picture_words_bump_version 会自动 bump content_table_versions，客户端自动刷新。',
         'BEGIN;',
         '',

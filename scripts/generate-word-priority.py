@@ -7,7 +7,13 @@ the user-approved learning priority (口语速成/二语习得):
 
   动词 > 名词 > 代词&冠词 > 介词 > 形容词 > 副词 > 其他
 
-Usage: uv run --with wordfreq python scripts/generate-word-priority.py
+Dominant POS (2026-08-28 user decision): for words with multiple POS, the
+group is decided by the *dominant* POS — the one with the highest real-world
+frequency in the Brown corpus (e.g. forward is 84% ADV, so it belongs to the
+adverb group despite having a verb sense; even is 95% ADV). Words missing
+from Brown fall back to the first POS in mean_cn.
+
+Usage: uv run --with wordfreq --with nltk python scripts/generate-word-priority.py
 """
 import json
 import os
@@ -15,6 +21,7 @@ import re
 from pathlib import Path
 
 from wordfreq import zipf_frequency
+from nltk.corpus import brown
 
 SOURCE = Path('/data/english_bot_resources/baicizhan/cet4_core')
 OUT = Path('/data/name-everything/src/features/pictures/content/wordPriority.ts')
@@ -37,6 +44,20 @@ UNKNOWN_RANK = 7
 
 POS_RE = re.compile(r'\b(n|v|adj|adv|prep|pron|art|conj|num|int|aux)\.')
 
+# Brown universal tagset → 我们的词性
+BROWN_TO_POS = {
+    'VERB': 'v',
+    'NOUN': 'n',
+    'PRON': 'pron',
+    'DET': 'art',
+    'ADP': 'prep',
+    'ADJ': 'adj',
+    'ADV': 'adv',
+    'CONJ': 'conj',
+    'NUM': 'num',
+    'X': 'int',
+}
+
 
 def pos_rank(mean_cn: str) -> int:
     """取 mean_cn 中最高优先级的词性（兼类词如 v./n. → 动词）。"""
@@ -47,21 +68,36 @@ def pos_rank(mean_cn: str) -> int:
 
 
 def main() -> None:
+    # 预构建 Brown 词性频率表（一次遍历，避免每词全量扫语料）
+    from collections import Counter, defaultdict
+    pos_freq: dict[str, Counter[str]] = defaultdict(Counter)
+    for w, tag in brown.tagged_words(tagset='universal'):
+        pos_freq[w.lower()][tag] += 1
+
+    def dominant_rank(word: str, mean_cn: str) -> int:
+        counter = pos_freq.get(word)
+        if counter:
+            pos = BROWN_TO_POS.get(counter.most_common(1)[0][0])
+            if pos:
+                return POS_RANK[pos]
+        return pos_rank(mean_cn)
+
     entries = []
     for f in sorted(os.listdir(SOURCE)):
         if not f.endswith('.json'):
             continue
         word = f[:-5]
         data = json.load(open(SOURCE / f))
-        rank = pos_rank(str(data.get('mean_cn') or ''))
+        mean_cn = str(data.get('mean_cn') or '')
+        rank = dominant_rank(word, mean_cn)
         zipf = round(zipf_frequency(word, 'en'), 2)
         entries.append((word, rank, zipf))
 
     lines = [
-        '// 自动生成，勿手改。来源：baicizhan cet4_core + wordfreq zipf。',
-        '// 生成命令：uv run --with wordfreq python scripts/generate-word-priority.py',
-        '// 排序键 = [词性优先级, zipf 词频]：动词>名词>代词&冠词>介词>形容词>副词，',
-        '// 同词性内按词频降序（用户定案：口语速成/二语习得，仅影响词汇记忆模块）。',
+        '// 自动生成，勿手改。来源：baicizhan cet4_core + wordfreq zipf + Brown 语料主导词性。',
+        '// 生成命令：uv run --with wordfreq --with nltk python scripts/generate-word-priority.py',
+        '// 排序键 = [主导词性优先级, zipf 词频]：动词>名词>代词&冠词>介词>形容词>副词；',
+        '// 兼类词按 Brown 语料中实际最高频的词性归组（forward 84% 副词 → 副词组）。',
         'export const WORD_PRIORITY: Record<string, [number, number]> = {',
     ]
     for word, rank, zipf in sorted(entries):
@@ -78,3 +114,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
