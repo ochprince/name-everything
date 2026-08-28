@@ -10,6 +10,7 @@ import {
   arcadePoolEligibleForTrophy,
   arcadeSessionSize,
   buildArcadeQueue,
+  scoreTier,
   shouldShowGroupSpeedBanner,
 } from './arcadeChallenge'
 import { gameTuning } from '../content/tuning'
@@ -102,5 +103,28 @@ describe('arcadeChallenge', () => {
     expect(arcadeEarnedTrophy(true, 30, 45)).toBe(true)
     expect(arcadeEarnedTrophy(false, 28, 45)).toBe(false)
     expect(arcadeEarnedTrophy(true, 30, 20)).toBe(false)
+  })
+
+  it('tiers sentence scores: unmastered < new < consolidating', () => {
+    expect(scoreTier(-1)).toBe(0)
+    expect(scoreTier(-99)).toBe(0) // 负分不按绝对值加深，统一未掌握档
+    expect(scoreTier(undefined)).toBe(1)
+    expect(scoreTier(0)).toBe(1)
+    expect(scoreTier(4)).toBe(2)
+    expect(scoreTier(9)).toBe(2)
+  })
+
+  it('filters mastered sentences out of the challenge pool', () => {
+    const pool = playablesForLevels(['dative-1', 'svo-1'])
+    // 全部掌握（≥5 分）→ 池空
+    const mastered: Record<string, number> = {}
+    for (const sentence of pool) mastered[sentence.id] = 5
+    expect(buildArcadeQueue(pool, mastered)).toEqual([])
+
+    // 其中一句答错过（负分）→ 回到池中，其余仍被过滤
+    const target = pool[0]!
+    const queue = buildArcadeQueue(pool, { ...mastered, [target.id]: -3 })
+    expect(queue).toContain(target.id)
+    expect(queue).toHaveLength(1)
   })
 })

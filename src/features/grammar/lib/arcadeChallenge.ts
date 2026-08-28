@@ -6,6 +6,31 @@ import { shuffle } from './engine'
 export const ARCADE_SESSION_SIZE = 30
 export const ARCADE_GROUP_SIZE = 5
 
+/** 句子分达到此值视为牢固掌握，退出挑战池（不再出现）。 */
+export const MASTERED_SCORE = 5
+
+/**
+ * 句子掌握度档位：未掌握(0) > 新句/归零(1) > 巩固中(2)。
+ * 负分不按绝对值加权（错 5 次 ≠ 5 倍优先级），统一归"未掌握"一档。
+ */
+export function scoreTier(score: number | undefined): 0 | 1 | 2 {
+  const value = score ?? 0
+  if (value < 0) return 0
+  if (value === 0) return 1
+  return 2
+}
+
+/** 从同难度层内按掌握度档位优先取一句（同档随机）。 */
+function pickByTier(
+  items: Sentence[],
+  sentenceScores: Record<string, number>,
+): Sentence | undefined {
+  if (items.length === 0) return undefined
+  const bestTier = Math.min(...items.map((s) => scoreTier(sentenceScores[s.id])))
+  const best = items.filter((s) => scoreTier(sentenceScores[s.id]) === bestTier)
+  return shuffle(best)[0]
+}
+
 /** Fall-duration multipliers per group (group 0 = sentences 1–5). Lower = faster. */
 export const ARCADE_GROUP_SPEED_FACTORS = [1, 0.9, 0.8, 0.7, 0.65, 0.6] as const
 
@@ -100,12 +125,21 @@ function groupByDifficulty(ids: string[]): string[] {
  *    5, shuffling inside each group. Group order is strictly increasing in
  *    difficulty, so later groups draw from later chapters/levels.
  */
-export function buildArcadeQueue(playables: Sentence[]): string[] {
+export function buildArcadeQueue(
+  playables: Sentence[],
+  sentenceScores: Record<string, number> = {},
+): string[] {
   if (playables.length === 0) return []
 
-  const targetSize = arcadeSessionSize(playables.length)
+  // 牢固掌握（score ≥ MASTERED_SCORE）的句子退出挑战池。
+  const eligible = playables.filter(
+    (sentence) => (sentenceScores[sentence.id] ?? 0) < MASTERED_SCORE,
+  )
+  if (eligible.length === 0) return []
+
+  const targetSize = arcadeSessionSize(eligible.length)
   const rank = difficultyRankMap()
-  const sorted = [...playables].sort(
+  const sorted = [...eligible].sort(
     (a, b) => (rank.get(a.level_id) ?? 0) - (rank.get(b.level_id) ?? 0),
   )
 
@@ -135,13 +169,15 @@ export function buildArcadeQueue(playables: Sentence[]): string[] {
     usedIds.add(sentence.id)
   }
 
-  // Fill remaining slots from evenly-sliced difficulty layers of leftovers.
+  // Fill remaining slots from evenly-sliced difficulty layers of leftovers,
+  // preferring mastered-tier order (unmastered > new > consolidating) inside
+  // each layer — difficulty spread stays intact, focus lands on weak sentences.
   const leftover = sorted.filter((sentence) => !usedIds.has(sentence.id))
   const quota = targetSize - picked.length
   for (let i = 0; i < quota; i++) {
     const start = Math.floor((i * leftover.length) / quota)
     const end = Math.floor(((i + 1) * leftover.length) / quota)
-    const sentence = shuffle(leftover.slice(start, end))[0]
+    const sentence = pickByTier(leftover.slice(start, end), sentenceScores)
     if (!sentence) continue
     picked.push(sentence.id)
     usedIds.add(sentence.id)
