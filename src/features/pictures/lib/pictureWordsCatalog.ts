@@ -85,22 +85,52 @@ export async function fetchPictureWordsVersion(): Promise<number> {
 }
 
 export async function fetchAllPictureWordRows(): Promise<PictureWordRow[]> {
-  const rows: PictureWordRow[] = []
-  let from = 0
-  for (;;) {
+  // 并行拉取全部分页（3 × 1000），串行在国内网络下首屏要等 5-10s+。
+  const SELECT =
+    'word,sort_order,word_level_id,word_audio,image_file,accent,mean_cn,mean_en,sentence_phrase,sentence,sentence_trans,sentence_audio'
+  const pages: Promise<PictureWordRow[]>[] = []
+  for (let from = 0; from < 5000; from += PAGE_SIZE) {
     const to = from + PAGE_SIZE - 1
-    const { data, error } = await getSupabase()
-      .from('picture_words')
-      .select(
-        'word,sort_order,word_level_id,word_audio,image_file,accent,mean_cn,mean_en,sentence_phrase,sentence,sentence_trans,sentence_audio',
-      )
-      .order('sort_order', { ascending: true })
-      .range(from, to)
-    if (error) throw error
-    const page = (data ?? []) as PictureWordRow[]
-    rows.push(...page)
-    if (page.length < PAGE_SIZE) break
-    from += PAGE_SIZE
+    pages.push(
+      (async () => {
+        const { data, error } = await getSupabase()
+          .from('picture_words')
+          .select(SELECT)
+          .order('sort_order', { ascending: true })
+          .range(from, to)
+        if (error) throw error
+        return (data ?? []) as PictureWordRow[]
+      })(),
+    )
+  }
+  const settled = await Promise.allSettled(pages)
+  const rows: PictureWordRow[] = []
+  let done = false
+  for (const result of settled) {
+    if (result.status === 'fulfilled') {
+      rows.push(...result.value)
+      if (result.value.length < PAGE_SIZE) done = true
+    } else {
+      // 任一页失败则整体失败（保持原语义：throw），避免静默缺数据
+      throw result.reason
+    }
+  }
+  if (!done && rows.length > 0) {
+    // 超过 5 页兜底：继续串行拉取剩余页
+    let from = 5000
+    for (;;) {
+      const to = from + PAGE_SIZE - 1
+      const { data, error } = await getSupabase()
+        .from('picture_words')
+        .select(SELECT)
+        .order('sort_order', { ascending: true })
+        .range(from, to)
+      if (error) throw error
+      const page = (data ?? []) as PictureWordRow[]
+      rows.push(...page)
+      if (page.length < PAGE_SIZE) break
+      from += PAGE_SIZE
+    }
   }
   return rows
 }
