@@ -31,7 +31,9 @@ import {
 
 const SCROLL_KEY = 'grammar/learn-list/scroll-y'
 const PENDING_KEY = 'grammar/learn-list/scroll-pending'
-const TOP_BANNER = `${import.meta.env.BASE_URL}images/home/grammar-horizon.jpg`
+import { assetUrl } from '../../../shared/assets'
+
+const TOP_BANNER = assetUrl('images/home/grammar-horizon.jpg')
 
 export function LearnListPage() {
   const progress = useGrammarProgress()

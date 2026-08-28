@@ -13,7 +13,9 @@ import { isQuark } from '../../../shared/isQuark'
 import { LangToggle } from '../../../components/LangToggle'
 import { ReportDialog } from '../../grammar/components/ReportDialog'
 
-const FALLBACK_IMAGE = `${import.meta.env.BASE_URL}images/cards/fallback.svg`
+import { assetUrl } from '../../../shared/assets'
+
+const FALLBACK_IMAGE = assetUrl('images/cards/fallback.svg')
 
 export interface PracticeCardProps {
   card: Card
