@@ -226,15 +226,20 @@ function FallingBoard({
   }
 }) {
   const grammarProgress = useGrammarProgress()
-  const queue = useMemo(() => {
-    if (mode === 'arcade' || mode === 'vocab') {
-      // 句子掌握度计分（sentenceScores）参与挑战池过滤与层内加权；
-      // 不加入依赖数组——本局队列在挑战中保持稳定，分数只影响下一局。
-      return buildArcadeQueue(pool.playables, grammarProgress.sentenceScores)
-    }
-    return buildQueue(pool.playables)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, pool.playables, queueSeed])
+  // 队列只在进入本局时构建一次（queueSeed = mode:levelId:location.key 变化才重建）。
+  // 不能用 useMemo 依赖 pool.playables：父组件每次渲染都重建 pool（filter 新数组），
+  // 且句子结算 recordSentenceOutcome → saveGrammarProgress → 父组件重渲染 →
+  // 若队列随引用重建，shuffle/抽样会换出已答句子，剩余计数与出题顺序全乱。
+  const queueRef = useRef<string[]>([])
+  const queueSeedRef = useRef(queueSeed)
+  if (queueSeedRef.current !== queueSeed) {
+    queueSeedRef.current = queueSeed
+    queueRef.current =
+      mode === 'arcade' || mode === 'vocab'
+        ? buildArcadeQueue(pool.playables, grammarProgress.sentenceScores)
+        : buildQueue(pool.playables)
+  }
+  const queue = queueRef.current
   const firstId = queue[0]
   // 输入模式占比来自「我的」设置（0–100%，默认 50%）；游戏中途不会变更。
   const produceRatio = useMemo(
