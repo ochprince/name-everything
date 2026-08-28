@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { StageShell, STAGE_CHROME_OFFSET } from '../../../shared/StageShell'
-import { StageHeader } from '../../../shared/StageHeader'
+import { StageHeader, StickyStageChrome } from '../../../shared/StageHeader'
 import {
   useKeyboardOverlapPx,
   usePinLayoutOnKeyboardDismiss,
@@ -22,7 +22,9 @@ import {
 } from '../lib/afterSentencePlan'
 import {
   anchorForLevel,
+  chaptersInOrder,
   levelById,
+  levelsForChapter,
   playablesForLevel,
   pointById,
   sentenceById,
@@ -32,6 +34,7 @@ import {
 import {
   recordArcadeRun,
   recordLevelScore,
+  recordSentenceOutcome,
   useGrammarProgress,
 } from '../lib/storage'
 import { recordMyChallengeRun } from '../../pictures/lib/myChallengeProgress'
@@ -222,9 +225,15 @@ function FallingBoard({
     pickAnswerModeFor?: (sentenceId: string, produceRatio: number) => AnswerMode
   }
 }) {
+  const grammarProgress = useGrammarProgress()
   const queue = useMemo(() => {
-    if (mode === 'arcade' || mode === 'vocab') return buildArcadeQueue(pool.playables)
+    if (mode === 'arcade' || mode === 'vocab') {
+      // 句子掌握度计分（sentenceScores）参与挑战池过滤与层内加权；
+      // 不加入依赖数组——本局队列在挑战中保持稳定，分数只影响下一局。
+      return buildArcadeQueue(pool.playables, grammarProgress.sentenceScores)
+    }
     return buildQueue(pool.playables)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, pool.playables, queueSeed])
   const firstId = queue[0]
   // 输入模式占比来自「我的」设置（0–100%，默认 50%）；游戏中途不会变更。
@@ -449,6 +458,11 @@ function FallingBoard({
     }
   }, [state?.status, passed, sessionCleared])
 
+  // 挑战池空（全部句子已熟练掌握退出）：提示用户而非静默跳转。
+  if ((mode === 'arcade' || mode === 'vocab') && queue.length === 0) {
+    return <ArcadeEmptyPool mode={mode} backTo={backTo} />
+  }
+
   if (!state || !firstId) {
     return <Navigate to={backTo} replace />
   }
@@ -600,6 +614,7 @@ function FallingBoard({
           />
         ) : null}
         <SentenceResultScreen
+          mode={mode}
           outcome={sentenceResult.outcome}
           sentence={resultSentence}
           lives={state.lives}
@@ -802,7 +817,81 @@ function FallingBoard({
   )
 }
 
+/**
+ * 挑战池空提示：已过关卡的句子全部熟练掌握退出挑战池（score ≥ 5）时
+ * 展示，引导用户去学新内容，而不是静默跳走。
+ */
+function ArcadeEmptyPool({
+  mode,
+  backTo,
+}: {
+  mode: 'arcade' | 'vocab'
+  backTo: string
+}) {
+  const progress = useGrammarProgress()
+  const allLevelIds = chaptersInOrder().flatMap((chapter) =>
+    levelsForChapter(chapter.id).map((level) => level.id),
+  )
+  const hasUnpassed = allLevelIds.some(
+    (id) => !progress.passedLevelIds.includes(id),
+  )
+  const copy =
+    mode === 'vocab'
+      ? {
+          title: '已熟练掌握全部收藏例句',
+          body: '去词汇记忆收藏新的例句，挑战内容会更新',
+          to: '/practice/pictures/play',
+          label: '去词汇记忆',
+        }
+      : hasUnpassed
+        ? {
+            title: '已熟练掌握所有已学句子',
+            body: '去语法学习解锁新章节，挑战内容会更新',
+            to: '/practice/grammar/learn',
+            label: '去语法学习',
+          }
+        : {
+            title: '已熟练掌握全部内容',
+            body: '恭喜！等待课程更新后再来挑战',
+            to: '/practice/grammar/learn',
+            label: '去语法学习',
+          }
+
+  return (
+    <main
+      data-seed="af3fdd03"
+      className="relative z-0 h-dvh overflow-hidden bg-cyc font-cue"
+    >
+      <div className="cyc-wash pointer-events-none absolute inset-0" />
+      <div className="relative h-full overflow-x-clip overflow-y-auto">
+        <div className="mx-auto max-w-md px-4 pb-28">
+          <StickyStageChrome>
+            <StageHeader backTo={backTo} title="挑战" />
+          </StickyStageChrome>
+          <div className="mt-16 rounded-2xl border border-gold/50 bg-cyc/80 px-4 py-6 text-center">
+            <p className="text-xl font-semibold tracking-[0.04em] text-day">
+              🎉 {copy.title}
+            </p>
+            <p className="mt-3 text-base font-medium leading-snug tracking-[0.01em] text-day/85">
+              {copy.body}
+            </p>
+            <Link to={copy.to}>
+              <button
+                type="button"
+                className="mt-6 rounded-2xl bg-day px-6 py-3 text-base font-semibold tracking-[0.04em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day"
+              >
+                {copy.label}
+              </button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+}
+
 function SentenceResultScreen({
+  mode,
   outcome,
   sentence,
   lives,
@@ -812,6 +901,7 @@ function SentenceResultScreen({
   onNext,
   backTo,
 }: {
+  mode: 'level' | 'arcade' | 'vocab'
   outcome: SentenceOutcome
   sentence: Sentence
   lives: number
@@ -822,6 +912,13 @@ function SentenceResultScreen({
   backTo: string
 }) {
   const cleared = outcome === 'cleared'
+
+  // 挑战模式（arcade/vocab）记录句子掌握度：答对 +1（负分归零）、答错 -1。
+  // 关卡游戏（level）不记录——计分是挑战独有的频率机制。
+  useEffect(() => {
+    if (mode === 'level') return
+    recordSentenceOutcome(sentence.id, cleared)
+  }, [mode, sentence.id, cleared])
   // 失败页防误触：页面切换瞬间玩家连点的残余点击可能落到「下一句」上，
   // 导致来不及看正确答案。失败时按钮静默延迟 500ms 才可点；成功页无需延迟。
   const [nextReady, setNextReady] = useState(cleared)
