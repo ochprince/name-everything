@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { CachedPictureWords } from '../content/pictureWordsCacheIdb'
 import type { PictureWordRow } from '../content/mapPictureWord'
 import {
   __resetPictureWordsCacheForTests,
   ensurePictureWordsReady,
+  getLoadedCard,
   getPictureWordBatch,
   getPictureWordsByWords,
   hydratePictureWords,
@@ -83,7 +85,7 @@ describe('ensurePictureWordsReady', () => {
   it('keeps idb catalog when remote version matches', async () => {
     const fetchAllRows = vi.fn(async () => [row('remote', 0)])
     await ensurePictureWordsReady({
-      readCached: async () => ({ version: 7, rows: [row('cup', 0)] }),
+      readCached: async () => ({ version: 7, rows: [row('cup', 0)], complete: true }),
       writeCached: async () => {},
       fetchVersion: async () => 7,
       fetchAllRows,
@@ -103,7 +105,7 @@ describe('ensurePictureWordsReady', () => {
     const writeCached = vi.fn(async () => {})
 
     const ready = ensurePictureWordsReady({
-      readCached: async () => ({ version: 1, rows: [row('old', 0)] }),
+      readCached: async () => ({ version: 1, rows: [row('old', 0)], complete: true }),
       writeCached,
       fetchVersion: async () => versionGate,
       fetchAllRows,
@@ -130,6 +132,7 @@ describe('ensurePictureWordsReady', () => {
     expect(writeCached).toHaveBeenCalledWith({
       version: 2,
       rows: [row('new', 0)],
+      complete: true,
     })
   })
 
@@ -143,6 +146,28 @@ describe('ensurePictureWordsReady', () => {
       fetchAllRows: async () => [],
     })
     expect(readCached).not.toHaveBeenCalled()
+    expect(isPictureWordsReady()).toBe(true)
+  })
+
+  it('merges partial cache into loaded words and completes the catalog', async () => {
+    // 部分缓存（complete: false，增量批次累积）：先并入 loadedByWord（复习可秒查），
+    // 后台继续拉全量补齐目录
+    const fetchAllRows = vi.fn(async () => [row('full', 0)])
+    const ready = ensurePictureWordsReady({
+      readCached: async (): Promise<CachedPictureWords | null> => ({
+        version: 5,
+        rows: [row('seen', 0)],
+        complete: false,
+      }),
+      writeCached: async () => {},
+      fetchVersion: async () => 5,
+      fetchAllRows,
+    })
+    await ready
+    // 部分缓存词已进 loadedByWord（复习秒查的路径）
+    expect(getLoadedCard('seen')?.word).toBe('seen')
+    // 后台补齐全量 → 目录最终就绪
+    expect(fetchAllRows).toHaveBeenCalled()
     expect(isPictureWordsReady()).toBe(true)
   })
 })

@@ -30,6 +30,22 @@ let memory: MemoryCatalog | null = null
 let ensurePromise: Promise<void> | null = null
 let refreshPromise: Promise<void> | null = null
 
+/**
+ * 已加载词表（增量累积）：词汇记忆按批次加载的词都会并入这里。
+ * 新用户 forgot 必然是已学过的词（固定词序下只可能在前几个批次内），
+ * 复习/按词查先查这里，全命中即返回——不等全量预热完成。
+ */
+const loadedByWord = new Map<string, Card>()
+
+export function mergeLoadedCards(cards: Card[]) {
+  for (const card of cards) loadedByWord.set(card.word, card)
+}
+
+/** 从已加载词表查询（不触发全量加载）；缺失返回 undefined。 */
+export function getLoadedCard(word: string): Card | undefined {
+  return loadedByWord.get(word)
+}
+
 export function isPictureWordsReady(): boolean {
   return memory !== null
 }
@@ -52,6 +68,8 @@ export function hydratePictureWords(version: number, rows: PictureWordRow[]) {
   const byWord = new Map<string, Card>()
   for (const card of cards) byWord.set(card.word, card)
   memory = { version, cards, byWord }
+  // 全量就绪后，已加载词表也补全（复习查询走同一内存表）
+  for (const card of cards) loadedByWord.set(card.word, card)
 }
 
 export function getPictureWordBatch(offset: number, limit: number): Card[] {
@@ -147,7 +165,7 @@ async function loadFresh(deps: EnsurePictureWordsDeps): Promise<void> {
   }
   const rows = await fetchAllRows()
   hydratePictureWords(version, rows)
-  await writeCached({ version, rows })
+  await writeCached({ version, rows, complete: true })
 }
 
 async function refreshIfStale(deps: EnsurePictureWordsDeps): Promise<void> {
@@ -184,9 +202,17 @@ export async function ensurePictureWordsReady(
 
     const cached = await readCached()
     if (cached && cached.rows.length > 0) {
-      hydratePictureWords(cached.version, cached.rows)
-      // Serve local catalog immediately; refresh in background if version drifted.
-      void refreshIfStale({ readCached, writeCached, fetchVersion, fetchAllRows })
+      if (cached.complete) {
+        // 全量缓存：hydrate 目录（按词性+词频排序）
+        hydratePictureWords(cached.version, cached.rows)
+        // Serve local catalog immediately; refresh in background if version drifted.
+        void refreshIfStale({ readCached, writeCached, fetchVersion, fetchAllRows })
+        return
+      }
+      // 部分缓存（增量批次累积）：先并入已加载词表（复习可秒查学过的词），
+      // 然后继续拉全量补齐目录（目录排序需要全量，部分数据 hydrate 会错乱）。
+      mergeLoadedCards(cached.rows.map(mapPictureWordRow))
+      await loadFresh({ readCached, writeCached, fetchVersion, fetchAllRows })
       return
     }
 
@@ -202,4 +228,5 @@ export function __resetPictureWordsCacheForTests() {
   memory = null
   ensurePromise = null
   refreshPromise = null
+  loadedByWord.clear()
 }
