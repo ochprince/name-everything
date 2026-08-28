@@ -36,6 +36,13 @@ export type GrammarProgress = {
   lastPlayedLevelId: string | null
   arcadeHistory: ArcadeRecord[]
   arcadeTrophyCount: number
+  /**
+   * 挑战模式句子掌握度计分（sentenceId → score）。
+   * 答错 -1；答对时负分归零、非负 +1；score ≥ 5 视为牢固掌握，
+   * 退出挑战池（buildArcadeQueue 过滤）。只记挑战（arcade/vocab），
+   * 关卡游戏不记录。
+   */
+  sentenceScores: Record<string, number>
 }
 
 const PROGRESS_KEY = 'grammar/progress/v1'
@@ -58,6 +65,7 @@ const EMPTY_PROGRESS: GrammarProgress = {
   lastPlayedLevelId: null,
   arcadeHistory: [],
   arcadeTrophyCount: 0,
+  sentenceScores: {},
 }
 const EMPTY_REPORTS: AssetReport[] = []
 
@@ -76,6 +84,7 @@ function parseProgress(raw: string | null): GrammarProgress {
       lastPlayedLevelId: value.lastPlayedLevelId ?? null,
       arcadeHistory: (value.arcadeHistory ?? []).map(normalizeArcadeRecord),
       arcadeTrophyCount: value.arcadeTrophyCount ?? 0,
+      sentenceScores: value.sentenceScores ?? {},
     }
   } catch {
     return EMPTY_PROGRESS
@@ -180,6 +189,26 @@ export function recordLevelScore(levelId: string, score: number, threshold: numb
     passedSentenceCounts,
     lastPlayedLevelId: levelId,
   })
+}
+
+/**
+ * 挑战模式句子计分：答错 -1；答对时负分归零、非负 +1。
+ * score ≥ 5 由 buildArcadeQueue 过滤退出挑战池。
+ */
+export function recordSentenceOutcome(sentenceId: string, correct: boolean) {
+  const current = loadGrammarProgress()
+  const prev = current.sentenceScores[sentenceId] ?? 0
+  const next = correct ? (prev < 0 ? 0 : prev + 1) : prev - 1
+  saveGrammarProgress({
+    ...current,
+    sentenceScores: { ...current.sentenceScores, [sentenceId]: next },
+  })
+}
+
+/** 清空句子掌握度（配合"清空学习进度"入口，让退出的句子重新进入挑战）。 */
+export function resetSentenceScores() {
+  const current = loadGrammarProgress()
+  saveGrammarProgress({ ...current, sentenceScores: {} })
 }
 
 function normalizeArcadeRecord(

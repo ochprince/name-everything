@@ -8,6 +8,8 @@ import {
   defaultGrammarProgress,
   recordLevelScore,
   recordArcadeRun,
+  recordSentenceOutcome,
+  resetSentenceScores,
 } from './storage'
 import { defaultProgress, loadProgress, saveProgress } from '../../pictures/lib/storage'
 import { levelById } from '../content/pack'
@@ -151,5 +153,35 @@ describe('grammar storage', () => {
       cleared: false,
     })
     expect(loadGrammarProgress().arcadeTrophyCount).toBe(0)
+  })
+
+  it('scores challenge sentences: wrong -1, correct clears negative to 0', () => {
+    // 新句默认 0 分
+    expect(loadGrammarProgress().sentenceScores['s1']).toBeUndefined()
+    // 答错 → -1
+    recordSentenceOutcome('s1', false)
+    expect(loadGrammarProgress().sentenceScores['s1']).toBe(-1)
+    // 再答错 → -2
+    recordSentenceOutcome('s1', false)
+    expect(loadGrammarProgress().sentenceScores['s1']).toBe(-2)
+    // 负分答对 → 归零（不清零历史错误拖累）
+    recordSentenceOutcome('s1', true)
+    expect(loadGrammarProgress().sentenceScores['s1']).toBe(0)
+    // 归零后答对 → +1
+    recordSentenceOutcome('s1', true)
+    expect(loadGrammarProgress().sentenceScores['s1']).toBe(1)
+    // 连续答对到 5 分（牢固掌握阈值）
+    recordSentenceOutcome('s1', true)
+    recordSentenceOutcome('s1', true)
+    recordSentenceOutcome('s1', true)
+    recordSentenceOutcome('s1', true)
+    expect(loadGrammarProgress().sentenceScores['s1']).toBe(5)
+  })
+
+  it('resets all sentence scores (clear-progress hook)', () => {
+    recordSentenceOutcome('s1', false)
+    recordSentenceOutcome('s2', true)
+    resetSentenceScores()
+    expect(loadGrammarProgress().sentenceScores).toEqual({})
   })
 })
