@@ -28,7 +28,6 @@ export async function fetchPictureWordBatch(
   if (isPictureWordsReady()) {
     return getPictureWordBatch(offset, limit)
   }
-  void ensurePictureWordsReady().catch(() => {})
 
   // 刷新后（内存词表空）：查 IDB 增量缓存是否已覆盖本批——命中则不联网。
   const cached = await readCachedPictureWords()
@@ -43,11 +42,25 @@ export async function fetchPictureWordBatch(
     if (slice.length === limit) {
       const cards = slice.map(mapPictureWordRow)
       mergeLoadedCards(cards)
+      scheduleCatalogWarmup()
       return cards
     }
   }
   // 缓存未覆盖：联网拉本批（拉回后并入词表 + IDB）
   return fetchPictureWordRange(offset, limit)
+}
+
+/**
+ * 延迟触发全量预热：首屏 50 词优先返回，全量加载延后 1.5s 再发，
+ * 避免与首屏请求并发抢带宽（弱网下全量 4 个并发请求会拖慢 50 词）。
+ */
+let warmupTimer: ReturnType<typeof setTimeout> | null = null
+function scheduleCatalogWarmup() {
+  if (warmupTimer) return
+  warmupTimer = setTimeout(() => {
+    warmupTimer = null
+    void ensurePictureWordsReady().catch(() => {})
+  }, 1500)
 }
 
 /**
@@ -74,6 +87,8 @@ async function fetchPictureWordRange(
       // 并入已加载词表 + IDB 增量缓存（均静默，失败不影响本次返回）
       mergeLoadedCards(cards)
       void mergeCachedPictureWords(rows).catch(() => {})
+      // 首屏 50 词已到手，延迟全量预热（不与本批抢带宽）
+      scheduleCatalogWarmup()
       return cards
     } catch (err) {
       lastError = err
