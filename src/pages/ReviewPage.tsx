@@ -74,6 +74,12 @@ export function ReviewPage() {
     async function load() {
       setLoading(true)
       try {
+        // forgotIds 为空时无需等词库全量加载（ensurePictureWordsReady
+        // 会拉 2315 词 / 1.2MB，国内网络下可能数秒）——直接显示空状态。
+        if (progress.forgotIds.length === 0) {
+          if (!cancelled) setListed([])
+          return
+        }
         const cards = await fetchPictureWordsByWords(progress.forgotIds)
         if (cancelled) return
         const byId = new Map(cards.map((c) => [c.id, c]))
