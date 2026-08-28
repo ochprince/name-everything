@@ -85,39 +85,37 @@ export async function fetchPictureWordsVersion(): Promise<number> {
 }
 
 export async function fetchAllPictureWordRows(): Promise<PictureWordRow[]> {
-  // 并行拉取全部分页（3 × 1000），串行在国内网络下首屏要等 5-10s+。
+  // 并行拉取分页（3 × 1000），串行在国内网络下首屏要等 5-10s+。
+  // 只发 3 页（2315 词），不浪费空页请求；每页失败重试一次再整体失败。
   const SELECT =
     'word,sort_order,word_level_id,word_audio,image_file,accent,mean_cn,mean_en,sentence_phrase,sentence,sentence_trans,sentence_audio'
-  const pages: Promise<PictureWordRow[]>[] = []
-  for (let from = 0; from < 5000; from += PAGE_SIZE) {
+
+  async function fetchPage(from: number, attempt = 1): Promise<PictureWordRow[]> {
     const to = from + PAGE_SIZE - 1
-    pages.push(
-      (async () => {
-        const { data, error } = await getSupabase()
-          .from('picture_words')
-          .select(SELECT)
-          .order('sort_order', { ascending: true })
-          .range(from, to)
-        if (error) throw error
-        return (data ?? []) as PictureWordRow[]
-      })(),
-    )
+    const { data, error } = await getSupabase()
+      .from('picture_words')
+      .select(SELECT)
+      .order('sort_order', { ascending: true })
+      .range(from, to)
+    if (error) {
+      if (attempt < 2) return fetchPage(from, attempt + 1)
+      throw error
+    }
+    return (data ?? []) as PictureWordRow[]
   }
-  const settled = await Promise.allSettled(pages)
+
+  const settled = await Promise.allSettled([0, 1000, 2000].map(fetchPage))
   const rows: PictureWordRow[] = []
-  let done = false
   for (const result of settled) {
     if (result.status === 'fulfilled') {
       rows.push(...result.value)
-      if (result.value.length < PAGE_SIZE) done = true
     } else {
-      // 任一页失败则整体失败（保持原语义：throw），避免静默缺数据
       throw result.reason
     }
   }
-  if (!done && rows.length > 0) {
-    // 超过 5 页兜底：继续串行拉取剩余页
-    let from = 5000
+  // 兜底：词库超过 3000 词时续拉剩余页（当前 2315，未来扩容保险）。
+  if (rows.length >= 3000) {
+    let from = 3000
     for (;;) {
       const to = from + PAGE_SIZE - 1
       const { data, error } = await getSupabase()
@@ -139,7 +137,15 @@ async function loadFresh(deps: EnsurePictureWordsDeps): Promise<void> {
   const fetchVersion = deps.fetchVersion ?? fetchPictureWordsVersion
   const fetchAllRows = deps.fetchAllRows ?? fetchAllPictureWordRows
   const writeCached = deps.writeCached ?? writeCachedPictureWords
-  const [version, rows] = await Promise.all([fetchVersion(), fetchAllRows()])
+  // 先取版本（轻量）再拉数据：弱网下避免 version+3 页并发 4 个请求，
+  // version 失败拖累整体（重试一次）。
+  let version: number
+  try {
+    version = await fetchVersion()
+  } catch {
+    version = await fetchVersion()
+  }
+  const rows = await fetchAllRows()
   hydratePictureWords(version, rows)
   await writeCached({ version, rows })
 }
