@@ -8,6 +8,7 @@ import {
   writeCachedPictureWords,
   type CachedPictureWords,
 } from '../content/pictureWordsCacheIdb'
+import { WORD_PRIORITY } from '../content/wordPriority'
 import type { Card } from '../../../types/card'
 
 const PAGE_SIZE = 1000
@@ -34,8 +35,20 @@ export function isPictureWordsReady(): boolean {
 }
 
 export function hydratePictureWords(version: number, rows: PictureWordRow[]) {
-  const sorted = [...rows].sort((a, b) => a.sort_order - b.sort_order)
-  const cards = sorted.map(mapPictureWordRow)
+  // 词汇记忆学习顺序（用户定案，口语速成/二语习得）：
+  // 词性优先级（动词>名词>代词&冠词>介词>形容词>副词）→ 同词性内词频降序。
+  // 只影响词汇记忆模块的批次顺序；语法/挑战不走此目录，零影响。
+  const priorityOf = (card: Card): [number, number] =>
+    WORD_PRIORITY[card.word] ?? [7, 0]
+  const sorted = [...rows]
+    .map(mapPictureWordRow)
+    .sort((a, b) => {
+      const [ra, fa] = priorityOf(a)
+      const [rb, fb] = priorityOf(b)
+      if (ra !== rb) return ra - rb
+      return fb - fa
+    })
+  const cards = sorted
   const byWord = new Map<string, Card>()
   for (const card of cards) byWord.set(card.word, card)
   memory = { version, cards, byWord }

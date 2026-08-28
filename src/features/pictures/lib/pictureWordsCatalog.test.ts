@@ -50,6 +50,29 @@ describe('pictureWordsCatalog', () => {
       'cup',
     ])
   })
+
+  it('orders batch by word-priority rank then zipf frequency', () => {
+    // WORD_PRIORITY 实测词条（从生成的 wordPriority.ts 取真实值）：
+    // abandon=v(0,4.02)  abolition=n(1,3.51)  absence=n(1,4.34)
+    // absolute=adj(4,4.54)  Christian=n(1,4.88)
+    const rows = [
+      row('absolute', 0),
+      row('absence', 1),
+      row('abandon', 2),
+      row('Christian', 3),
+      row('abolition', 4),
+    ]
+    hydratePictureWords(9, rows)
+    const words = getPictureWordBatch(0, 10).map((c) => c.word)
+    // 动词 abandon 最先；名词组内按词频降序 Christian(4.88) > absence(4.34) > abolition(3.51)；形容词 absolute 最后
+    expect(words).toEqual([
+      'abandon',
+      'Christian',
+      'absence',
+      'abolition',
+      'absolute',
+    ])
+  })
 })
 
 describe('ensurePictureWordsReady', () => {
