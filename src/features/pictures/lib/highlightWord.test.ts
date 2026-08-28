@@ -23,4 +23,44 @@ describe('highlightParts', () => {
       { text: 'Nothing here.', highlight: false },
     ])
   })
+
+  it('matches an -ing form (去 e)', () => {
+    expect(highlightParts('The doctor is explaining the illness.', 'explain')).toEqual([
+      { text: 'The doctor is ', highlight: false },
+      { text: 'explaining', highlight: true },
+      { text: ' the illness.', highlight: false },
+    ])
+  })
+
+  it('matches an -ed form', () => {
+    expect(highlightParts('The driver avoided the dogs.', 'avoid')).toEqual([
+      { text: 'The driver ', highlight: false },
+      { text: 'avoided', highlight: true },
+      { text: ' the dogs.', highlight: false },
+    ])
+  })
+
+  it('matches a doubled-consonant -ed form', () => {
+    expect(highlightParts('The soil cracked.', 'crack')).toEqual([
+      { text: 'The soil ', highlight: false },
+      { text: 'cracked', highlight: true },
+      { text: '.', highlight: false },
+    ])
+  })
+
+  it('matches an irregular past form', () => {
+    expect(highlightParts('She thought about it.', 'think')).toEqual([
+      { text: 'She ', highlight: false },
+      { text: 'thought', highlight: true },
+      { text: ' about it.', highlight: false },
+    ])
+  })
+
+  it('matches a third-person singular form', () => {
+    expect(highlightParts('She runs every day.', 'run')).toEqual([
+      { text: 'She ', highlight: false },
+      { text: 'runs', highlight: true },
+      { text: ' every day.', highlight: false },
+    ])
+  })
 })
