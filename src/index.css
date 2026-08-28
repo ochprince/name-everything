@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 子集化中文字体（scripts/subset-fonts.py 生成，覆盖 UI 文案 + 词库 + 语法内容）。
+   与 @fontsource 同名 "Noto Sans SC" 无缝替换；缺失字符回退系统字体。
+   相对路径引用 → Vite 构建自动加 hash + base 前缀（GitHub Pages 子路径可用）。 */
+@font-face {
+  font-family: "Noto Sans SC";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./assets/fonts/noto-sans-sc-subset-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans SC";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./assets/fonts/noto-sans-sc-subset-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Noto Sans SC";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./assets/fonts/noto-sans-sc-subset-700.woff2") format("woff2");
+}
+
 :root {
   color: #ffffff;
   background: #05060a;

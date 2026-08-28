@@ -6,9 +6,10 @@ import '@fontsource/big-shoulders-text/latin-500'
 import '@fontsource/big-shoulders-text/latin-600'
 import '@fontsource/big-shoulders-text/latin-700'
 import '@fontsource/big-shoulders-text/latin-800'
-import '@fontsource/noto-sans-sc/chinese-simplified-500'
-import '@fontsource/noto-sans-sc/chinese-simplified-600'
-import '@fontsource/noto-sans-sc/chinese-simplified-700'
+// 中文字体 = 子集化 Noto Sans SC（scripts/subset-fonts.py 生成，~460KB/字重
+// vs @fontsource 全量 1.16MB/字重；字符覆盖 UI 文案 + 词库 + 语法内容，
+// 未覆盖字符由字体栈回退到 PingFang SC / Microsoft YaHei 系统字体）。
+// @font-face 注册见 index.css。
 import './index.css'
 import App from './App.tsx'
 import { ASSET_VERSION } from './shared/assets'
