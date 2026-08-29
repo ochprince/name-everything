@@ -27,6 +27,8 @@ export interface PracticeCardProps {
   onTimeout?: () => void
   onNext?: () => void
   progressLabel?: string
+  /** 本批最后一张时的预告小字（如「本批最后一张 · 练完还有 3 个待复习」）。 */
+  lastCardNote?: string
   chrome?: 'stage' | 'sheet'
   backTo?: string
   onBack?: () => void
@@ -124,6 +126,7 @@ export function PracticeCard({
   onTimeout,
   onNext,
   progressLabel,
+  lastCardNote,
   chrome = 'stage',
   backTo,
   onBack,
@@ -377,6 +380,12 @@ export function PracticeCard({
             </div>
           )}
         </div>
+
+        {lastCardNote ? (
+          <p className="shrink-0 pb-2 pt-4 text-center text-sm font-semibold tracking-[0.14em] text-gold">
+            {lastCardNote}
+          </p>
+        ) : null}
 
         <div className="mt-auto flex shrink-0 items-center gap-2.5 pt-4">
           {timeoutHold ? (

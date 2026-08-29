@@ -427,4 +427,16 @@ describe('PracticeCard', () => {
       })
     }
   })
+
+  it('shows the last-card note when provided', () => {
+    render(
+      <PracticeCard
+        {...props}
+        lastCardNote="本批最后一张 · 练完还有 3 个待复习"
+      />,
+    )
+    expect(
+      screen.getByText('本批最后一张 · 练完还有 3 个待复习'),
+    ).toBeInTheDocument()
+  })
 })

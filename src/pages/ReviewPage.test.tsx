@@ -46,7 +46,7 @@ describe('ReviewPage', () => {
 
     expect(screen.queryByText(card.sentence)).not.toBeInTheDocument()
     expect(
-      screen.getByText('暂时没有 Forgot，去练习里诚实点一下吧'),
+      screen.getByText('复习完成'),
     ).toBeInTheDocument()
   })
 
@@ -159,5 +159,39 @@ describe('ReviewPage', () => {
     const main = document.querySelector('main')
     expect(main).toHaveClass('overflow-hidden')
     expect(main?.querySelector('.cyc-wash')).toHaveClass('absolute', 'inset-0')
+  })
+
+  it('shows progress badges and the completion gate after clearing the whole queue', async () => {
+    const user = userEvent.setup()
+    const [first, second] = TEST_PICTURE_CARDS.slice(0, 2)
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: [first.id, second.id],
+    })
+    renderWithProgress(<ReviewPage />)
+
+    // 右上角进度：进入时 0 过关 / 2 待复习
+    await waitFor(() => {
+      expect(screen.getByText('0 / 2')).toBeInTheDocument()
+    })
+    expect(screen.getByText('待复习 2')).toBeInTheDocument()
+
+    // sheet 模式打开即揭示：直接 Got it 过关第一张 → 1 / 2
+    await user.click(screen.getByRole('button', { name: first.sentence }))
+    await user.click(screen.getByRole('button', { name: 'Got it' }))
+    await waitFor(() => {
+      expect(screen.getByText('1 / 2')).toBeInTheDocument()
+    })
+    expect(screen.getByText('待复习 1')).toBeInTheDocument()
+
+    // 过关第二张：完成态 + 继续练习
+    await user.click(screen.getByRole('button', { name: 'Got it' }))
+    await waitFor(() => {
+      expect(screen.getByText('复习完成')).toBeInTheDocument()
+    })
+    expect(screen.getByText('2 / 2')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: '继续练习' }),
+    ).toBeInTheDocument()
   })
 })

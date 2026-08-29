@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PracticeCard } from '../features/pictures/components/PracticeCard'
 import { fetchPictureWordsByWords } from '../features/pictures/content/fetchPictureWords'
 import { useProgress } from '../features/pictures/hooks/useProgress'
@@ -56,9 +57,15 @@ function SentenceHighlight({
 
 export function ReviewPage() {
   const { progress, update } = useProgress()
+  const navigate = useNavigate()
   const [openId, setOpenId] = useState<string | null>(null)
   const [listed, setListed] = useState<Card[]>([])
   const [loading, setLoading] = useState(true)
+  /** 进入本页时的待复习总数——过关进度 = total − 当前剩余。 */
+  const [total] = useState(() => progress.forgotIds.length)
+  const remaining = progress.forgotIds.length
+  const done = Math.max(0, total - remaining)
+  const reviewDone = total > 0 && remaining === 0
 
   const sheetRef = useRef<HTMLDialogElement>(null)
   const openCard = openId
@@ -77,7 +84,10 @@ export function ReviewPage() {
         // forgotIds 为空时无需等词库全量加载（ensurePictureWordsReady
         // 会拉 2315 词 / 1.2MB，国内网络下可能数秒）——直接显示空状态。
         if (progress.forgotIds.length === 0) {
-          if (!cancelled) setListed([])
+          if (!cancelled) {
+            setListed([])
+            setLoading(false)
+          }
           return
         }
         const cards = await fetchPictureWordsByWords(progress.forgotIds)
@@ -124,7 +134,21 @@ export function ReviewPage() {
       <div className="relative h-full overflow-x-clip overflow-y-auto">
         <div className="mx-auto max-w-md px-4 pb-28">
         <StickyStageChrome>
-          <StageHeader title="复习" />
+          <StageHeader
+            title="复习"
+            trailing={
+              total > 0 ? (
+                <div className="flex items-center gap-1.5">
+                  <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
+                    {done} / {total}
+                  </p>
+                  <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
+                    待复习 {remaining}
+                  </p>
+                </div>
+              ) : undefined
+            }
+          />
         </StickyStageChrome>
         <p className="mt-3 text-center text-lg font-semibold tracking-[0.12em] text-rose">
           Forgot
@@ -136,7 +160,23 @@ export function ReviewPage() {
         </p>
 
         <div id="review-queue" className="pb-40">
-          {loading ? (
+          {reviewDone ? (
+            <div className="mt-16 rounded-2xl border border-gold/50 bg-cyc/80 px-4 py-6 text-center">
+              <p className="text-2xl font-semibold tracking-[0.06em] text-day">
+                复习完成
+              </p>
+              <p className="mx-auto mt-2 max-w-xs text-base font-medium leading-relaxed tracking-[0.02em] text-day/80">
+                {total} 个词已回到练习里，再练一次就算真正掌握
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/practice/pictures')}
+                className="mt-6 inline-flex min-h-14 min-w-[12rem] items-center justify-center rounded-2xl bg-day px-6 font-cue text-lg font-semibold tracking-[0.08em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day active:brightness-95"
+              >
+                继续练习
+              </button>
+            </div>
+          ) : loading ? (
             <div className="mt-16 rounded-2xl border border-gold/50 bg-cyc/80 px-4 py-5">
               <p className="text-center text-lg font-medium leading-snug tracking-[0.01em] text-day/85">
                 加载中…

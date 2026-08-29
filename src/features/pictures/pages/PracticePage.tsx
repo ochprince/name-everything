@@ -1,4 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PracticeCard } from '../components/PracticeCard'
 import {
   fetchPictureWordBatch,
@@ -30,17 +32,32 @@ import type { Card } from '../../../types/card'
 
 function WrapScreen({
   title,
+  subtitle,
+  trailing,
   action,
 }: {
   title: string
+  subtitle?: string
+  trailing?: ReactNode
   action?: { label: string; onClick: () => void }
 }) {
   return (
-    <StageShell header={<StageHeader backTo="/" title="词汇记忆" />}>
-      <div className="flex flex-1 flex-col items-center justify-center gap-8">
-        <p className="text-balance text-center text-3xl font-semibold tracking-[0.04em] text-day">
-          {title}
-        </p>
+    <StageShell
+      header={
+        <StageHeader backTo="/" title="词汇记忆" trailing={trailing} />
+      }
+    >
+      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4">
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-balance text-center text-3xl font-semibold tracking-[0.04em] text-day">
+            {title}
+          </p>
+          {subtitle ? (
+            <p className="max-w-xs text-center text-base font-medium leading-relaxed tracking-[0.02em] text-day/80">
+              {subtitle}
+            </p>
+          ) : null}
+        </div>
         {action ? (
           <button
             type="button"
@@ -57,6 +74,7 @@ function WrapScreen({
 
 export function PracticePage() {
   const { progress, update } = useProgress()
+  const navigate = useNavigate()
   const [batchCards, setBatchCards] = useState<Card[]>([])
   const [warmExtra, setWarmExtra] = useState<Card[]>([])
   const [loading, setLoading] = useState(() => !isPictureWordsReady())
@@ -244,8 +262,41 @@ export function PracticePage() {
   }
 
   if (reviewPrompt) {
-    return <WrapScreen title="请先复习" />
+    const batchStrong = batchCards.filter((card) =>
+      progress.strongIds.includes(card.id),
+    ).length
+    const batchForgot = batchCards.filter((card) =>
+      progress.forgotIds.includes(card.id),
+    ).length
+    const reviewCount = progress.forgotIds.length
+    return (
+      <WrapScreen
+        title="先过关，再继续"
+        subtitle={`本批 ${batchCards.length} 个词：已过关 ${batchStrong} · 待复习 ${batchForgot}。复习过关后会回到练习里，再练一次才算真正掌握。`}
+        trailing={
+          <div className="flex items-center gap-1.5">
+            <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
+              {view.gotInSet} / {view.denom}
+            </p>
+            {reviewCount > 0 ? (
+              <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
+                待复习 {reviewCount}
+              </p>
+            ) : null}
+          </div>
+        }
+        action={{
+          label: `去复习（${reviewCount}）`,
+          onClick: () => navigate('/review'),
+        }}
+      />
+    )
   }
+
+  const lastCardNote =
+    practicePool.length === 1 && progress.forgotIds.length > 0
+      ? `本批最后一张 · 练完还有 ${progress.forgotIds.length} 个待复习`
+      : undefined
 
   return (
     <main className="relative z-0 min-h-dvh bg-cyc">
@@ -256,6 +307,7 @@ export function PracticePage() {
           backTo="/"
           stageTitle="词汇记忆"
           progressLabel={`${view.gotInSet} / ${view.denom}`}
+          lastCardNote={lastCardNote}
           hintLangDefault={progress.settings.hintLang}
           autoSpeak={progress.settings.autoSpeak}
           thinkHoldMs={progress.settings.thinkHoldMs}

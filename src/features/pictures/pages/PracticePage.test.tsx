@@ -178,14 +178,30 @@ describe('PracticePage', () => {
     expect(screen.queryByRole('button', { name: '继续' })).not.toBeInTheDocument()
   })
 
-  it('shows 请先复习 when the batch is only forgot', async () => {
+  it('shows 先过关再继续 gate with review count when the batch is only forgot', async () => {
     saveProgress({
       ...defaultProgress(),
       forgotIds: TEST_PICTURE_CARDS.map((c) => c.id),
     })
     renderWithProgress(<PracticePage />)
     await waitFor(() => {
-      expect(screen.getByText('请先复习')).toBeInTheDocument()
+      expect(screen.getByText('先过关，再继续')).toBeInTheDocument()
+    })
+    expect(screen.getByRole('button', { name: '去复习（12）' })).toBeInTheDocument()
+    expect(screen.getByText('待复习 12')).toBeInTheDocument()
+    expect(screen.getByText('0 / 10')).toBeInTheDocument()
+  })
+
+  it('shows a last-card note when only one new card remains and review is pending', async () => {
+    saveProgress({
+      ...defaultProgress(),
+      forgotIds: TEST_PICTURE_CARDS.slice(0, 9).map((c) => c.id),
+    })
+    renderWithProgress(<PracticePage />)
+    await waitFor(() => {
+      expect(
+        screen.getByText('本批最后一张 · 练完还有 9 个待复习'),
+      ).toBeInTheDocument()
     })
   })
 })
