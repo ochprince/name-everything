@@ -1,7 +1,7 @@
 import type { Card } from '../../../types/card'
 import type { ProgressState } from '../lib/storage'
 
-export const BATCH_SIZE = 50
+export const BATCH_SIZE = 10
 
 export function buildPracticePool(
   batchCards: Card[],

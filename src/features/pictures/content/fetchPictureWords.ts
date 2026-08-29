@@ -51,8 +51,8 @@ export async function fetchPictureWordBatch(
 }
 
 /**
- * 延迟触发全量预热：首屏 50 词优先返回，全量加载延后 1.5s 再发，
- * 避免与首屏请求并发抢带宽（弱网下全量 4 个并发请求会拖慢 50 词）。
+ * 延迟触发全量预热：首屏当前批次优先返回，全量加载延后 1.5s 再发，
+ * 避免与首屏请求并发抢带宽（弱网下全量 4 个并发请求会拖慢首批）。
  */
 let warmupTimer: ReturnType<typeof setTimeout> | null = null
 function scheduleCatalogWarmup() {
@@ -87,7 +87,7 @@ async function fetchPictureWordRange(
       // 并入已加载词表 + IDB 增量缓存（均静默，失败不影响本次返回）
       mergeLoadedCards(cards)
       void mergeCachedPictureWords(rows).catch(() => {})
-      // 首屏 50 词已到手，延迟全量预热（不与本批抢带宽）
+      // 首屏当前批次已到手，延迟全量预热（不与本批抢带宽）
       scheduleCatalogWarmup()
       return cards
     } catch (err) {

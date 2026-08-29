@@ -63,7 +63,7 @@ describe('practicePool', () => {
     expect(needsReviewPrompt(batch, buildPracticePool(batch, [], p), p)).toBe(true)
   })
 
-  it('exports BATCH_SIZE 50', () => {
-    expect(BATCH_SIZE).toBe(50)
+  it('exports BATCH_SIZE 10', () => {
+    expect(BATCH_SIZE).toBe(10)
   })
 })

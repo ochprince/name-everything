@@ -34,7 +34,7 @@ export type ProgressState = {
   reviewUnseenCount: number
   currentCardId: string | null
   recentPracticeTag: string | null
-  /** Offset into picture_words.sort_order for the current 50-card batch. */
+  /** Offset into picture_words.sort_order for the current 10-card batch. */
   batchOffset: number
   streaks: { lastActiveDate: string | null; count: number }
   settings: {

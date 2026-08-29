@@ -210,14 +210,6 @@ export function PracticePage() {
     return <WrapScreen title="这一批都会了" />
   }
 
-  if (
-    batchFullyStrong(batchCards, progress) &&
-    batchCards.length > 0 &&
-    !catalogDone
-  ) {
-    return <WrapScreen title="加载中…" />
-  }
-
   if (view.wrap === 'pack') {
     return <WrapScreen title="这一批都会了" />
   }
@@ -240,6 +232,15 @@ export function PracticePage() {
         }}
       />
     )
+  }
+
+  if (
+    view.wrap === 'none' &&
+    batchFullyStrong(batchCards, progress) &&
+    batchCards.length > 0 &&
+    !catalogDone
+  ) {
+    return <WrapScreen title="加载中…" />
   }
 
   if (reviewPrompt) {
