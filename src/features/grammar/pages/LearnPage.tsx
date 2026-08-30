@@ -65,6 +65,7 @@ export function LearnPage() {
                 }}
                 label="报错本关"
                 hint="可反馈知识点问题，或建议补充游戏例句"
+                size="sm"
               />
               <ScoreBadge score={score} need={need} />
             </div>
