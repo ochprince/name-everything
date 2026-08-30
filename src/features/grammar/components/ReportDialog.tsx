@@ -14,6 +14,7 @@ export function ReportDialog({
   className = '',
   variant = 'icon',
   size = 'md',
+  hint,
 }: {
   target: ReportTarget
   label?: string
@@ -23,6 +24,8 @@ export function ReportDialog({
   variant?: 'icon' | 'text'
   /** md = size-9 (default elsewhere); sm = progress-pill height */
   size?: 'md' | 'sm'
+  /** Optional helper line under the dialog title (e.g. what kind of feedback is welcome). */
+  hint?: string
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const noteId = useId()
@@ -102,6 +105,11 @@ export function ReportDialog({
           <p id={`${noteId}-title`} className="text-lg font-semibold tracking-[0.06em]">
             {label}
           </p>
+          {hint ? (
+            <p className="text-sm font-medium leading-snug tracking-[0.02em] text-day/60">
+              {hint}
+            </p>
+          ) : null}
           <label className="flex flex-col gap-2 text-base font-medium tracking-[0.02em] text-day/80">
             反馈
             <textarea

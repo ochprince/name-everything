@@ -55,7 +55,20 @@ export function LearnPage() {
         <StageHeader
           backTo="/practice/grammar/learn"
           title={topic?.title_zh ?? '学习'}
-          trailing={<ScoreBadge score={score} need={need} />}
+          trailing={
+            <div className="flex items-center gap-1.5">
+              <ReportDialog
+                target={{
+                  asset_type: 'grammar_point',
+                  asset_id: level.grammar_point_id,
+                  level_id: level.id,
+                }}
+                label="报错本关"
+                hint="可反馈知识点问题，或建议补充游戏例句"
+              />
+              <ScoreBadge score={score} need={need} />
+            </div>
+          }
         />
       }
     >
