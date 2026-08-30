@@ -553,6 +553,10 @@ function FallingBoard({
 
     if (state.status === 'over') return
 
+    // 同步清空输入草稿：队列只剩当前句时 nextSentenceId 会回绕返回同一句，
+    // sentenceId 不变导致下方 useEffect 不触发，旧输入会残留到下一题。
+    setProduceDraft('')
+
     if (allQueueCleared) {
       setState((current) => (current ? { ...current, status: 'over' } : current))
       return
