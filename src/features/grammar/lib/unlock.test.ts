@@ -14,7 +14,7 @@ import {
   defaultGrammarProgress,
   saveGrammarProgress,
 } from './storage'
-import { levelsForChapter } from '../content/pack'
+import { levelsForChapter, playablesForLevel } from '../content/pack'
 
 describe('level unlock', () => {
   const simpleLevels = levelsForChapter('simple')
@@ -136,6 +136,45 @@ describe('level unlock', () => {
   it('clears 有更新 after passing again on expanded content', () => {
     const level = first!
     recordLevelScore(level.id, thresholdFor(level), thresholdFor(level))
+    expect(hasLevelContentUpdate(level.id, loadGrammarProgress())).toBe(false)
+    expect(levelListScoreLabel(level, loadGrammarProgress())).toMatch(/已过关$/)
+  })
+
+  it('shows 有更新 when sentences are replaced after a pass (same count)', () => {
+    // 内容替换：数量不变（分数仍等于总数）但句子 id 变了——不能直接显示
+    // 「已过关」，要标「有更新」；关卡本身保持解锁（通过态优先，不受影响）。
+    const level = first!
+    const total = playableCountForLevel(level.id)
+    const realIds = playablesForLevel(level.id).map((sentence) => sentence.id)
+    saveGrammarProgress({
+      ...defaultGrammarProgress(),
+      passedLevelIds: [level.id],
+      highScores: { [level.id]: total },
+      passedSentenceCounts: { [level.id]: total },
+      passedSentenceIds: { [level.id]: [...realIds].reverse() },
+    })
+    expect(hasLevelContentUpdate(level.id, loadGrammarProgress())).toBe(true)
+    expect(levelListScoreLabel(level, loadGrammarProgress())).toBe(
+      `最高 ${total}/${total} · 有更新`,
+    )
+    // 关卡不重新上锁
+    expect(isLevelUnlocked(level, loadGrammarProgress())).toBe(true)
+  })
+
+  it('clears 有更新 after re-passing replaced content', () => {
+    const level = first!
+    const total = playableCountForLevel(level.id)
+    const realIds = playablesForLevel(level.id).map((sentence) => sentence.id)
+    saveGrammarProgress({
+      ...defaultGrammarProgress(),
+      passedLevelIds: [level.id],
+      highScores: { [level.id]: total },
+      passedSentenceCounts: { [level.id]: total },
+      passedSentenceIds: { [level.id]: [...realIds].reverse() },
+    })
+    expect(hasLevelContentUpdate(level.id, loadGrammarProgress())).toBe(true)
+    // 用新内容重刷满分 → 快照更新为当前句子 id → 有更新消失
+    recordLevelScore(level.id, total, thresholdFor(level))
     expect(hasLevelContentUpdate(level.id, loadGrammarProgress())).toBe(false)
     expect(levelListScoreLabel(level, loadGrammarProgress())).toMatch(/已过关$/)
   })

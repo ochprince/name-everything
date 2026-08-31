@@ -12,7 +12,7 @@ import {
   resetSentenceScores,
 } from './storage'
 import { defaultProgress, loadProgress, saveProgress } from '../../pictures/lib/storage'
-import { levelById } from '../content/pack'
+import { levelById, playablesForLevel } from '../content/pack'
 import { playableCountForLevel, thresholdFor } from './unlock'
 
 beforeEach(() => {
@@ -118,6 +118,9 @@ describe('grammar storage', () => {
     recordLevelScore(level!.id, thresholdFor(level!), thresholdFor(level!))
     expect(loadGrammarProgress().passedSentenceCounts[level!.id]).toBe(
       playableCountForLevel(level!.id),
+    )
+    expect(loadGrammarProgress().passedSentenceIds[level!.id]).toEqual(
+      playablesForLevel(level!.id).map((sentence) => sentence.id),
     )
   })
 

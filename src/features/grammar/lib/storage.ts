@@ -33,6 +33,12 @@ export type GrammarProgress = {
   passedLevelIds: string[]
   /** Sentence count in the level when the user last passed it. */
   passedSentenceCounts: Record<string, number>
+  /**
+   * Playable sentence ids in the level when the user last passed it。
+   * 与 passedSentenceCounts 互补：counts 只能识别「句子变多」，
+   * ids 快照还能识别「内容被替换」（数量不变但句子变了）。
+   */
+  passedSentenceIds: Record<string, string[]>
   lastPlayedLevelId: string | null
   arcadeHistory: ArcadeRecord[]
   arcadeTrophyCount: number
@@ -62,6 +68,7 @@ const EMPTY_PROGRESS: GrammarProgress = {
   highScores: {},
   passedLevelIds: [],
   passedSentenceCounts: {},
+  passedSentenceIds: {},
   lastPlayedLevelId: null,
   arcadeHistory: [],
   arcadeTrophyCount: 0,
@@ -81,6 +88,7 @@ function parseProgress(raw: string | null): GrammarProgress {
       highScores: value.highScores ?? {},
       passedLevelIds: value.passedLevelIds ?? [],
       passedSentenceCounts: value.passedSentenceCounts ?? {},
+      passedSentenceIds: value.passedSentenceIds ?? {},
       lastPlayedLevelId: value.lastPlayedLevelId ?? null,
       arcadeHistory: (value.arcadeHistory ?? []).map(normalizeArcadeRecord),
       arcadeTrophyCount: value.arcadeTrophyCount ?? 0,
@@ -179,14 +187,17 @@ export function recordLevelScore(levelId: string, score: number, threshold: numb
       ? [...current.passedLevelIds, levelId]
       : current.passedLevelIds
   const passedSentenceCounts = { ...current.passedSentenceCounts }
+  const passedSentenceIds = { ...current.passedSentenceIds }
   if (passed && score >= threshold) {
     passedSentenceCounts[levelId] = playablesForLevel(levelId).length
+    passedSentenceIds[levelId] = playablesForLevel(levelId).map((sentence) => sentence.id)
   }
   saveGrammarProgress({
     ...current,
     highScores,
     passedLevelIds,
     passedSentenceCounts,
+    passedSentenceIds,
     lastPlayedLevelId: levelId,
   })
 }

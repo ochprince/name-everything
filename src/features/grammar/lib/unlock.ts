@@ -68,6 +68,16 @@ export function hasLevelContentUpdate(
   const total = playableCountForLevel(levelId)
   const score = highScoreFor(levelId, progress)
   if (score < total) return true
+  // 句子被替换（数量不变但内容变了）：用通关时的句子 id 快照识别。
+  // 无快照的老数据回退到数量基线判断（只有「句子变多」一种情况）。
+  const passedIds = progress.passedSentenceIds?.[levelId]
+  if (passedIds) {
+    const currentIds = playablesForLevel(levelId).map((sentence) => sentence.id)
+    return !(
+      currentIds.length === passedIds.length &&
+      currentIds.every((id, index) => id === passedIds[index])
+    )
+  }
   return total > passedSentenceBaseline(levelId, progress)
 }
 
@@ -75,11 +85,13 @@ export function levelListScoreLabel(level: Level, progress: GrammarProgress): st
   const score = highScoreFor(level.id, progress)
   const total = playableCountForLevel(level.id)
 
-  if (score >= total && total > 0) {
-    return `最高 ${score} · 已过关`
-  }
+  // 有更新优先：内容变动（新增/替换）后即使分数仍达到总数（如替换后
+  // 重刷满分），也要显示「有更新」而非直接「已过关」。
   if (hasLevelContentUpdate(level.id, progress)) {
     return `最高 ${score}/${total} · 有更新`
+  }
+  if (score >= total && total > 0) {
+    return `最高 ${score} · 已过关`
   }
   return `最高 ${score}/${total}`
 }
