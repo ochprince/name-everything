@@ -1022,11 +1022,6 @@ function SentenceResultScreen({
               sentence.en
             )}
           </p>
-          {answerMarks ? (
-            <p className="mt-2 text-xs font-normal tracking-[0.02em] text-cyc/50">
-              蓝色 = 与答案不一致的位置；带划线 = 你多写的词
-            </p>
-          ) : null}
         </div>
         {!cleared && !gameOver ? (
           <div className="flex justify-center">
