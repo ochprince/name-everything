@@ -1,4 +1,4 @@
-const CONTRACTIONS: Array<[RegExp, string]> = [
+export const CONTRACTIONS: Array<[RegExp, string]> = [
   [/\bwon't\b/g, 'will not'],
   [/\bcan't\b/g, 'cannot'],
   [/\bshan't\b/g, 'shall not'],

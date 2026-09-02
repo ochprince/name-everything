@@ -62,6 +62,7 @@ import {
   MAX_WRONG_PER_SENTENCE,
 } from '../lib/engine'
 import { englishAnswersMatch } from '../lib/englishAnswerCompare'
+import { annotateAnswer } from '../lib/answerDiff'
 import { buildProduceHints } from '../lib/produceHints'
 import {
   arcadeEarnedTrophy,
@@ -89,6 +90,8 @@ type SentenceOutcome = 'cleared' | 'failed'
 type SentenceResult = {
   outcome: SentenceOutcome
   sentenceId: string
+  /** 输入模式失败时用户提交的原文——失败页据此标注差异位置。 */
+  userAttempt?: string
 }
 
 /** 提示底边落到底部蓝线时的进度（0→1 对应 start%→100%） */
@@ -534,7 +537,11 @@ function FallingBoard({
       playUiFail()
       if (sentenceRef.current) gsap.killTweensOf(sentenceRef.current)
       setState((current) => (current ? land(current) : current))
-      setSentenceResult({ outcome: 'failed', sentenceId: sentence.id })
+      setSentenceResult({
+        outcome: 'failed',
+        sentenceId: sentence.id,
+        userAttempt: trimmed,
+      })
       return
     }
 
@@ -628,6 +635,7 @@ function FallingBoard({
           mode={mode}
           outcome={sentenceResult.outcome}
           sentence={resultSentence}
+          userAttempt={sentenceResult.userAttempt}
           lives={state.lives}
           maxLives={maxLives}
           gameOver={state.status === 'over'}
@@ -905,6 +913,7 @@ function SentenceResultScreen({
   mode,
   outcome,
   sentence,
+  userAttempt,
   lives,
   maxLives,
   gameOver,
@@ -915,6 +924,8 @@ function SentenceResultScreen({
   mode: 'level' | 'arcade' | 'vocab'
   outcome: SentenceOutcome
   sentence: Sentence
+  /** 输入模式失败时用户提交的原文；存在才展示差异标注（蓝标/划线）。 */
+  userAttempt?: string
   lives: number
   maxLives: number
   gameOver: boolean
@@ -954,6 +965,13 @@ function SentenceResultScreen({
     if (cleared) fireSingleBurst(document.body)
   }, [cleared, sentence.id])
 
+  // 输入模式失败：以正确句为模板标注差异（蓝=没写对的词，划线=多写的词）。
+  // 判错归一化与展示同源，纯函数缓存一次即可。
+  const answerMarks = useMemo(
+    () => (userAttempt ? annotateAnswer(userAttempt, sentence.en) : null),
+    [userAttempt, sentence.en],
+  )
+
   return (
     <StageShell
       header={
@@ -984,8 +1002,31 @@ function SentenceResultScreen({
         <div className="rounded-2xl bg-day px-4 py-4 text-cyc">
           <p className="text-lg font-medium tracking-[0.02em] text-cyc/75">{sentence.zh}</p>
           <p className="mt-3 text-2xl font-medium leading-snug tracking-[0.01em]">
-            {sentence.en}
+            {answerMarks ? (
+              answerMarks.map((mark, index) => (
+                <span
+                  key={index}
+                  className={
+                    mark.kind === 'emph'
+                      ? 'text-cobalt'
+                      : mark.kind === 'strike'
+                        ? 'text-cobalt line-through'
+                        : undefined
+                  }
+                >
+                  {index > 0 ? ' ' : ''}
+                  {mark.text}
+                </span>
+              ))
+            ) : (
+              sentence.en
+            )}
           </p>
+          {answerMarks ? (
+            <p className="mt-2 text-xs font-normal tracking-[0.02em] text-cyc/50">
+              蓝色 = 与答案不一致的位置；带划线 = 你多写的词
+            </p>
+          ) : null}
         </div>
         {!cleared && !gameOver ? (
           <div className="flex justify-center">
