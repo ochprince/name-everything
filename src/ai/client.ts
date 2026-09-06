@@ -125,13 +125,14 @@ export async function completeText(
       }
     }
 
+    // supabase-js overload resolution: keep broadcast filter typed loosely
     channel
       .on(
         'broadcast',
         { event: 'done' },
-        (msg: { payload?: AiDonePayload }) => {
+        ((msg: { payload?: AiDonePayload }) => {
           if (msg.payload) settlePayload(msg.payload)
-        },
+        }) as Parameters<typeof channel.on>[2],
       )
       .subscribe()
 
