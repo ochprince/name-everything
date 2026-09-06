@@ -58,6 +58,7 @@ ssh aliyun
 cd /opt/name-everything
 git pull --ff-only origin main
 npm ci
+systemctl daemon-reload
 systemctl restart name-everything-ai-worker
 ```
 
