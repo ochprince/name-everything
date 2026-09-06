@@ -142,7 +142,7 @@ describe('processClaimedJob', () => {
   it('completes on generate success', async () => {
     const store = makeStore()
     await processClaimedJob(baseJob(), {
-      quota: quota(),
+      quota: quota({ allowDeviceIds: ['dev-a'] }),
       store,
       generateText: vi.fn(async () => ({
         text: 'world',
@@ -151,7 +151,7 @@ describe('processClaimedJob', () => {
       })),
       apiKey: 'k',
     })
-    expect(store.occupyCalls).toEqual(['dev-a'])
+    expect(store.occupyCalls).toEqual([])
     expect(store.finishCalls[0]).toMatchObject({
       status: 'completed',
       output: { text: 'world', model: 'qwen3.8-flash' },
@@ -161,7 +161,7 @@ describe('processClaimedJob', () => {
   it('maps model_timeout', async () => {
     const store = makeStore()
     await processClaimedJob(baseJob(), {
-      quota: quota(),
+      quota: quota({ allowDeviceIds: ['dev-a'] }),
       store,
       generateText: vi.fn(async () => {
         throw new Error('model_timeout')

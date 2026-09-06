@@ -1,12 +1,25 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { AI_ALLOW_DEVICE_IDS_KEY } from '../src/ai/configKeys'
 import { jobChannelName, type AiDonePayload } from '../src/ai/types'
-import type { QuotaSnapshot } from './quota'
+import { parseAllowDeviceIdsValue, type QuotaSnapshot } from './quota'
 import type { JobStore } from './jobs'
 
 function utcDayStartIso(now = new Date()): string {
   return new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
   ).toISOString()
+}
+
+export async function loadAllowDeviceIds(
+  supabase: SupabaseClient,
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('app_config')
+    .select('value')
+    .eq('key', AI_ALLOW_DEVICE_IDS_KEY)
+    .maybeSingle()
+  if (error) throw error
+  return parseAllowDeviceIdsValue(data?.value)
 }
 
 export function createSupabaseStore(supabase: SupabaseClient): JobStore {

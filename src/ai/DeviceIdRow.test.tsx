@@ -3,6 +3,12 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { DEVICE_ID_STORAGE_KEY } from './deviceId'
 import { DeviceIdRow } from './DeviceIdRow'
 
+vi.mock('./allowance', () => ({
+  isAiAllowed: vi.fn(async () => false),
+}))
+
+import { isAiAllowed } from './allowance'
+
 describe('DeviceIdRow', () => {
   const writeText = vi.fn().mockResolvedValue(undefined)
 
@@ -13,16 +19,17 @@ describe('DeviceIdRow', () => {
       'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
     )
     writeText.mockClear()
+    vi.mocked(isAiAllowed).mockResolvedValue(false)
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
       value: { writeText },
     })
   })
 
-  it('shows the 设备码 section and copies the full id', async () => {
+  it('shows the 设备码 section, 未开通, and copies the full id', async () => {
     render(<DeviceIdRow />)
     expect(screen.getByText('设备码')).toBeInTheDocument()
-    expect(screen.getByText('发给管理员以开通 AI 功能')).toBeInTheDocument()
+    expect(await screen.findByText(/未开通/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '复制' }))
     await waitFor(() => {
       expect(writeText).toHaveBeenCalledWith(
@@ -32,5 +39,11 @@ describe('DeviceIdRow', () => {
     expect(
       await screen.findByRole('button', { name: '已复制' }),
     ).toBeInTheDocument()
+  })
+
+  it('shows 已开通 when allowed', async () => {
+    vi.mocked(isAiAllowed).mockResolvedValue(true)
+    render(<DeviceIdRow />)
+    expect(await screen.findByText(/已开通/)).toBeInTheDocument()
   })
 })

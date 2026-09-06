@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProgress } from '../test/renderWithProgress'
@@ -10,6 +10,10 @@ import {
 } from '../features/pictures/lib/storage'
 import { MePage } from './MePage'
 import { subscribeToasts } from '../features/pictures/lib/toast'
+
+vi.mock('../ai/allowance', () => ({
+  isAiAllowed: vi.fn(async () => false),
+}))
 
 beforeEach(() => {
   localStorage.clear()
@@ -49,10 +53,11 @@ describe('MePage', () => {
     expect(screen.getByText('4')).toBeInTheDocument()
   })
 
-  it('shows 设备码 section for AI allow-list', () => {
+  it('shows 设备码 section for AI allow-list', async () => {
     renderWithProgress(<MePage />)
     expect(screen.getByText('设备码')).toBeInTheDocument()
-    expect(screen.getByText('发给管理员以开通 AI 功能')).toBeInTheDocument()
+    expect(screen.getByText(/发给管理员以开通 AI 功能/)).toBeInTheDocument()
+    expect(await screen.findByText(/未开通/)).toBeInTheDocument()
   })
 
   it('writes hintLang into progress.settings', async () => {

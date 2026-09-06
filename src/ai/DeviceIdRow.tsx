@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { isAiAllowed } from './allowance'
 import { getOrCreateDeviceId } from './deviceId'
 
 const holdButton =
@@ -27,13 +28,19 @@ async function copyText(text: string): Promise<void> {
 export function DeviceIdRow() {
   const id = getOrCreateDeviceId()
   const [copied, setCopied] = useState(false)
+  const [allowed, setAllowed] = useState<boolean | null>(null)
   const timer = useRef<number | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+    void isAiAllowed(id).then((ok) => {
+      if (!cancelled) setAllowed(ok)
+    })
     return () => {
+      cancelled = true
       if (timer.current !== null) window.clearTimeout(timer.current)
     }
-  }, [])
+  }, [id])
 
   async function onCopy() {
     await copyText(id)
@@ -42,11 +49,15 @@ export function DeviceIdRow() {
     timer.current = window.setTimeout(() => setCopied(false), 1500)
   }
 
+  const statusLabel =
+    allowed === null ? '查询中…' : allowed ? '已开通' : '未开通'
+
   return (
     <div className="mt-14 flex flex-col gap-3">
       <p className="text-lg font-medium tracking-[0.04em] text-day">设备码</p>
       <p className="text-base font-medium tracking-[0.02em] text-day/80">
         发给管理员以开通 AI 功能
+        <span className="text-day/50"> · {statusLabel}</span>
       </p>
       <p className="font-mono text-sm tracking-[0.04em] text-day/70">
         {truncateId(id)}

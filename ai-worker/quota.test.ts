@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   evaluateQuota,
+  parseAllowDeviceIdsValue,
   parseQuotaConfig,
   type QuotaConfig,
   type QuotaSnapshot,
@@ -25,23 +26,35 @@ const baseConfig = (over: Partial<QuotaConfig> = {}): QuotaConfig => ({
   ...over,
 })
 
+describe('parseAllowDeviceIdsValue', () => {
+  it('parses a json string array', () => {
+    expect(parseAllowDeviceIdsValue([' a ', 'b', ''])).toEqual(['a', 'b'])
+  })
+
+  it('returns empty for non-arrays', () => {
+    expect(parseAllowDeviceIdsValue(null)).toEqual([])
+    expect(parseAllowDeviceIdsValue({ x: 1 })).toEqual([])
+    expect(parseAllowDeviceIdsValue('nope')).toEqual([])
+  })
+})
+
 describe('parseQuotaConfig', () => {
-  it('uses defaults', () => {
+  it('uses defaults without env allow list', () => {
     expect(parseQuotaConfig({})).toEqual(baseConfig())
   })
 
-  it('parses allow list and zeros', () => {
+  it('parses numeric quotas and ignores env allow list', () => {
     expect(
       parseQuotaConfig({
         AI_QUOTA_MAX_USERS: '0',
-        AI_QUOTA_ALLOW_DEVICE_IDS: ' a , b ',
+        AI_QUOTA_ALLOW_DEVICE_IDS: 'a,b',
         AI_QUOTA_PER_USER_PER_DAY: '10',
         AI_QUOTA_PER_USER_PER_MINUTE: '0',
         AI_QUOTA_GLOBAL_PER_MINUTE: '5',
       }),
     ).toEqual({
       maxUsers: 0,
-      allowDeviceIds: ['a', 'b'],
+      allowDeviceIds: [],
       perUserPerDay: 10,
       perUserPerMinute: 0,
       globalPerMinute: 5,
@@ -50,6 +63,10 @@ describe('parseQuotaConfig', () => {
 })
 
 describe('evaluateQuota', () => {
+  it('rejects everyone when allow list is empty', () => {
+    expect(evaluateQuota(baseConfig(), baseSnap())).toBe('quota_users')
+  })
+
   it('rejects unknown device when allow list is set', () => {
     expect(
       evaluateQuota(
@@ -59,37 +76,19 @@ describe('evaluateQuota', () => {
     ).toBe('quota_users')
   })
 
-  it('allows listed device even when seats full', () => {
+  it('allows listed device', () => {
     expect(
       evaluateQuota(
-        baseConfig({ allowDeviceIds: ['dev-a'], maxUsers: 1 }),
-        baseSnap({ deviceCount: 99, knownDevice: false }),
+        baseConfig({ allowDeviceIds: ['dev-a'] }),
+        baseSnap(),
       ),
     ).toBe('ok')
   })
 
-  it('rejects new device when maxUsers reached', () => {
+  it('enforces daily limit for listed devices', () => {
     expect(
       evaluateQuota(
-        baseConfig({ maxUsers: 2 }),
-        baseSnap({ deviceCount: 2, knownDevice: false }),
-      ),
-    ).toBe('quota_users')
-  })
-
-  it('allows known device when seats full', () => {
-    expect(
-      evaluateQuota(
-        baseConfig({ maxUsers: 2 }),
-        baseSnap({ deviceCount: 2, knownDevice: true }),
-      ),
-    ).toBe('ok')
-  })
-
-  it('enforces daily limit', () => {
-    expect(
-      evaluateQuota(
-        baseConfig({ perUserPerDay: 3 }),
+        baseConfig({ allowDeviceIds: ['dev-a'], perUserPerDay: 3 }),
         baseSnap({ userJobsLastDay: 3 }),
       ),
     ).toBe('quota_daily')
@@ -98,7 +97,7 @@ describe('evaluateQuota', () => {
   it('enforces per-user minute limit', () => {
     expect(
       evaluateQuota(
-        baseConfig({ perUserPerMinute: 2 }),
+        baseConfig({ allowDeviceIds: ['dev-a'], perUserPerMinute: 2 }),
         baseSnap({ userJobsLastMinute: 2 }),
       ),
     ).toBe('rate_limited')
@@ -107,23 +106,23 @@ describe('evaluateQuota', () => {
   it('enforces global minute limit', () => {
     expect(
       evaluateQuota(
-        baseConfig({ globalPerMinute: 5 }),
+        baseConfig({ allowDeviceIds: ['dev-a'], globalPerMinute: 5 }),
         baseSnap({ globalJobsLastMinute: 5 }),
       ),
     ).toBe('rate_limited')
   })
 
-  it('allows everything when limits are zero', () => {
+  it('skips numeric limits when they are zero', () => {
     expect(
       evaluateQuota(
         baseConfig({
+          allowDeviceIds: ['dev-a'],
           maxUsers: 0,
           perUserPerDay: 0,
           perUserPerMinute: 0,
           globalPerMinute: 0,
         }),
         baseSnap({
-          deviceCount: 999,
           userJobsLastDay: 999,
           userJobsLastMinute: 999,
           globalJobsLastMinute: 999,

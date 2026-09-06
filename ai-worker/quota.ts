@@ -33,18 +33,22 @@ function parseNonNegInt(
   return Math.floor(n)
 }
 
+/** Parse `app_config.value` for `ai.allow_device_ids`. */
+export function parseAllowDeviceIdsValue(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
 export function parseQuotaConfig(
   env: Record<string, string | undefined>,
 ): QuotaConfig {
-  const allowRaw = env.AI_QUOTA_ALLOW_DEVICE_IDS ?? ''
-  const allowDeviceIds = allowRaw
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-
   return {
     maxUsers: parseNonNegInt(env.AI_QUOTA_MAX_USERS, DEFAULTS.maxUsers),
-    allowDeviceIds,
+    // Allow list lives in app_config; env is ignored.
+    allowDeviceIds: [],
     perUserPerDay: parseNonNegInt(
       env.AI_QUOTA_PER_USER_PER_DAY,
       DEFAULTS.perUserPerDay,
@@ -64,13 +68,7 @@ export function evaluateQuota(
   config: QuotaConfig,
   snap: QuotaSnapshot,
 ): 'ok' | 'quota_users' | 'quota_daily' | 'rate_limited' {
-  if (config.allowDeviceIds.length > 0) {
-    if (!config.allowDeviceIds.includes(snap.deviceId)) return 'quota_users'
-  } else if (
-    config.maxUsers > 0 &&
-    !snap.knownDevice &&
-    snap.deviceCount >= config.maxUsers
-  ) {
+  if (!config.allowDeviceIds.includes(snap.deviceId)) {
     return 'quota_users'
   }
 

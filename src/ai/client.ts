@@ -1,4 +1,5 @@
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase'
+import { isAiAllowed } from './allowance'
 import {
   jobChannelName,
   type AiDonePayload,
@@ -58,6 +59,10 @@ export async function completeText(
     throw new Error(
       'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.',
     )
+  }
+
+  if (!(await isAiAllowed(options.deviceId))) {
+    throw new AiJobError('quota_users')
   }
 
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS

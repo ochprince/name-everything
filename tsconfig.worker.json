@@ -17,5 +17,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["ai-worker", "src/ai/types.ts"]
+  "include": ["ai-worker", "src/ai/types.ts", "src/ai/configKeys.ts"]
 }

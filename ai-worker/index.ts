@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { loadWorkerConfig } from './config'
 import { processClaimedJob, type AiJobRow } from './jobs'
 import { generateText } from './qwen'
-import { createSupabaseStore } from './store'
+import { createSupabaseStore, loadAllowDeviceIds } from './store'
 
 async function loop(): Promise<void> {
   const cfg = loadWorkerConfig()
@@ -10,6 +10,8 @@ async function loop(): Promise<void> {
   const store = createSupabaseStore(supabase)
 
   for (;;) {
+    cfg.quota.allowDeviceIds = await loadAllowDeviceIds(supabase)
+
     await store.deleteTerminalOlderThan(7 * 24 * 60 * 60 * 1000)
     const stale = await store.failStaleRunning(30_000)
     for (const payload of stale) await store.broadcast(payload)

@@ -10,7 +10,8 @@
 - **语法：** `chapters`、`grammar_points`、`levels`、`sentences`、`sentence_spans`、`slots`、`sentence_slot_refs`、`game_tuning`
 - **词汇：** `picture_words`。`ai_corrected` 为 `true` 表示该行的图 / 例句 / 例句音频已按报错替换过，不再是百词斩原始资料。
 - **报错：** `asset_reports`。用户在语法或词汇练习里提交报错时，本机一定会记下，「我的」可复制或下载。配了读库用的 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_PUBLISHABLE_KEY` 时，会同时写入此表。
-- **AI 队列：** `ai_jobs`（浏览器 INSERT `queued` 任务；VPS worker 领取并写回结果）。anon 只能 INSERT，不能 SELECT 列表；读单行走 RPC `get_ai_job(id)`；领取走 `claim_ai_job()`（仅 service role）。`ai_quota_devices` 记录先到先占的设备名额，anon 无权限。
+- **AI 队列：** `ai_jobs`（浏览器 INSERT `queued` 任务；VPS worker 领取并写回结果）。anon 只能 INSERT，不能 SELECT 列表；读单行走 RPC `get_ai_job(id)`；领取走 `claim_ai_job()`（仅 service role）。`ai_quota_devices` 为历史名额表，anon 无权限（准入已改走配置表）。
+- **通用配置：** `app_config(key, value jsonb)`。AI 设备名单键为 `ai.allow_device_ids`（字符串数组）；缺键或 `[]` = 无人可用。anon 无直接读写；用 RPC `ai_is_allowed(p_device_id)` 查询当前设备是否开通。
 
 ## 应用怎么读
 

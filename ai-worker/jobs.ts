@@ -82,10 +82,6 @@ export async function processClaimedJob(
     return
   }
 
-  if (quota.allowDeviceIds.length === 0) {
-    await store.occupyDevice(job.device_id)
-  }
-
   const raw = job.input
   if (!raw || typeof raw !== 'object') {
     await store.finishJob(job.id, { status: 'failed', error: 'model_error' })

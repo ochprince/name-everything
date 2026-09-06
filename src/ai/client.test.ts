@@ -7,6 +7,10 @@ const removeChannel = vi.fn()
 let broadcastCb: ((msg: { payload: Record<string, unknown> }) => void) | null =
   null
 
+vi.mock('./allowance', () => ({
+  isAiAllowed: vi.fn(async () => true),
+}))
+
 vi.mock('../lib/supabase', () => ({
   isSupabaseConfigured: vi.fn(() => true),
   getSupabase: () => ({
@@ -28,6 +32,7 @@ vi.mock('../lib/supabase', () => ({
   }),
 }))
 
+import { isAiAllowed } from './allowance'
 import { isSupabaseConfigured } from '../lib/supabase'
 
 describe('completeText', () => {
@@ -37,6 +42,7 @@ describe('completeText', () => {
     removeChannel.mockReset()
     broadcastCb = null
     vi.mocked(isSupabaseConfigured).mockReturnValue(true)
+    vi.mocked(isAiAllowed).mockResolvedValue(true)
   })
 
   it('throws when supabase is missing', async () => {
@@ -44,6 +50,14 @@ describe('completeText', () => {
     await expect(
       completeText({ input: 'hi', deviceId: 'd1' }),
     ).rejects.toThrow(/VITE_SUPABASE/)
+  })
+
+  it('rejects before insert when device is not allowed', async () => {
+    vi.mocked(isAiAllowed).mockResolvedValue(false)
+    await expect(
+      completeText({ input: 'hi', deviceId: 'd1' }),
+    ).rejects.toMatchObject({ code: 'quota_users' })
+    expect(insert).not.toHaveBeenCalled()
   })
 
   it('inserts a queued text job', async () => {
