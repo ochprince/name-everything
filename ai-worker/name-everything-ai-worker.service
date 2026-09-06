@@ -1,10 +1,11 @@
 [Unit]
-Description=Name Everything AI text worker
+Description=Name Everything AI job worker
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
+# Adjust WorkingDirectory / EnvironmentFile / ExecStart to your install path.
 WorkingDirectory=/opt/name-everything
 EnvironmentFile=/etc/name-everything/ai-worker.env
 ExecStart=/opt/name-everything/node_modules/.bin/tsx ai-worker/index.ts

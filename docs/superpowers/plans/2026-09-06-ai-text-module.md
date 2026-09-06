@@ -1109,7 +1109,7 @@ git commit -m "feat(ai): VPS worker 循环与 systemd 单元"
 
 Dashboard 确认：`ai_jobs`、`get_ai_job`、`claim_ai_job` 存在；anon 对 `ai_jobs` 无 SELECT。
 
-- [ ] **Step 2: SSH `root@<worker-host>`**
+- [ ] **Step 2: SSH 到 worker 主机**
 
 查看 Node 版本（需要 20+）、git clone 路径、是否已有 systemd。若无 clone：把仓库放到 `/opt/name-everything`。`npm ci`（或 `npm install`）。
 

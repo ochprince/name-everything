@@ -14,7 +14,7 @@
 | 项 | 选择 |
 |----|------|
 | 调用方 | GitHub Pages 浏览器（anon / publishable key） |
-| 生产者 | `root@<worker-host>` 上的常驻 worker，不对外开 HTTP、不需要域名和证书 |
+| 生产者 | 自管主机上的常驻 worker，不对外开 HTTP、不需要域名和证书 |
 | 通道 | 表 `ai_jobs` + public Realtime Broadcast + RPC 读单行 |
 | 结果 | 整段写回，不流式 |
 | 登录 | 不上。控量在 worker，限额全部可配置 |
@@ -133,7 +133,7 @@ Realtime：public 频道，不登录可订。频道名含 UUID，与 `get_ai_job
 - `client.responses.create({ model, input, instructions, reasoning: { effort: 'none' }, store: false })`
 - 取 `output_text`（或从 `output` 里 `type=message` 的文本拼接）
 
-机器：`<worker-host>`。**不监听端口**。出站 HTTPS 到 Supabase 与 DashScope。
+机器：自管 VPS / 服务器。**不监听端口**。出站 HTTPS 到 Supabase 与 DashScope。
 
 进程：`systemd` 单元 `name-everything-ai-worker`。密钥在服务器环境文件（如 `/etc/name-everything/ai-worker.env`），不进 Git、不加 `VITE_` 前缀、不进 GitHub Pages Secrets。
 

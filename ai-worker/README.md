@@ -1,97 +1,98 @@
 # AI Worker
 
-Backend worker for Name Everything's AI job queue.
+Name Everything 的 AI 任务队列 **生产者**。
 
-Static frontends (e.g. GitHub Pages) must not hold model API keys. This process runs on a private host you control: it claims jobs from Supabase, runs the matching capability, writes the result, and notifies waiting clients. The browser only enqueues work and waits (today via `completeText()`; image / speech can reuse the same protocol).
+静态前端（如 GitHub Pages）不能持有模型厂商密钥。本进程跑在你自管的机器上：从 Supabase 领取任务 → 按 `capability` 执行 → 写回结果并通知等待中的客户端。浏览器只负责入队与等待（当前入口是 `completeText()`；文生图 / 语音等可复用同一协议）。
 
-## Why
+## 为什么需要它
 
-| Role | Where | Responsibility |
-|------|--------|----------------|
-| Consumer | Browser (anon / publishable key) | `INSERT` into `ai_jobs`; wait on Realtime Broadcast + `get_ai_job` |
-| Producer | This worker (service role) | `claim_ai_job` → quota → provider call → `UPDATE` + Broadcast |
-| Queue | Supabase `ai_jobs` | Shared job shape: `capability`, `input`, `output`, `status` |
+| 角色 | 位置 | 职责 |
+|------|------|------|
+| 消费者 | 浏览器（anon / publishable key） | `INSERT` 进 `ai_jobs`；用 Realtime Broadcast + `get_ai_job` 等待 |
+| 生产者 | 本 worker（service role） | `claim_ai_job` → 限额 → 调厂商 API → `UPDATE` + Broadcast |
+| 队列 | Supabase `ai_jobs` | 统一任务形态：`capability`、`input`、`output`、`status` |
 
-Use this when the SPA has no trusted backend of its own, or the machine running models has no public HTTPS endpoint. Responses are written in one shot (not streamed) for simpler clients and free-tier Realtime limits.
+适合：SPA 没有可信后端，或跑模型的机器没有对外 HTTPS。结果整段写回（不流式），客户端更简单，也更贴合 Realtime 免费额度。
 
-## Capabilities
+## 能力（`capability`）
 
-| `capability` | Status | Notes |
-|--------------|--------|--------|
-| `text` | Implemented | DashScope OpenAI-compatible Responses API |
-| `image` | Stub | Rejected as `unsupported_capability` |
-| `tts` | Stub | Same |
+| 值 | 状态 | 说明 |
+|----|------|------|
+| `text` | 已实现 | DashScope OpenAI 兼容 Responses API |
+| `image` | 占位 | 入队后标 `unsupported_capability` |
+| `tts` | 占位 | 同上 |
 
-To add a capability: extend the shared types under `src/ai/`, accept a new `input` / `output` shape, and branch in the claim loop. The queue table and client wait path stay the same.
+新增能力：扩展 `src/ai/` 下的共享类型与 `input`/`output`，在领取循环里加分支即可；队列表与客户端等待路径可保持不变。
 
-## Requirements
+## 环境要求
 
 - Node.js 20+
-- Supabase project with the `ai_jobs` migrations applied (see `supabase/migrations/`)
-- Provider credentials for the capabilities you enable (today: DashScope for `text`)
-- A long-running host (VPS, home server, container, …) that can reach Supabase and the provider over HTTPS
+- 已应用 `ai_jobs` 相关 migration 的 Supabase 项目（见 `supabase/migrations/`）
+- 你启用的能力所对应的厂商密钥（当前 `text` 使用 DashScope）
+- 一台能出站访问 Supabase 与厂商 API 的常驻主机（VPS、家里机器、容器等）
 
-Never put `SUPABASE_SERVICE_ROLE_KEY` or provider keys in Vite / GitHub Pages secrets.
+切勿把 `SUPABASE_SERVICE_ROLE_KEY` 或厂商密钥放进 Vite / GitHub Pages Secrets。
 
-## Configuration
+## 配置
 
-Copy [`env.example`](./env.example) to a file **outside the repo** (or a local ignored path), set real values, and point your process manager at it. Suggested permissions: `600`.
+复制 [`env.example`](./env.example) 到**仓库外**的环境文件（或已被 ignore 的本地路径），填入真实值，并由进程管理器加载。建议权限 `600`。
 
-| Variable | Description |
-|----------|-------------|
-| `SUPABASE_URL` | Same project URL as the web app |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (bypasses RLS; server only) |
-| `DASHSCOPE_API_KEY` | Key for the current `text` provider (add more vars when you add providers) |
-| `AI_QUOTA_MAX_USERS` | Max distinct `device_id`s (first-come). `0` = unlimited. Ignored when the allow-list is set |
-| `AI_QUOTA_ALLOW_DEVICE_IDS` | Comma-separated device allow-list. Non-empty → only those ids |
-| `AI_QUOTA_PER_USER_PER_DAY` | Per-device daily cap (UTC). `0` = unlimited |
-| `AI_QUOTA_PER_USER_PER_MINUTE` | Per-device per-minute cap. `0` = unlimited |
-| `AI_QUOTA_GLOBAL_PER_MINUTE` | Global per-minute cap. `0` = unlimited |
+| 变量 | 含义 |
+|------|------|
+| `SUPABASE_URL` | 与 Web 应用同一项目的 URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | service role（绕过 RLS，仅服务端） |
+| `DASHSCOPE_API_KEY` | 当前 `text` 能力的密钥（其它厂商另增变量） |
+| `AI_QUOTA_MAX_USERS` | 不同 `device_id` 数量上限（先到先占）。`0` = 不限。有白名单时忽略 |
+| `AI_QUOTA_ALLOW_DEVICE_IDS` | **逗号分隔**的设备白名单。非空则只放行名单内 id |
+| `AI_QUOTA_PER_USER_PER_DAY` | 每设备每天上限（UTC）。`0` = 不限 |
+| `AI_QUOTA_PER_USER_PER_MINUTE` | 每设备每分钟上限。`0` = 不限 |
+| `AI_QUOTA_GLOBAL_PER_MINUTE` | 全站每分钟上限。`0` = 不限 |
 
-Allow-list example:
+白名单示例：
 
 ```bash
 AI_QUOTA_ALLOW_DEVICE_IDS=<device-uuid-1>,<device-uuid-2>
 ```
 
-Learners copy a device id from **Me → 设备码** in the app; operators add it to the allow-list and restart the worker. Quotas are per device across all capabilities.
+学习者在应用「我的 → 设备码」复制编号；运营者写入白名单后重启 worker。限额按设备统计，与具体 `capability` 无关。
 
-## Development
+## 本地开发
 
-From the repository root, with the env vars above exported (or loaded by your shell):
+在仓库根目录，导出上述环境变量后：
 
 ```bash
 npm install
 npm run ai-worker
 ```
 
-Unit tests:
+单测：
 
 ```bash
 npx vitest run ai-worker src/ai
 ```
 
-## Deploy (example: systemd)
+## 部署示例（systemd）
 
-Paths and hostnames are yours to choose. The unit file in this folder is a template—adjust `WorkingDirectory`, `EnvironmentFile`, and `ExecStart` before installing.
+主机与路径由你自定。本目录的 unit 文件是模板，安装前请改 `WorkingDirectory`、`EnvironmentFile`、`ExecStart`。
 
 ```bash
-# On the worker host
-git clone <this-repo> /path/to/name-everything
+# 在 worker 主机上
+git clone <本仓库> /path/to/name-everything
 cd /path/to/name-everything
 npm ci
 
+mkdir -p /etc/name-everything
 cp ai-worker/env.example /etc/name-everything/ai-worker.env
 chmod 600 /etc/name-everything/ai-worker.env
-# edit secrets and quotas
+# 编辑密钥与限额
 
 cp ai-worker/name-everything-ai-worker.service /etc/systemd/system/
-# edit paths in the unit if needed
+# 按实际路径修改 unit
 systemctl daemon-reload
 systemctl enable --now name-everything-ai-worker
 ```
 
-Update:
+更新代码：
 
 ```bash
 cd /path/to/name-everything
@@ -101,14 +102,14 @@ systemctl daemon-reload
 systemctl restart name-everything-ai-worker
 ```
 
-Quota / allow-list only:
+只改限额 / 白名单：
 
 ```bash
-# edit EnvironmentFile
+# 编辑 EnvironmentFile 后
 systemctl restart name-everything-ai-worker
 ```
 
-Useful commands:
+常用命令：
 
 ```bash
 systemctl status name-everything-ai-worker --no-pager
@@ -116,24 +117,24 @@ journalctl -u name-everything-ai-worker -n 80 --no-pager
 journalctl -u name-everything-ai-worker -f
 ```
 
-## Smoke test
+## 冒烟测试
 
-With the web app's publishable Supabase vars in `.env.local` and a running worker:
+`.env.local` 已配置 Web 端 publishable Supabase 变量，且 worker 在跑时：
 
 ```bash
 npx tsx scripts/ai-text-smoke.ts
 ```
 
-Expect a non-empty `text:` within a few seconds. `quota_users` usually means the smoke `device_id` is not on the allow-list (`AI_SMOKE_DEVICE_ID` overrides it).
+数秒内应出现非空 `text:`。若为 `quota_users`，多半是 smoke 用的 `device_id` 不在白名单（可用 `AI_SMOKE_DEVICE_ID` 覆盖）。
 
-## Job error codes
+## 任务错误码
 
-Stored on `ai_jobs.error`:
+写入 `ai_jobs.error`：
 
 `quota_users` · `quota_daily` · `rate_limited` · `input_too_large` · `unsupported_capability` · `model_timeout` · `model_error` · `worker_stale`
 
-## Security notes
+## 安全说明
 
-- Publishable / anon keys are public by design; RLS must keep `ai_jobs` insert-only for clients and forbid listing.
-- Service role and provider keys stay on the worker host only—never commit them.
-- Device ids are not strong identity; use the allow-list and global caps to limit abuse.
+- publishable / anon key 本就会出现在前端；靠 RLS 限制客户端只能 INSERT、不能列表。
+- service role 与厂商密钥只留在 worker 主机，绝不提交进 Git。
+- `device_id` 不是强身份；用白名单与全局限额控制滥用。
