@@ -39,3 +39,4 @@ supabase/backups/*
 .impeccable/
 
 .worktrees/
+tmp/
