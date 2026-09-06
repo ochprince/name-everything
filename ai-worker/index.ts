@@ -14,14 +14,15 @@ async function loop(): Promise<void> {
     const stale = await store.failStaleRunning(30_000)
     for (const payload of stale) await store.broadcast(payload)
 
-    const { data: job, error } = await supabase.rpc('claim_ai_job')
+    const { data, error } = await supabase.rpc('claim_ai_job')
     if (error) throw error
+    const job = (Array.isArray(data) ? data[0] : data) as AiJobRow | null
     if (!job) {
       await new Promise((r) => setTimeout(r, cfg.pollMs))
       continue
     }
 
-    await processClaimedJob(job as AiJobRow, {
+    await processClaimedJob(job, {
       quota: cfg.quota,
       store,
       generateText,

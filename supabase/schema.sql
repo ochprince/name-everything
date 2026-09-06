@@ -236,7 +236,7 @@ AS $$
 $$;
 
 CREATE OR REPLACE FUNCTION claim_ai_job()
-RETURNS ai_jobs
+RETURNS SETOF ai_jobs
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
@@ -252,7 +252,7 @@ BEGIN
   LIMIT 1;
 
   IF NOT FOUND THEN
-    RETURN NULL;
+    RETURN;
   END IF;
 
   UPDATE ai_jobs
@@ -261,7 +261,7 @@ BEGIN
   WHERE id = job.id
   RETURNING * INTO job;
 
-  RETURN job;
+  RETURN NEXT job;
 END;
 $$;
 
