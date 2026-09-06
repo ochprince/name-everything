@@ -2,7 +2,7 @@ import {
   AiJobError,
   completeText as defaultCompleteText,
 } from '../../../ai/client'
-import type { CompleteTextResult } from '../../../ai/client'
+import type { CompleteTextOptions, CompleteTextResult } from '../../../ai/client'
 
 export type ProduceGateMode = 'level' | 'arcade' | 'vocab'
 
@@ -109,12 +109,7 @@ export type JudgeProduceSentenceInput = {
   timeoutMs?: number
 }
 
-type CompleteTextFn = (options: {
-  input: string | unknown[]
-  instructions?: string
-  deviceId: string
-  timeoutMs?: number
-}) => Promise<CompleteTextResult>
+type CompleteTextFn = (options: CompleteTextOptions) => Promise<CompleteTextResult>
 
 export async function judgeProduceSentence(
   input: JudgeProduceSentenceInput,
