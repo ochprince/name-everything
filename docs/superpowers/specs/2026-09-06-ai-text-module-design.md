@@ -17,7 +17,7 @@
 | 生产者 | `root@<worker-host>` 上的常驻 worker，不对外开 HTTP、不需要域名和证书 |
 | 通道 | 表 `ai_jobs` + public Realtime Broadcast + RPC 读单行 |
 | 结果 | 整段写回，不流式 |
-| 登录 | 不上。控量在 worker：设备 id + 全局限额 |
+| 登录 | 不上。控量在 worker，限额全部可配置（人数、每用户每天次数、突发） |
 | 频道 | public，名 `ai-job:{jobId}`。UUID 即读票 |
 | 默认模型 | `qwen3.8-flash`；`reasoning.effort = none` |
 | 前端 API | `completeText({ input, instructions?, deviceId, timeoutMs? })` |
@@ -97,7 +97,8 @@ anon key 会出现在 Pages 包里。安全靠 GRANT + RLS，不靠藏 key。
 - anon：**不能 SELECT**（禁止 `select * from ai_jobs`）
 - `get_ai_job(p_id uuid) RETURNS ai_jobs`：`SECURITY DEFINER`，`GRANT EXECUTE TO anon`。知道 id 才能读一行
 - `claim_ai_job() RETURNS ai_jobs`：`SECURITY DEFINER`，无行可领时返回 NULL。`FOR UPDATE SKIP LOCKED` 取最早 `queued`，标 `running`。`REVOKE` public/anon/authenticated，只 `GRANT EXECUTE` 给 `service_role`
-- worker 用 **service role** UPDATE 终态，并用 service role 往 public 频道发广播
+- worker 用 **service role** UPDATE 终态、维护 `ai_quota_devices`，并往 public 频道发广播
+- `ai_quota_devices`：anon 无任何权限
 
 Realtime：public 频道，不登录可订。频道名含 UUID，与 `get_ai_job(id)` 同一把钥匙。漏订或刷新靠 RPC 回退。
 
@@ -143,24 +144,39 @@ Realtime：public 频道，不登录可订。频道名含 UUID，与 `get_ai_job
 2. 将 `running` 且 `claimed_at` 超过 30s 的行标 `failed`（`worker_stale`）并广播
 3. `claim_ai_job()`；空则等 ~200ms
 4. `image` / `tts` → `failed` / `unsupported_capability`，广播
-5. 限流不通过 → `rejected`，广播，不打模型
+5. 限额不通过 → `rejected`（`quota_users` / `quota_daily` / `rate_limited`），广播，不打模型
 6. `input` 过大 → `rejected` / `input_too_large`
 7. 调千问，硬超时 12s；429/5xx 再试 1 次
 8. 成功 `completed` + `output`；失败 `failed` + `error`
 9. 广播 event `done`，payload 为 `{ id, status, text?, error? }`（成功带 `text`，失败带 `error`）。单条远小于免费版 256KB。前端订到即可结束等待；RPC 只用于漏听或刷新。
 
-## 限流（worker，调模型前）
+## 限额（worker，调模型前）
 
-可环境变量覆盖，默认：
+限额只存在 worker 配置里（VPS 环境文件），前端不可信、也不下发。无登录时「用户」= `device_id`。改配额只改配置并重启 worker，不改表、不改 Pages。
 
-| 维度 | 默认 |
-|------|------|
-| 单 `device_id` | 20 次 / 60s，200 次 / 日（UTC） |
-| 全局 | 60 次 / 60s |
+配置项与默认值：
 
-超额：`rejected`，`error = rate_limited`。窗口内按 `created_at` 计所有已入库行（含随后被 `rejected` 的），避免连插绕过。
+| 配置 | 环境变量 | 默认 | 含义 |
+|------|----------|------|------|
+| `maxUsers` | `AI_QUOTA_MAX_USERS` | `20` | 允许多少个不同用户。`0` = 不限制人数 |
+| `allowDeviceIds` | `AI_QUOTA_ALLOW_DEVICE_IDS` | 空 | 逗号分隔白名单。非空时只放行这些 `device_id`，不再用先到先占 |
+| `perUserPerDay` | `AI_QUOTA_PER_USER_PER_DAY` | `50` | 每用户每天（UTC）可调用次数。`0` = 不限制 |
+| `perUserPerMinute` | `AI_QUOTA_PER_USER_PER_MINUTE` | `20` | 每用户每 60s，防连点。`0` = 不限制 |
+| `globalPerMinute` | `AI_QUOTA_GLOBAL_PER_MINUTE` | `60` | 全站每 60s。`0` = 不限制 |
 
-`device_id` 可伪造，接受这个代价以保持打开即练。全局上限兜底烧钱。
+占用名额：先到先占。表 `ai_quota_devices`（`device_id` PK、`first_seen_at`）由 worker 在领取后、调模型前写入。终态任务 7 天清理**不影响**名额，避免人数上限被删行冲掉。有白名单时不写占用逻辑，只校验 id 在名单内。
+
+判定顺序：白名单或不在 `maxUsers` 内 → 日限额 → 每分钟（用户 / 全局）。次数按 `ai_jobs.created_at` 计窗口内全部已入库行（含随后 `rejected` 的），避免连插绕过。
+
+超额一律 `rejected`，`error` 为：
+
+| 原因 | `error` |
+|------|---------|
+| 不在白名单，或人数已满 | `quota_users` |
+| 超过每天次数 | `quota_daily` |
+| 超过每分钟（用户或全局） | `rate_limited` |
+
+`device_id` 可伪造，接受这个代价以保持打开即练。人数上限 + 全局限额兜底烧钱。
 
 ## 超时
 
@@ -173,15 +189,15 @@ Realtime：public 频道，不登录可订。频道名含 UUID，与 `get_ai_job
 ## 测试
 
 - `src/ai/client.test.ts`：INSERT 形状；广播先到则返回；只有 RPC 也能返回；`failed`/`rejected`/超时抛错
-- `ai-worker` 单测（mock 千问与 Supabase）：限流、`unsupported_capability`、僵尸 `running`、成功写回
+- `ai-worker` 单测（mock 千问与 Supabase）：人数上限、白名单、日限额、每分钟限流、`unsupported_capability`、僵尸 `running`、成功写回
 - 真机验收（实现末）：本机或 VPS 插一条 `text` 任务，秒级看到 `completed`。不改 App 页面
 
 ## 文档（实现时改，不另开范围）
 
-- `DATABASE.md`：`ai_jobs`、两条 RPC、anon 只能插
-- `.env.example`：注明 worker 密钥只在 VPS，Pages 不新增 Vite 变量
+- `DATABASE.md`：`ai_jobs`、`ai_quota_devices`、两条 RPC、anon 只能插 `ai_jobs`
+- `.env.example`：注明 worker 密钥与限额只在 VPS，Pages 不新增 Vite 变量
 - `MANIFEST.md` / `README.md`：本期无用户可见能力，不改
 
 ## 错误码（`error` 文本，稳定可测）
 
-`rate_limited` | `input_too_large` | `unsupported_capability` | `model_timeout` | `model_error` | `worker_stale`
+`quota_users` | `quota_daily` | `rate_limited` | `input_too_large` | `unsupported_capability` | `model_timeout` | `model_error` | `worker_stale`
