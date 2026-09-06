@@ -1,16 +1,26 @@
-# AI Worker（文生文生产者）
+# AI Worker（队列生产者）
 
-GitHub Pages 不能持有千问 Key。本目录是跑在阿里云 VPS 上的常驻进程：从 Supabase 队列领取任务 → 调 DashScope Responses API → 把结果写回并广播。浏览器侧只负责 `completeText()` 入队与等待。
+GitHub Pages 不能持有模型厂商密钥。本目录是跑在阿里云 VPS 上的常驻进程：从 Supabase 任务队列领取作业 → 按 `capability` 分发到对应实现 → 把结果写回并广播。浏览器只负责入队与等待（当前客户端入口是 `completeText()`；图 / 语音等可按同一协议扩展）。
 
 ## 目的
 
+把「任意 AI 能力调用」做成可复用底层：**Pages 消费、VPS 生产、Supabase 当无公网证书时的通信队列**，秒级整段写回。
+
 | 角色 | 位置 | 做什么 |
 |------|------|--------|
-| 调用方 / 消费者 | GitHub Pages | INSERT `ai_jobs`，订 Realtime / RPC 等结果 |
-| 生产者 | 本 worker（VPS） | `claim_ai_job` → 限额 → 千问 → UPDATE + Broadcast |
-| 队列 | Supabase | 无域名证书时的通信通道 |
+| 调用方 / 消费者 | GitHub Pages | INSERT `ai_jobs`，订 Realtime / RPC 等终态 |
+| 生产者 | 本 worker（VPS） | `claim_ai_job` → 限额 → 按能力执行 → UPDATE + Broadcast |
+| 队列 | Supabase `ai_jobs` | 统一任务协议（`capability` / `input` / `output` / `status`） |
 
-本期只实现 `capability = text`。`image` / `tts` 会标 `unsupported_capability`。
+协议里的 `capability`：
+
+| 值 | 本期 | 说明 |
+|----|------|------|
+| `text` | 已实现 | DashScope OpenAI 兼容 Responses（文生文） |
+| `image` | 占位 | 入队后标 `unsupported_capability`，接口形状已预留 |
+| `tts` | 占位 | 同上 |
+
+新增能力时：扩展 `capability` 与 `input`/`output` 形状，在领取循环里加分支；队列表与 Pages 入队通道不必推倒重来。
 
 ## 配置
 
@@ -20,7 +30,7 @@ GitHub Pages 不能持有千问 Key。本目录是跑在阿里云 VPS 上的常�
 |------|------|
 | `SUPABASE_URL` | 与 Pages 同一项目 URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | service role（绕过 RLS，仅本机） |
-| `DASHSCOPE_API_KEY` | 千问 / 百炼 API Key |
+| `DASHSCOPE_API_KEY` | 当前 text 能力所用的千问 / 百炼 Key（其它能力可另增变量） |
 | `AI_QUOTA_MAX_USERS` | 先到先占人数上限；`0` = 不限。有白名单时忽略 |
 | `AI_QUOTA_ALLOW_DEVICE_IDS` | **逗号分隔**的设备码白名单。非空则只放行名单内 id |
 | `AI_QUOTA_PER_USER_PER_DAY` | 每设备每天次数（UTC）；`0` = 不限 |
@@ -33,7 +43,7 @@ GitHub Pages 不能持有千问 Key。本目录是跑在阿里云 VPS 上的常�
 AI_QUOTA_ALLOW_DEVICE_IDS=aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee,ffffffff-1111-4222-8333-444444444444
 ```
 
-用户在 App「我的 → 设备码」复制后发给你，你追加进该变量并重启服务。
+用户在 App「我的 → 设备码」复制后发给你，你追加进该变量并重启服务。限额按设备统计，与具体 `capability` 无关（全站共用配额）。
 
 ## 本机开发
 
@@ -42,7 +52,7 @@ AI_QUOTA_ALLOW_DEVICE_IDS=aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee,ffffffff-1111-422
 npm run ai-worker
 ```
 
-需要已应用的 `ai_jobs` migration，以及上述三个密钥。
+需要已应用的 `ai_jobs` migration，以及上述密钥。
 
 ## VPS 部署（当前约定）
 
@@ -89,7 +99,7 @@ systemctl restart name-everything-ai-worker
 
 ## 验收
 
-本机（配好 `.env.local` 的 Vite Supabase 变量，且 worker 已在跑）：
+本机（配好 `.env.local` 的 Vite Supabase 变量，且 worker 已在跑）可跑 text 冒烟：
 
 ```bash
 npx tsx scripts/ai-text-smoke.ts
