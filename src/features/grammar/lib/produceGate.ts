@@ -18,13 +18,11 @@ const PARSE_FAIL_REASON = '暂时无法理解判定结果，请再提交一次�
 
 export function shouldEnterProduceGate(input: {
   mode: ProduceGateMode
-  levelPassed: boolean
   aiAllowed: boolean
   score: number
   threshold: number
 }): boolean {
   if (input.mode !== 'level') return false
-  if (input.levelPassed) return false
   if (!input.aiAllowed) return false
   if (!(input.score >= input.threshold && input.threshold > 0)) return false
   return true

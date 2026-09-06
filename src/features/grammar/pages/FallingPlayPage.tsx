@@ -88,7 +88,6 @@ import {
 import gsap from 'gsap'
 import {
   fallDurationFor,
-  isLevelPassed,
   isLevelUnlocked,
   livesFor,
   nextLevelAfter,
@@ -613,7 +612,6 @@ function FallingBoard({
 
     const enter = shouldEnterProduceGate({
       mode: 'level',
-      levelPassed: isLevelPassed(levelId, grammarProgress),
       aiAllowed: allowed === true,
       score,
       threshold,

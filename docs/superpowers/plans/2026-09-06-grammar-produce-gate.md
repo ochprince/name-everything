@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- 仅 `mode === 'level'`；已过关跳过；未开通 AI 跳过
+- 仅 `mode === 'level'`；未开通 AI 跳过；已过关同样进门闩
 - UI 不展示例句；不合格/错误可重试不扣命
 - 中文文档：`README.md` / `MANIFEST.md` / `NOTES.md`
 

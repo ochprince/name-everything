@@ -5,7 +5,7 @@
 
 ## 目标
 
-语法学习关卡（`mode === 'level'`）在练习句全部清完后，对**未过关**且**已开通 AI** 的设备追加一道开放造句门闩；AI 判定合格才记通关，合格句写入造句候选管道。
+语法学习关卡（`mode === 'level'`）在练习句全部清完后，对**已开通 AI** 的设备追加一道开放造句门闩（含已过关重打）；AI 判定合格才进结算并记分/通关，合格句写入造句候选管道。
 
 ## 决议
 
@@ -13,7 +13,7 @@
 |----|------|
 | 挂法 | 练习句清完后**追加**门闩（N+1），不替换课包句 |
 | 谁看见 | 仅 `isAiAllowed`；未开通 = 现有「清完即结算/过关」 |
-| 已过关 | `passedLevelIds` 含本关 → 不出现门闩（含「有更新」重刷） |
+| 已过关 | 同样追加门闩（重打也可造句沉淀） |
 | 不合格 | 留门闩改写再交；不扣命、不回练习句 |
 | 判定失败 | 超时/配额/网络等同交互：提示后可再交，不放行 |
 | 刺激物 | UI 只显示知识点 `title_zh` + `body_zh`，**不**展示例句 |
@@ -27,7 +27,7 @@
 
 ```
 练习句全清 + score≥threshold
-  → 已过关 OR 未开通 AI → status=over（现状）
+  → 未开通 AI → status=over（现状）
   → 否则 → produce_gate UI
        → 提交 → completeText 判题
        → pass → recordProduceCandidate → status=over
@@ -60,6 +60,6 @@ AI 返回可解析 JSON（允许包在 markdown 代码块里）：
 
 ## 测试要点
 
-- `shouldEnterProduceGate`：mode/过关/AI/分数组合
+- `shouldEnterProduceGate`：mode/AI/分数组合
 - 解析：裸 JSON、代码块、缺字段、非 JSON
 - 接线：清完 → 门闩 → 合格才 `recordLevelScore`；不合格不结算

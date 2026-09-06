@@ -8,11 +8,10 @@ import {
 } from './produceGate'
 
 describe('shouldEnterProduceGate', () => {
-  it('enters only for level, not passed, AI on, score met', () => {
+  it('enters for level when AI on and score met, including already passed', () => {
     expect(
       shouldEnterProduceGate({
         mode: 'level',
-        levelPassed: false,
         aiAllowed: true,
         score: 3,
         threshold: 3,
@@ -20,17 +19,7 @@ describe('shouldEnterProduceGate', () => {
     ).toBe(true)
     expect(
       shouldEnterProduceGate({
-        mode: 'level',
-        levelPassed: true,
-        aiAllowed: true,
-        score: 3,
-        threshold: 3,
-      }),
-    ).toBe(false)
-    expect(
-      shouldEnterProduceGate({
         mode: 'arcade',
-        levelPassed: false,
         aiAllowed: true,
         score: 3,
         threshold: 3,
@@ -39,7 +28,6 @@ describe('shouldEnterProduceGate', () => {
     expect(
       shouldEnterProduceGate({
         mode: 'vocab',
-        levelPassed: false,
         aiAllowed: true,
         score: 3,
         threshold: 3,
@@ -48,7 +36,6 @@ describe('shouldEnterProduceGate', () => {
     expect(
       shouldEnterProduceGate({
         mode: 'level',
-        levelPassed: false,
         aiAllowed: false,
         score: 3,
         threshold: 3,
@@ -57,7 +44,6 @@ describe('shouldEnterProduceGate', () => {
     expect(
       shouldEnterProduceGate({
         mode: 'level',
-        levelPassed: false,
         aiAllowed: true,
         score: 2,
         threshold: 3,
