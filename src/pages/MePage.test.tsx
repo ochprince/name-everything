@@ -52,7 +52,7 @@ describe('MePage', () => {
   it('shows 设备码 section for AI allow-list', () => {
     renderWithProgress(<MePage />)
     expect(screen.getByText('设备码')).toBeInTheDocument()
-    expect(screen.getByText('发给管理员以开通 AI')).toBeInTheDocument()
+    expect(screen.getByText('发给管理员以开通 AI 功能')).toBeInTheDocument()
   })
 
   it('writes hintLang into progress.settings', async () => {

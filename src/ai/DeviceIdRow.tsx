@@ -46,7 +46,7 @@ export function DeviceIdRow() {
     <div className="mt-14 flex flex-col gap-3">
       <p className="text-lg font-medium tracking-[0.04em] text-day">设备码</p>
       <p className="text-base font-medium tracking-[0.02em] text-day/80">
-        发给管理员以开通 AI
+        发给管理员以开通 AI 功能
       </p>
       <p className="font-mono text-sm tracking-[0.04em] text-day/70">
         {truncateId(id)}

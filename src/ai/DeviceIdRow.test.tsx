@@ -22,7 +22,7 @@ describe('DeviceIdRow', () => {
   it('shows the 设备码 section and copies the full id', async () => {
     render(<DeviceIdRow />)
     expect(screen.getByText('设备码')).toBeInTheDocument()
-    expect(screen.getByText('发给管理员以开通 AI')).toBeInTheDocument()
+    expect(screen.getByText('发给管理员以开通 AI 功能')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '复制' }))
     await waitFor(() => {
       expect(writeText).toHaveBeenCalledWith(
