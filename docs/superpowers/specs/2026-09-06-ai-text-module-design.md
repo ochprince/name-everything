@@ -5,7 +5,7 @@
 
 ## 目标
 
-在不把千问 Key 放进 GitHub Pages 的前提下，提供可复用的文生文调用。浏览器是调用方/消费者，VPS 上的 worker 是被调用方/生产者，Supabase 只做通信队列。本期只交底层（队列表 + worker + `completeText()`），不接语法中阶判定、问答、场景挑战，App 不露入口。
+在不把千问 Key 放进 GitHub Pages 的前提下，提供可复用的文生文调用。浏览器是调用方/消费者，VPS 上的 worker 是被调用方/生产者，Supabase 只做通信队列。本期交底层（队列表 + worker + `completeText()`）以及「我的」里一枚设备码复制，供管理员写入白名单后开通 AI。不接语法中阶判定、问答、场景挑战，不提供 AI 对话入口。
 
 同一套任务协议预留 `image` / `tts`，本期遇之立即失败，接口形状以后不改。
 
@@ -17,11 +17,12 @@
 | 生产者 | `root@47.113.191.179` 上的常驻 worker，不对外开 HTTP、不需要域名和证书 |
 | 通道 | 表 `ai_jobs` + public Realtime Broadcast + RPC 读单行 |
 | 结果 | 整段写回，不流式 |
-| 登录 | 不上。控量在 worker，限额全部可配置（人数、每用户每天次数、突发） |
-| 频道 | public，名 `ai-job:{jobId}`。UUID 即读票 |
+| 登录 | 不上。控量在 worker，限额全部可配置 |
+| 开通 | 用户在「我的」复制设备码发给管理员；管理员写入 `AI_QUOTA_ALLOW_DEVICE_IDS` 并重启 worker |
+| 频道 | public，名 `ai-job:{jobId}`。任务 UUID 即读票 |
 | 默认模型 | `qwen3.8-flash`；`reasoning.effort = none` |
 | 前端 API | `completeText({ input, instructions?, deviceId, timeoutMs? })` |
-| App UI | 无 |
+| App UI | 「我的」仅设备码复制，无 AI 对话入口 |
 
 ## 非目标
 
@@ -164,7 +165,9 @@ Realtime：public 频道，不登录可订。频道名含 UUID，与 `get_ai_job
 | `perUserPerMinute` | `AI_QUOTA_PER_USER_PER_MINUTE` | `20` | 每用户每 60s，防连点。`0` = 不限制 |
 | `globalPerMinute` | `AI_QUOTA_GLOBAL_PER_MINUTE` | `60` | 全站每 60s。`0` = 不限制 |
 
-占用名额：先到先占。表 `ai_quota_devices`（`device_id` PK、`first_seen_at`）由 worker 在领取后、调模型前写入。终态任务 7 天清理**不影响**名额，避免人数上限被删行冲掉。有白名单时不写占用逻辑，只校验 id 在名单内。
+**生产开通走白名单。** `allowDeviceIds` 非空时只放行名单内设备，忽略先到先占。空名单时仍可用 `maxUsers` 先到先占（方便本地冒烟）。正式给学习者用时应配置白名单，避免路人占名额。
+
+占用名额：先到先占。表 `ai_quota_devices`（`device_id` PK、`first_seen_at`）由 worker 在领取后、调模型前写入。终态任务 7 天清理**不影响**名额。有白名单时不写占用逻辑，只校验 id 在名单内。
 
 判定顺序：白名单或不在 `maxUsers` 内 → 日限额 → 每分钟（用户 / 全局）。次数按 `ai_jobs.created_at` 计窗口内全部已入库行（含随后 `rejected` 的），避免连插绕过。
 
@@ -178,6 +181,15 @@ Realtime：public 频道，不登录可订。频道名含 UUID，与 `get_ai_job
 
 `device_id` 可伪造，接受这个代价以保持打开即练。人数上限 + 全局限额兜底烧钱。
 
+## 「我的」设备码
+
+- 位置：节奏设置下方、语法报错上方。
+- 文案：标题「设备码」；一行说明「发给管理员以开通 AI」。
+- 控件：复制按钮（成功后短暂变成「已复制」）。剪贴板写入完整 `device_id`（`getOrCreateDeviceId()`，进页即生成并持久化）。
+- 展示：可截断显示，复制的必须是完整 UUID。
+- 复制实现与语法报错相同（`clipboard.writeText`，失败则隐藏 textarea + `execCommand`）。
+- 清站点数据后设备码会变，需重新发给管理员。
+
 ## 超时
 
 | 角色 | 时限 | 结果 |
@@ -190,13 +202,14 @@ Realtime：public 频道，不登录可订。频道名含 UUID，与 `get_ai_job
 
 - `src/ai/client.test.ts`：INSERT 形状；广播先到则返回；只有 RPC 也能返回；`failed`/`rejected`/超时抛错
 - `ai-worker` 单测（mock 千问与 Supabase）：人数上限、白名单、日限额、每分钟限流、`unsupported_capability`、僵尸 `running`、成功写回
-- 真机验收（实现末）：本机或 VPS 插一条 `text` 任务，秒级看到 `completed`。不改 App 页面
+- `src/pages/MePage.test.tsx`：有「设备码」；点复制后剪贴板为完整 id
+- 真机验收（实现末）：本机或 VPS 插一条 `text` 任务，秒级看到 `completed`；「我的」可复制设备码
 
 ## 文档（实现时改，不另开范围）
 
 - `DATABASE.md`：`ai_jobs`、`ai_quota_devices`、两条 RPC、anon 只能插 `ai_jobs`
 - `.env.example`：注明 worker 密钥与限额只在 VPS，Pages 不新增 Vite 变量
-- `MANIFEST.md` / `README.md`：本期无用户可见能力，不改
+- `MANIFEST.md` / `README.md`：「我的」增加设备码复制（开通 AI 用）
 
 ## 错误码（`error` 文本，稳定可测）
 
