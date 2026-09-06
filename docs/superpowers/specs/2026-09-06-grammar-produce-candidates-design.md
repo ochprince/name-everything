@@ -30,6 +30,6 @@ AI 判定合格的造句沉淀为**候选资产**（非正式题库），本机�
 
 `grammar-produce-ingest`：输入候选 → 审质量 → 补 span/slots → migration 挂到目标 level。不 UPDATE staging。
 
-## 非本期
+## 接线
 
-关卡末题 UI、判题 prompt、门闩接线；实现时调用 `recordProduceCandidate` 即可。
+关卡末题门闩见 `2026-09-06-grammar-produce-gate-design.md`；判定合格后调用 `recordProduceCandidate`。

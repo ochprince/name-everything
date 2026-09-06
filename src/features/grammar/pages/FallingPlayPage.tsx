@@ -34,9 +34,18 @@ import {
 import {
   recordArcadeRun,
   recordLevelScore,
+  recordProduceCandidate,
   recordSentenceOutcome,
   useGrammarProgress,
 } from '../lib/storage'
+import { isAiAllowed } from '../../../ai/allowance'
+import { getOrCreateDeviceId } from '../../../ai/deviceId'
+import { ProduceGatePanel } from '../components/ProduceGatePanel'
+import {
+  formatProduceJudgeError,
+  judgeProduceSentence,
+  shouldEnterProduceGate,
+} from '../lib/produceGate'
 import { recordMyChallengeRun } from '../../pictures/lib/myChallengeProgress'
 import {
   pickVocabAnswerMode,
@@ -77,7 +86,14 @@ import {
   shatterSentence,
 } from '../lib/fallingMotion'
 import gsap from 'gsap'
-import { fallDurationFor, isLevelUnlocked, livesFor, nextLevelAfter, thresholdFor } from '../lib/unlock'
+import {
+  fallDurationFor,
+  isLevelPassed,
+  isLevelUnlocked,
+  livesFor,
+  nextLevelAfter,
+  thresholdFor,
+} from '../lib/unlock'
 import { gameTuning } from '../content/tuning'
 import { loadProgress } from '../../pictures/lib/storage'
 import { playUiCorrect, playUiFail, playUiSuccess, playUiTap, unlockUiSound } from '../../../shared/uiSound'
@@ -266,6 +282,13 @@ function FallingBoard({
   const [sentenceResult, setSentenceResult] = useState<SentenceResult | null>(null)
   const [clearedIds, setClearedIds] = useState<Set<string>>(() => new Set())
   const [groupBanner, setGroupBanner] = useState<number | null>(null)
+  const [aiAllowed, setAiAllowed] = useState<boolean | null>(
+    mode === 'level' ? null : false,
+  )
+  const [produceGateActive, setProduceGateActive] = useState(false)
+  const [gateDraft, setGateDraft] = useState('')
+  const [gateBusy, setGateBusy] = useState(false)
+  const [gateFeedback, setGateFeedback] = useState<string | null>(null)
   const usedRef = useRef<string[]>(firstId ? [firstId] : [])
   const settled = useRef(false)
   const pendingAdvanceRef = useRef<(() => void) | null>(null)
@@ -285,6 +308,20 @@ function FallingBoard({
     // SPA remount after produce can inherit iOS/visualViewport scroll leftovers.
     pinLayoutToTop()
   }, [])
+
+  useEffect(() => {
+    if (mode !== 'level') {
+      setAiAllowed(false)
+      return
+    }
+    let cancelled = false
+    void isAiAllowed(getOrCreateDeviceId()).then((ok) => {
+      if (!cancelled) setAiAllowed(ok)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [mode])
 
   stateRef.current = state
   sentenceResultRef.current = sentenceResult
@@ -555,6 +592,43 @@ function FallingBoard({
     })
   }
 
+  function finishRound() {
+    setProduceGateActive(false)
+    setState((current) =>
+      current ? { ...current, status: 'over' } : current,
+    )
+  }
+
+  async function enterProduceGateOrFinish(score: number) {
+    if (mode !== 'level' || !levelId || threshold === undefined) {
+      finishRound()
+      return
+    }
+
+    let allowed = aiAllowed
+    if (allowed === null) {
+      allowed = await isAiAllowed(getOrCreateDeviceId())
+      setAiAllowed(allowed)
+    }
+
+    const enter = shouldEnterProduceGate({
+      mode: 'level',
+      levelPassed: isLevelPassed(levelId, grammarProgress),
+      aiAllowed: allowed === true,
+      score,
+      threshold,
+    })
+    if (!enter) {
+      finishRound()
+      return
+    }
+
+    setGateDraft('')
+    setGateFeedback(null)
+    setGateBusy(false)
+    setProduceGateActive(true)
+  }
+
   function advanceToNextSentence() {
     if (!state) return
 
@@ -565,13 +639,13 @@ function FallingBoard({
     setProduceDraft('')
 
     if (allQueueCleared) {
-      setState((current) => (current ? { ...current, status: 'over' } : current))
+      void enterProduceGateOrFinish(state.score)
       return
     }
 
     const nextId = nextSentenceId(queue, state.sentenceId, usedRef.current, clearedIds)
     if (!nextId) {
-      setState((current) => (current ? { ...current, status: 'over' } : current))
+      void enterProduceGateOrFinish(state.score)
       return
     }
     if (!usedRef.current.includes(nextId)) {
@@ -585,6 +659,53 @@ function FallingBoard({
     setState((current) =>
       current ? beginSentence(current, nextId, nextFallMs, answerMode) : current,
     )
+  }
+
+  async function submitProduceGate() {
+    if (!levelId || gateBusy) return
+    const trimmed = gateDraft.trim()
+    if (!trimmed) return
+
+    unlockUiSound()
+    setGateBusy(true)
+    setGateFeedback(null)
+
+    const level = levelById(levelId)
+    const point = level ? pointById(level.grammar_point_id) : undefined
+    const anchor = level ? anchorForLevel(level.id) : undefined
+    const sampleEns = [
+      ...(anchor?.en ? [anchor.en] : []),
+      ...playablesForLevel(levelId).map((sentence) => sentence.en),
+    ]
+    const deviceId = getOrCreateDeviceId()
+
+    try {
+      const verdict = await judgeProduceSentence({
+        titleZh: point?.title_zh ?? '',
+        bodyZh: point?.body_zh ?? '',
+        sampleEns,
+        learnerEn: trimmed,
+        deviceId,
+      })
+      if (verdict.pass) {
+        playUiSuccess()
+        recordProduceCandidate({
+          levelId,
+          en: trimmed,
+          zh: verdict.zh,
+          deviceId,
+        })
+        finishRound()
+        return
+      }
+      playUiFail()
+      setGateFeedback(verdict.reason)
+    } catch (error) {
+      playUiFail()
+      setGateFeedback(formatProduceJudgeError(error))
+    } finally {
+      setGateBusy(false)
+    }
   }
 
   function continueAfterSentence() {
@@ -644,6 +765,28 @@ function FallingBoard({
           backTo={backTo}
         />
       </>
+    )
+  }
+
+  if (produceGateActive && levelId) {
+    const level = levelById(levelId)
+    const point = level ? pointById(level.grammar_point_id) : undefined
+    return (
+      <StageShell
+        header={<StageHeader backTo={backTo} title="举一反三" />}
+      >
+        <ProduceGatePanel
+          titleZh={point?.title_zh ?? '本关语法'}
+          bodyZh={point?.body_zh ?? ''}
+          draft={gateDraft}
+          onDraftChange={setGateDraft}
+          onSubmit={() => {
+            void submitProduceGate()
+          }}
+          busy={gateBusy}
+          feedback={gateFeedback}
+        />
+      </StageShell>
     )
   }
 
