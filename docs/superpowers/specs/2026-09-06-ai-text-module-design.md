@@ -1,0 +1,187 @@
+# AI 文生文底层模块
+
+**日期：** 2026-09-06  
+**状态：** 待实现
+
+## 目标
+
+在不把千问 Key 放进 GitHub Pages 的前提下，提供可复用的文生文调用。浏览器是调用方/消费者，VPS 上的 worker 是被调用方/生产者，Supabase 只做通信队列。本期只交底层（队列表 + worker + `completeText()`），不接语法中阶判定、问答、场景挑战，App 不露入口。
+
+同一套任务协议预留 `image` / `tts`，本期遇之立即失败，接口形状以后不改。
+
+## 决议
+
+| 项 | 选择 |
+|----|------|
+| 调用方 | GitHub Pages 浏览器（anon / publishable key） |
+| 生产者 | `root@47.113.191.179` 上的常驻 worker，不对外开 HTTP、不需要域名和证书 |
+| 通道 | 表 `ai_jobs` + public Realtime Broadcast + RPC 读单行 |
+| 结果 | 整段写回，不流式 |
+| 登录 | 不上。控量在 worker：设备 id + 全局限额 |
+| 频道 | public，名 `ai-job:{jobId}`。UUID 即读票 |
+| 默认模型 | `qwen3.8-flash`；`reasoning.effort = none` |
+| 前端 API | `completeText({ input, instructions?, deviceId, timeoutMs? })` |
+| App UI | 无 |
+
+## 非目标
+
+- 中阶造句判定、章节问答、场景挑战玩法
+- 文生图、TTS 的真实调用
+- Supabase Auth / 匿名登录 / private 频道
+- 改 `asset_reports` 的远程 INSERT
+- 多轮 `previous_response_id`、思考链展示、function calling
+- 给 VPS 配域名、证书、反代
+
+## 链路
+
+```
+completeText()
+  → INSERT ai_jobs (id 客户端生成, status=queued)
+  → 订阅 public 频道 ai-job:{id}
+  → 并行：300ms 调 get_ai_job(id)
+                                 worker 每 ~200ms claim_ai_job()
+                                 限流 → 千问 Responses API（整段，超时 ~12s）
+                                 UPDATE completed|failed|rejected
+                                 Broadcast event=done
+  ← 先到者：广播 或 RPC；15s 仍无则超时
+```
+
+秒级来自：领取轮询 ≤200ms + 千问 1–3s + 一条广播。时间主要在模型，不在队列。
+
+## 表 `ai_jobs`
+
+| 列 | 类型 | 约束 |
+|----|------|------|
+| `id` | UUID | PK，客户端生成 |
+| `capability` | TEXT | `text` \| `image` \| `tts` |
+| `status` | TEXT | `queued` \| `running` \| `completed` \| `failed` \| `rejected` |
+| `device_id` | TEXT | NOT NULL，本机 UUID，限流用 |
+| `input` | JSONB | NOT NULL，见下 |
+| `output` | JSONB | 成功才有 |
+| `error` | TEXT | 失败/拒绝原因 |
+| `created_at` | TIMESTAMPTZ | DEFAULT now() |
+| `claimed_at` | TIMESTAMPTZ | 领取时写入 |
+| `completed_at` | TIMESTAMPTZ | 终态时写入 |
+
+`input`（`capability = text`）：
+
+```json
+{
+  "instructions": "可选系统指令",
+  "input": "用户文本，或 Responses 风格消息数组",
+  "model": "可选覆盖，默认 qwen3.8-flash",
+  "temperature": 0.2,
+  "max_output_tokens": 512
+}
+```
+
+`output`：
+
+```json
+{
+  "text": "模型正文",
+  "model": "实际模型",
+  "usage": { "input_tokens": 0, "output_tokens": 0, "total_tokens": 0 }
+}
+```
+
+INSERT 时 `input` 序列化后超过 32KiB 的任务，worker 标 `rejected`（`input_too_large`），不打模型。
+
+终态行保留 7 天，worker 循环里删除更旧的 `completed` / `failed` / `rejected`。
+
+## 权限与 RPC
+
+anon key 会出现在 Pages 包里。安全靠 GRANT + RLS，不靠藏 key。
+
+- anon：**INSERT only**，且 `status = 'queued'`、`output IS NULL`、`error IS NULL`、`claimed_at IS NULL`、`completed_at IS NULL`
+- anon：**不能 SELECT**（禁止 `select * from ai_jobs`）
+- `get_ai_job(p_id uuid) RETURNS ai_jobs`：`SECURITY DEFINER`，`GRANT EXECUTE TO anon`。知道 id 才能读一行
+- `claim_ai_job() RETURNS ai_jobs`：`SECURITY DEFINER`，无行可领时返回 NULL。`FOR UPDATE SKIP LOCKED` 取最早 `queued`，标 `running`。`REVOKE` public/anon/authenticated，只 `GRANT EXECUTE` 给 `service_role`
+- worker 用 **service role** UPDATE 终态，并用 service role 往 public 频道发广播
+
+Realtime：public 频道，不登录可订。频道名含 UUID，与 `get_ai_job(id)` 同一把钥匙。漏订或刷新靠 RPC 回退。
+
+## 前端模块
+
+路径：`src/ai/`（与 `src/lib/supabase.ts` 并列的横切能力，不属于某个练习 feature）。
+
+| 文件 | 职责 |
+|------|------|
+| `types.ts` | 任务协议、capability、status、input/output。worker 可复用 |
+| `deviceId.ts` | `localStorage` 持久化 UUID；没有则创建 |
+| `client.ts` | `completeText()`：insert → 广播 + 300ms RPC → 15s 超时 |
+
+`completeText` 行为：
+
+1. 需要已配置 `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`，否则抛错
+2. 生成 `id`，INSERT `capability: 'text'`
+3. 订阅 `ai-job:{id}` 事件 `done`；同时每 300ms `rpc('get_ai_job')`
+4. 收到 `completed` 则返回 `{ id, text, usage, model }`
+5. `failed` / `rejected` 抛错，带 `error` 文案
+6. 15s 内无终态：退订并抛超时。库里任务可能稍后完成，客户端不再读
+
+默认 `timeoutMs = 15_000`。不在本期接到任何页面或路由。
+
+## VPS worker
+
+路径：`ai-worker/`。Node + TypeScript，和前端共用 `src/ai/types.ts`。依赖官方 `openai` SDK，走千问 OpenAI 兼容 Responses API：
+
+- `baseURL`: `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- `apiKey`: 环境变量 `DASHSCOPE_API_KEY`
+- `client.responses.create({ model, input, instructions, reasoning: { effort: 'none' }, store: false })`
+- 取 `output_text`（或从 `output` 里 `type=message` 的文本拼接）
+
+机器：`47.113.191.179`。**不监听端口**。出站 HTTPS 到 Supabase 与 DashScope。
+
+进程：`systemd` 单元 `name-everything-ai-worker`。密钥在服务器环境文件（如 `/etc/name-everything/ai-worker.env`），不进 Git、不加 `VITE_` 前缀、不进 GitHub Pages Secrets。
+
+实现时 SSH 看机器上已有 Node / git 布局，再落 unit 文件。部署：仓库 pull → 安装依赖 → `systemctl restart name-everything-ai-worker`。
+
+循环（单进程即可）：
+
+1. 删除 7 天前的终态行
+2. 将 `running` 且 `claimed_at` 超过 30s 的行标 `failed`（`worker_stale`）并广播
+3. `claim_ai_job()`；空则等 ~200ms
+4. `image` / `tts` → `failed` / `unsupported_capability`，广播
+5. 限流不通过 → `rejected`，广播，不打模型
+6. `input` 过大 → `rejected` / `input_too_large`
+7. 调千问，硬超时 12s；429/5xx 再试 1 次
+8. 成功 `completed` + `output`；失败 `failed` + `error`
+9. 广播 event `done`，payload 为 `{ id, status, text?, error? }`（成功带 `text`，失败带 `error`）。单条远小于免费版 256KB。前端订到即可结束等待；RPC 只用于漏听或刷新。
+
+## 限流（worker，调模型前）
+
+可环境变量覆盖，默认：
+
+| 维度 | 默认 |
+|------|------|
+| 单 `device_id` | 20 次 / 60s，200 次 / 日（UTC） |
+| 全局 | 60 次 / 60s |
+
+超额：`rejected`，`error = rate_limited`。窗口内按 `created_at` 计所有已入库行（含随后被 `rejected` 的），避免连插绕过。
+
+`device_id` 可伪造，接受这个代价以保持打开即练。全局上限兜底烧钱。
+
+## 超时
+
+| 角色 | 时限 | 结果 |
+|------|------|------|
+| 前端 | 15s | `completeText` 抛超时 |
+| 千问调用 | 12s | 行 `failed` / `model_timeout`，广播 |
+| `running` 无心跳 | 30s | `failed` / `worker_stale` |
+
+## 测试
+
+- `src/ai/client.test.ts`：INSERT 形状；广播先到则返回；只有 RPC 也能返回；`failed`/`rejected`/超时抛错
+- `ai-worker` 单测（mock 千问与 Supabase）：限流、`unsupported_capability`、僵尸 `running`、成功写回
+- 真机验收（实现末）：本机或 VPS 插一条 `text` 任务，秒级看到 `completed`。不改 App 页面
+
+## 文档（实现时改，不另开范围）
+
+- `DATABASE.md`：`ai_jobs`、两条 RPC、anon 只能插
+- `.env.example`：注明 worker 密钥只在 VPS，Pages 不新增 Vite 变量
+- `MANIFEST.md` / `README.md`：本期无用户可见能力，不改
+
+## 错误码（`error` 文本，稳定可测）
+
+`rate_limited` | `input_too_large` | `unsupported_capability` | `model_timeout` | `model_error` | `worker_stale`
