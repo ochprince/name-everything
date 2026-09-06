@@ -37,3 +37,6 @@ supabase/backups/*
 
 # Impeccable design artifacts / local runtime
 .impeccable/
+
+.worktrees/
+tmp/
