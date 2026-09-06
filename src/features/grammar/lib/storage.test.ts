@@ -5,6 +5,10 @@ import {
   addReport,
   exportReports,
   clearReports,
+  recordProduceCandidate,
+  loadProduceCandidates,
+  exportProduceCandidates,
+  clearProduceCandidates,
   defaultGrammarProgress,
   recordLevelScore,
   recordArcadeRun,
@@ -53,6 +57,43 @@ describe('grammar storage', () => {
     expect(typeof parsed[0]!.created_at).toBe('string')
     clearReports()
     expect(JSON.parse(exportReports())).toHaveLength(0)
+  })
+
+  it('recordProduceCandidate stores en/zh/level_id and export clears', () => {
+    const id = recordProduceCandidate({
+      levelId: 'dative-1',
+      en: 'I give her a book.',
+      zh: '我给她一本书。',
+    })
+    expect(id).toBeTruthy()
+    expect(loadProduceCandidates()).toHaveLength(1)
+    expect(loadProduceCandidates()[0]).toMatchObject({
+      id,
+      level_id: 'dative-1',
+      en: 'I give her a book.',
+      zh: '我给她一本书。',
+    })
+    const exported = JSON.parse(exportProduceCandidates()) as Array<
+      Record<string, unknown>
+    >
+    expect(exported[0]).toMatchObject({
+      level_id: 'dative-1',
+      en: 'I give her a book.',
+      zh: '我给她一本书。',
+      level_title: '主谓双宾 S+V+IO+DO',
+    })
+    clearProduceCandidates()
+    expect(loadProduceCandidates()).toHaveLength(0)
+  })
+
+  it('recordProduceCandidate ignores blank en or zh', () => {
+    expect(
+      recordProduceCandidate({ levelId: 'dative-1', en: '  ', zh: '有' }),
+    ).toBeNull()
+    expect(
+      recordProduceCandidate({ levelId: 'dative-1', en: 'Hi', zh: '' }),
+    ).toBeNull()
+    expect(loadProduceCandidates()).toHaveLength(0)
   })
 
   it('enriches sentence reports with en/zh and every slot at export time', () => {

@@ -60,6 +60,13 @@ describe('MePage', () => {
     expect(await screen.findByText(/未开通/)).toBeInTheDocument()
   })
 
+  it('shows 造句候选 export section', () => {
+    renderWithProgress(<MePage />)
+    expect(screen.getByText('造句候选')).toBeInTheDocument()
+    expect(screen.getByText(/还没有举一反三合格句/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '复制候选' })).toBeInTheDocument()
+  })
+
   it('writes hintLang into progress.settings', async () => {
     const user = userEvent.setup()
     renderWithProgress(<MePage />)

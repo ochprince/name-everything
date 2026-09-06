@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { LangToggle } from '../components/LangToggle'
-import { exportReports, clearReports, useGrammarReports } from '../features/grammar'
+import {
+  exportReports,
+  clearReports,
+  useGrammarReports,
+  exportProduceCandidates,
+  clearProduceCandidates,
+  useGrammarProduceCandidates,
+} from '../features/grammar'
 import { useProgress } from '../features/pictures/hooks/useProgress'
 import {
   todayKey,
@@ -66,6 +73,85 @@ function CueHold({
       >
         {effectiveOn ? '开' : '关'}
       </button>
+    </div>
+  )
+}
+
+function GrammarProduceCandidates() {
+  const candidates = useGrammarProduceCandidates()
+  const [copied, setCopied] = useState(false)
+  const copiedTimer = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
+    }
+  }, [])
+
+  async function copyCandidates() {
+    const text = exportProduceCandidates()
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const area = document.createElement('textarea')
+      area.value = text
+      area.style.position = 'fixed'
+      area.style.opacity = '0'
+      document.body.appendChild(area)
+      area.select()
+      document.execCommand('copy')
+      area.remove()
+    }
+    setCopied(true)
+    if (copiedTimer.current !== null) window.clearTimeout(copiedTimer.current)
+    copiedTimer.current = window.setTimeout(() => setCopied(false), 1500)
+  }
+
+  function downloadCandidates() {
+    const blob = new Blob([exportProduceCandidates()], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'grammar-produce-candidates.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className="mt-14 flex flex-col gap-3">
+      <p className="text-lg font-medium tracking-[0.04em] text-day">造句候选</p>
+      <p className="text-base font-medium tracking-[0.02em] text-day/80">
+        {candidates.length === 0
+          ? '还没有举一反三合格句。'
+          : `本机 ${candidates.length} 条，可供管理员入库审核`}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => void copyCandidates()}
+          className={`${holdButton} bg-day text-cyc hover:brightness-105`}
+        >
+          {copied ? '已复制' : '复制候选'}
+        </button>
+        <button
+          type="button"
+          onClick={downloadCandidates}
+          className={`${holdButton} border border-day/75 bg-cyc text-day hover:border-day`}
+        >
+          下载文件
+        </button>
+        {candidates.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => clearProduceCandidates()}
+            className={`${holdButton} border border-day/75 bg-cyc text-day hover:border-day`}
+          >
+            清空已导出
+          </button>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -302,6 +388,7 @@ export function MePage() {
         </div>
 
         <DeviceIdRow />
+        <GrammarProduceCandidates />
         <GrammarReports />
         </div>
       </div>

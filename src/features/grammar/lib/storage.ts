@@ -51,11 +51,21 @@ export type GrammarProgress = {
   sentenceScores: Record<string, number>
 }
 
+export type ProduceCandidate = {
+  id: string
+  level_id: string
+  en: string
+  zh: string
+  created_at: string
+}
+
 const PROGRESS_KEY = 'grammar/progress/v1'
 const REPORTS_KEY = 'grammar/reports/v1'
+const PRODUCE_CANDIDATES_KEY = 'grammar/produce-candidates/v1'
 
 const progressListeners = new Set<() => void>()
 const reportListeners = new Set<() => void>()
+const produceListeners = new Set<() => void>()
 
 function newId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -75,6 +85,7 @@ const EMPTY_PROGRESS: GrammarProgress = {
   sentenceScores: {},
 }
 const EMPTY_REPORTS: AssetReport[] = []
+const EMPTY_PRODUCE: ProduceCandidate[] = []
 
 export function defaultGrammarProgress(): GrammarProgress {
   return EMPTY_PROGRESS
@@ -109,10 +120,31 @@ function parseReports(raw: string | null): AssetReport[] {
   }
 }
 
+function parseProduceCandidates(raw: string | null): ProduceCandidate[] {
+  if (!raw) return EMPTY_PRODUCE
+  try {
+    const value = JSON.parse(raw) as ProduceCandidate[]
+    if (!Array.isArray(value)) return EMPTY_PRODUCE
+    return value.filter(
+      (row) =>
+        row &&
+        typeof row.id === 'string' &&
+        typeof row.level_id === 'string' &&
+        typeof row.en === 'string' &&
+        typeof row.zh === 'string' &&
+        typeof row.created_at === 'string',
+    )
+  } catch {
+    return EMPTY_PRODUCE
+  }
+}
+
 let progressRaw: string | null = null
 let progressCache: GrammarProgress = EMPTY_PROGRESS
 let reportsRaw: string | null = null
 let reportsCache: AssetReport[] = EMPTY_REPORTS
+let produceRaw: string | null = null
+let produceCache: ProduceCandidate[] = EMPTY_PRODUCE
 
 export function loadGrammarProgress(): GrammarProgress {
   const raw = localStorage.getItem(PROGRESS_KEY)
@@ -152,6 +184,39 @@ export function saveReports(next: AssetReport[]) {
   reportsRaw = raw
   localStorage.setItem(REPORTS_KEY, raw)
   emitReports()
+}
+
+export function loadProduceCandidates(): ProduceCandidate[] {
+  const raw = localStorage.getItem(PRODUCE_CANDIDATES_KEY)
+  if (raw === produceRaw) return produceCache
+  produceRaw = raw
+  produceCache = parseProduceCandidates(raw)
+  return produceCache
+}
+
+function emitProduce() {
+  produceListeners.forEach((listener) => listener())
+}
+
+export function saveProduceCandidates(next: ProduceCandidate[]) {
+  const raw = JSON.stringify(next)
+  produceCache = next
+  produceRaw = raw
+  localStorage.setItem(PRODUCE_CANDIDATES_KEY, raw)
+  emitProduce()
+}
+
+export function subscribeProduceCandidates(listener: () => void) {
+  produceListeners.add(listener)
+  return () => produceListeners.delete(listener)
+}
+
+export function useGrammarProduceCandidates(): ProduceCandidate[] {
+  return useSyncExternalStore(
+    subscribeProduceCandidates,
+    loadProduceCandidates,
+    () => EMPTY_PRODUCE,
+  )
 }
 
 export function subscribeGrammarProgress(listener: () => void) {
@@ -290,6 +355,52 @@ export function addReport(
 }
 
 /**
+ * Persist an AI-passed produce sentence as a candidate asset (local + best-effort remote).
+ * Returns the new id, or null if en/zh/levelId blank after trim.
+ */
+export function recordProduceCandidate(input: {
+  levelId: string
+  en: string
+  zh: string
+  deviceId?: string
+}): string | null {
+  const levelId = input.levelId.trim()
+  const en = input.en.trim()
+  const zh = input.zh.trim()
+  if (!levelId || !en || !zh) return null
+
+  const candidate: ProduceCandidate = {
+    id: newId(),
+    level_id: levelId,
+    en,
+    zh,
+    created_at: new Date().toISOString(),
+  }
+
+  saveProduceCandidates([candidate, ...loadProduceCandidates()])
+
+  if (isSupabaseConfigured()) {
+    void getSupabase()
+      .from('grammar_produce_candidates')
+      .insert({
+        id: candidate.id,
+        level_id: candidate.level_id,
+        en: candidate.en,
+        zh: candidate.zh,
+        device_id: input.deviceId?.trim() || null,
+        created_at: candidate.created_at,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn('grammar_produce_candidates insert failed:', error.message)
+        }
+      })
+  }
+
+  return candidate.id
+}
+
+/**
  * Export-time enrichment: the base report rows stay lean (id/asset/level/note),
  * but the exported JSON joins against the current grammar pack so pasted
  * reports are self-contained — sentence text, every slot's role/correct/
@@ -361,6 +472,29 @@ export function exportReports(): string {
 
 export function clearReports() {
   saveReports([])
+}
+
+function enrichProduceCandidate(
+  candidate: ProduceCandidate,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...candidate }
+  if (!isGrammarPackLoaded()) return out
+  const level = levelById(candidate.level_id)
+  const topic = level ? pointById(level.grammar_point_id) : undefined
+  if (topic) out.level_title = topic.title_zh
+  return out
+}
+
+export function exportProduceCandidates(): string {
+  return JSON.stringify(
+    loadProduceCandidates().map(enrichProduceCandidate),
+    null,
+    2,
+  )
+}
+
+export function clearProduceCandidates() {
+  saveProduceCandidates([])
 }
 
 export function passedLevelCount(progress = loadGrammarProgress()): number {
