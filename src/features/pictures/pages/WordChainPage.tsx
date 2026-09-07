@@ -22,6 +22,7 @@ import trophyPassed from '../../grammar/assets/trophy-passed.svg'
 import { isEnglishWord, loadEnglishWords } from '../lib/englishWord'
 import { useKeyboardOverlapPx, usePinLayoutOnKeyboardDismiss } from '../../../shared/useAppViewportHeight'
 import { KEYBOARD_OVERLAP_LOCK_PX } from '../../../shared/appViewport'
+import { pinLayoutToTop } from '../../../shared/appViewport'
 
 const LETTERS_ONLY = /^[a-z]{2,}$/
 
@@ -77,6 +78,28 @@ export function WordChainPage() {
   const keyboardOverlapPx = useKeyboardOverlapPx()
   const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
   usePinLayoutOnKeyboardDismiss()
+
+  // iOS 聚焦底部输入框会把可视视口整体下移（即使页面锁死不滚文档也会），
+  // 造成上方留白、词链/锚点被顶出视野。键盘弹起期间持续把视口钉回顶部：
+  // 输入框已被垫高到键盘上沿后，钉顶不会再把输入框顶走。
+  useEffect(() => {
+    if (!keyboardOpen) return
+    pinLayoutToTop()
+    const timers = [50, 120, 300, 600].map((ms) =>
+      window.setTimeout(pinLayoutToTop, ms),
+    )
+    const vv = window.visualViewport
+    const onVisualScroll = () => {
+      if (window.visualViewport && window.visualViewport.offsetTop > 0) {
+        pinLayoutToTop()
+      }
+    }
+    vv?.addEventListener('scroll', onVisualScroll)
+    return () => {
+      timers.forEach((id) => window.clearTimeout(id))
+      vv?.removeEventListener('scroll', onVisualScroll)
+    }
+  }, [keyboardOpen])
 
   const allPriorityWords = useMemo(
     () => Object.keys(WORD_PRIORITY).filter((w) => LETTERS_ONLY.test(w)),
