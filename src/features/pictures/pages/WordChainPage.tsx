@@ -20,6 +20,8 @@ import {
 } from '../lib/wordChain'
 import trophyPassed from '../../grammar/assets/trophy-passed.svg'
 import { isEnglishWord, loadEnglishWords } from '../lib/englishWord'
+import { useKeyboardOverlapPx, usePinLayoutOnKeyboardDismiss } from '../../../shared/useAppViewportHeight'
+import { KEYBOARD_OVERLAP_LOCK_PX } from '../../../shared/appViewport'
 
 const LETTERS_ONLY = /^[a-z]{2,}$/
 
@@ -72,6 +74,9 @@ export function WordChainPage() {
   const catalogRef = useRef<Set<string>>(new Set())
   const settledRef = useRef(false)
   const listEndRef = useRef<HTMLDivElement>(null)
+  const keyboardOverlapPx = useKeyboardOverlapPx()
+  const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
+  usePinLayoutOnKeyboardDismiss()
 
   const allPriorityWords = useMemo(
     () => Object.keys(WORD_PRIORITY).filter((w) => LETTERS_ONLY.test(w)),
@@ -279,30 +284,37 @@ export function WordChainPage() {
   }
 
   return (
-    <StageShell header={header}>
-      <div className="flex flex-1 flex-col gap-4 px-1 pt-4">
-        <div className="flex items-center gap-3">
-          <ChainSummary label="当前链" value={`${chain.length} 词`} />
-          <ChainSummary label="得分" value={`${score}`} />
-          <div className="flex min-h-14 flex-1 items-center justify-center gap-1.5 rounded-2xl bg-day px-3">
-            <p className="max-w-24 truncate text-sm font-medium tracking-[0.02em] text-cyc/70">
-              {chain[chain.length - 1]?.word}
-            </p>
-            <p aria-hidden="true" className="flex-none text-sm text-cyc/45">
-              →
-            </p>
-            <p className="font-cue text-2xl font-bold tracking-[0.08em] text-cyc">
-              {lastLetter.toUpperCase()}
-            </p>
-            <p className="whitespace-nowrap text-sm tracking-[0.12em] text-cyc/60">
-              开头的词
-            </p>
+    <StageShell header={header} lockViewport>
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-3 px-1 pt-3"
+        style={keyboardOpen ? { paddingBottom: keyboardOverlapPx } : undefined}
+      >
+        {keyboardOpen ? null : (
+          <div className="flex items-center gap-3">
+            <ChainSummary label="当前链" value={`${chain.length} 词`} />
+            <ChainSummary label="得分" value={`${score}`} />
           </div>
+        )}
+        <div className="flex min-h-14 flex-none items-center justify-center gap-1.5 rounded-2xl bg-day px-3">
+          <p className="max-w-24 truncate text-sm font-medium tracking-[0.02em] text-cyc/70">
+            {chain[chain.length - 1]?.word}
+          </p>
+          <p aria-hidden="true" className="flex-none text-sm text-cyc/45">
+            →
+          </p>
+          <p className="font-cue text-2xl font-bold tracking-[0.08em] text-cyc">
+            {lastLetter.toUpperCase()}
+          </p>
+          <p className="whitespace-nowrap text-sm tracking-[0.12em] text-cyc/60">
+            开头的词
+          </p>
         </div>
 
-        <p className="px-1 text-[11px] tracking-[0.18em] text-day/45">
-          词库词 ×2 · 词库外的真单词也能接
-        </p>
+        {keyboardOpen ? null : (
+          <p className="px-1 text-[11px] tracking-[0.18em] text-day/45">
+            词库词 ×2 · 词库外的真单词也能接
+          </p>
+        )}
 
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
           {chain.map((row, index) => (
