@@ -100,6 +100,18 @@ describe('buildProduceJudgePrompt', () => {
     expect(built.instructions).toContain('I gave him a book.')
     expect(built.input).toBe('I handed her the keys.')
   })
+
+  it('lists this-round accepted sentences when avoidEns is given', () => {
+    const built = buildProduceJudgePrompt({
+      titleZh: '与格',
+      bodyZh: 'body',
+      sampleEns: ['I gave him a book.'],
+      learnerEn: 'I handed her the keys.',
+      avoidEns: ['I handed her the keys.', 'She told me a story.'],
+    })
+    expect(built.instructions).toContain('本局学习者已写过的合格句')
+    expect(built.instructions).toContain('She told me a story.')
+  })
 })
 
 describe('judgeProduceSentence', () => {

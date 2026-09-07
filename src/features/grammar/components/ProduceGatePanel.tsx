@@ -13,6 +13,14 @@ type ProduceGatePanelProps = {
   result?: { en: string; zh: string; comment: string } | null
   /** 通过视图里「查看结算」的回调。 */
   onFinish?: () => void
+  /** 顶部小标签（默认「举一反三」）。 */
+  eyebrow?: string
+  /** 例句上方的小提示（默认「你能用这个语法造一个新句子吗？」）。 */
+  promptText?: string
+  /** 句泡进度（挑战者模式：本知识点已合格句数）。 */
+  bubbles?: { hit: number; total: number } | null
+  /** 金色过程提示（如「击败了某个知识点」），与 feedback 互斥显示。 */
+  notice?: string | null
 }
 
 const PASS_COMMENT_FALLBACK = '句子结构正确，用上了本关的语法。'
@@ -27,6 +35,10 @@ export function ProduceGatePanel({
   feedback,
   result,
   onFinish,
+  eyebrow = '举一反三',
+  promptText = '你能用这个语法造一个新句子吗？',
+  bubbles = null,
+  notice = null,
 }: ProduceGatePanelProps) {
   const keyboardOverlapPx = useKeyboardOverlapPx()
   const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
@@ -73,18 +85,41 @@ export function ProduceGatePanel({
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="flex flex-col gap-2">
             <p className="text-sm font-medium tracking-[0.08em] text-rose">
-              举一反三
+              {eyebrow}
             </p>
             <h2 className="text-2xl font-semibold tracking-[0.02em] text-day">
               {titleZh}
             </h2>
+            {bubbles ? (
+              <div
+                aria-label={`已合格 ${bubbles.hit}/${bubbles.total} 句`}
+                className="flex items-center gap-2"
+              >
+                <div className="flex items-center gap-1.5">
+                  {Array.from({ length: bubbles.total }, (_, index) => (
+                    <span
+                      key={index}
+                      aria-hidden="true"
+                      className={`size-4 rounded-full ${
+                        index < bubbles.hit
+                          ? 'bg-gold'
+                          : 'border border-day/35 bg-transparent'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs font-medium tracking-[0.12em] text-day/55">
+                  {bubbles.hit}/{bubbles.total} 句
+                </p>
+              </div>
+            ) : null}
             {bodyZh.trim() ? (
               <p className="text-base leading-relaxed tracking-[0.02em] text-day/80">
                 {bodyZh}
               </p>
             ) : null}
             <p className="text-lg font-medium tracking-[0.02em] text-day">
-              你能用这个语法造一个新句子吗？
+              {promptText}
             </p>
           </div>
         </div>
@@ -111,7 +146,11 @@ export function ProduceGatePanel({
           placeholder="输入你的英文句子"
           className="min-h-[5.5rem] w-full resize-none rounded-2xl border border-day/75 bg-cyc px-3 py-2.5 text-lg font-semibold leading-snug tracking-[0.02em] text-day placeholder:text-day/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-day disabled:opacity-60"
         />
-        {feedback ? (
+        {notice ? (
+          <p role="status" className="text-sm leading-snug tracking-[0.02em] text-gold">
+            {notice}
+          </p>
+        ) : feedback ? (
           <p
             role="status"
             className="text-sm leading-snug tracking-[0.02em] text-rose"

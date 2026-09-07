@@ -16,6 +16,7 @@ import { ChallengeHubPage } from './shell/ChallengeHubPage'
 import { LearnListPage } from './features/grammar/pages/LearnListPage'
 import { LearnPage } from './features/grammar/pages/LearnPage'
 import { FallingPlayPage } from './features/grammar/pages/FallingPlayPage'
+import { ChallengerPage } from './features/grammar/pages/ChallengerPage'
 import { ArcadePage } from './features/grammar/pages/ArcadePage'
 import { AppToast } from './components/AppToast'
 
@@ -58,6 +59,10 @@ export default function App() {
           />
           <Route path="/practice/pictures/play/run" element={<MyChallengeRunPage />} />
           <Route path="/practice/challenge" element={<ChallengeHubPage />} />
+          <Route
+            path="/practice/challenge/challenger"
+            element={<ChallengerPage />}
+          />
           <Route path="/practice/grammar/learn" element={<LearnListPage />} />
           <Route path="/practice/grammar/learn/:levelId" element={<LearnPage />} />
           <Route

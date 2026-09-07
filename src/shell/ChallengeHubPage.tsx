@@ -12,7 +12,10 @@ import {
 } from '../shared/stageMaterials'
 import { passedLevelCount, useGrammarProgress } from '../features/grammar/lib/storage'
 import { challengeWordCount, useChallengeWords } from '../features/pictures/lib/challengeCollection'
+import { isAiAllowed } from '../ai/allowance'
+import { getOrCreateDeviceId } from '../ai/deviceId'
 import { StageHint, useStageHint } from '../shared/StageHint'
+import { useEffect, useState } from 'react'
 
 type Door = {
   id: string
@@ -27,9 +30,20 @@ type Door = {
 export function ChallengeHubPage() {
   const grammar = useGrammarProgress()
   useChallengeWords()
+  const [aiOk, setAiOk] = useState<boolean | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    void isAiAllowed(getOrCreateDeviceId()).then((ok) => {
+      if (!cancelled) setAiOk(ok)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
   const { hint, showHint } = useStageHint()
   const grammarOpen = passedLevelCount(grammar) > 0
   const mineOpen = challengeWordCount() > 0
+  const challengerOpen = grammarOpen && aiOk === true
 
   const doors: Door[] = [
     {
@@ -52,6 +66,20 @@ export function ChallengeHubPage() {
       unavailableHint: '先在词汇记忆里「加入我的挑战」',
       material: 'day',
     },
+    {
+      id: 'challenger',
+      title: '挑战者',
+      detail: challengerOpen
+        ? '自由造句连战，3 句击败一个知识点'
+        : aiOk === false
+          ? '需要先开通 AI'
+          : '先去语法学习过一关',
+      to: challengerOpen ? '/practice/challenge/challenger' : null,
+      available: challengerOpen,
+      unavailableHint:
+        aiOk === false ? '挑战者需要 AI 判定，请先开通' : '先去语法学习过一关',
+      material: 'cobalt',
+    },
   ]
 
   return (
@@ -59,7 +87,7 @@ export function ChallengeHubPage() {
       <StageShell header={<StageHeader backTo="/" title="挑战模式" />}>
         <div className="flex flex-1 flex-col gap-4 pt-4">
           <p className="text-pretty text-base font-medium tracking-[0.02em] text-day/70">
-            选一种挑战：语法综合局，或你收藏的词汇例句。
+            选一种挑战：语法综合局、你收藏的词汇例句，或自由造句连战。
           </p>
           <div className="flex flex-col gap-2.5">
             {doors.map((door) => (

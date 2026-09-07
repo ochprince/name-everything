@@ -78,11 +78,17 @@ export function buildProduceJudgePrompt(input: {
   bodyZh: string
   sampleEns: string[]
   learnerEn: string
+  /** 本局已合格的句子：不得重复或改写雷同（挑战者模式用）。 */
+  avoidEns?: string[]
 }): { instructions: string; input: string } {
   const samples =
     input.sampleEns.length > 0
       ? input.sampleEns.map((s, i) => `${i + 1}. ${s}`).join('\n')
       : '(none)'
+  const avoid =
+    input.avoidEns && input.avoidEns.length > 0
+      ? input.avoidEns.map((s, i) => `${i + 1}. ${s}`).join('\n')
+      : ''
 
   const instructions = [
     '你是英语语法老师。判断学习者造的英文句子是否合格。',
@@ -95,6 +101,13 @@ export function buildProduceJudgePrompt(input: {
     `知识点说明：${input.bodyZh}`,
     '课包例句（仅供你对照，不要当作标准答案要求复述）：',
     samples,
+    ...(avoid
+      ? [
+          '',
+          '本局学习者已写过的合格句（新的句子不得与之重复或改写雷同）：',
+          avoid,
+        ]
+      : []),
     '',
     '只输出一个 JSON 对象，不要其它文字：',
     '{"pass":true|false,"zh":"合格时给中文译文，否则空字符串","reason":"不合格时用一两句中文说明原因，否则空字符串","comment":"合格时用一句话中文点评，说明为什么正确（例如点出用对了哪个语法结构），否则空字符串"}',
@@ -110,6 +123,8 @@ export type JudgeProduceSentenceInput = {
   learnerEn: string
   deviceId: string
   timeoutMs?: number
+  /** 本局已合格的句子：不得重复或改写雷同（挑战者模式用）。 */
+  avoidEns?: string[]
 }
 
 type CompleteTextFn = (options: CompleteTextOptions) => Promise<CompleteTextResult>
@@ -118,7 +133,13 @@ export async function judgeProduceSentence(
   input: JudgeProduceSentenceInput,
   completeText: CompleteTextFn = defaultCompleteText,
 ): Promise<ProduceJudgeVerdict> {
-  const built = buildProduceJudgePrompt(input)
+  const built = buildProduceJudgePrompt({
+    titleZh: input.titleZh,
+    bodyZh: input.bodyZh,
+    sampleEns: input.sampleEns,
+    learnerEn: input.learnerEn,
+    avoidEns: input.avoidEns,
+  })
   const result = await completeText({
     input: built.input,
     instructions: built.instructions,
