@@ -1,63 +1,70 @@
 import { describe, expect, it } from 'vitest'
 import {
-  CHAIN_RARE_ENDINGS,
   chainReasonCopy,
   checkChainWord,
   loadBestChain,
   normalizeWord,
   pickStartWord,
-  rareEndingBonus,
   updateBestChain,
 } from './wordChain'
 
-const known = new Set(['time', 'egg', 'gate', 'eight', 'tea', 'cat', 'quiz'])
+const catalog = new Set(['time', 'egg', 'gate', 'eight', 'tea', 'cat', 'quiz'])
+/** 词库外真词模拟：接龙测试里只有 apple/tiger 是真英文。 */
+const isEnglish = (w: string) => w === 'apple' || w === 'tiger' || w === 'quizlet'
+const checker = { catalog, isEnglish }
 
 describe('checkChainWord', () => {
-  it('accepts a word that starts with the last letter', () => {
-    expect(checkChainWord('Time', 't', new Set(), known)).toEqual({
+  it('accepts a catalog word that starts with the last letter (rare ×2)', () => {
+    expect(checkChainWord('Time', 't', new Set(), checker)).toEqual({
       ok: true,
       word: 'time',
-      score: 1,
+      score: 2,
+      inCatalog: true,
     })
   })
 
   it('is case-insensitive for the leading letter', () => {
-    expect(checkChainWord('Time', 'T', new Set(), known).ok).toBe(true)
+    expect(checkChainWord('Time', 'T', new Set(), checker).ok).toBe(true)
   })
 
   it('rejects a wrong first letter', () => {
-    expect(checkChainWord('cat', 'e', new Set(), known)).toEqual({
+    expect(checkChainWord('cat', 'e', new Set(), checker)).toEqual({
       ok: false,
       reason: 'letter',
     })
   })
 
-  it('rejects words outside the dictionary', () => {
-    expect(checkChainWord('tiger', 't', new Set(), known)).toEqual({
+  it('accepts a real English word outside the catalog (no bonus)', () => {
+    expect(checkChainWord('tiger', 't', new Set(), checker)).toEqual({
+      ok: true,
+      word: 'tiger',
+      score: 1,
+      inCatalog: false,
+    })
+  })
+
+  it('rejects gibberish outside the catalog', () => {
+    expect(checkChainWord('tigzz', 't', new Set(), checker)).toEqual({
       ok: false,
-      reason: 'unknown',
+      reason: 'notword',
     })
   })
 
   it('rejects words already used this round', () => {
-    expect(checkChainWord('time', 't', new Set(['time']), known)).toEqual({
+    expect(checkChainWord('time', 't', new Set(['time']), checker)).toEqual({
       ok: false,
       reason: 'repeat',
     })
   })
 
-  it('rejects empty input', () => {
-    expect(checkChainWord('   ', 'e', new Set(), known)).toEqual({
+  it('rejects empty and non-letter input', () => {
+    expect(checkChainWord('   ', 'e', new Set(), checker)).toEqual({
       ok: false,
-      reason: 'letter',
+      reason: 'notword',
     })
-  })
-
-  it('doubles score for rare endings', () => {
-    expect(checkChainWord('quiz', 'q', new Set(), known)).toEqual({
-      ok: true,
-      word: 'quiz',
-      score: 2,
+    expect(checkChainWord('time2', 't', new Set(), checker)).toEqual({
+      ok: false,
+      reason: 'notword',
     })
   })
 })
@@ -67,15 +74,9 @@ describe('helpers', () => {
     expect(normalizeWord('  Time  ')).toBe('time')
   })
 
-  it('flags rare endings', () => {
-    expect(CHAIN_RARE_ENDINGS).toContain('z')
-    expect(rareEndingBonus('z')).toBe(true)
-    expect(rareEndingBonus('a')).toBe(false)
-  })
-
   it('maps reasons to copy', () => {
     expect(chainReasonCopy('letter')).toMatch(/首字母/)
-    expect(chainReasonCopy('unknown')).toMatch(/词库/)
+    expect(chainReasonCopy('notword')).toMatch(/不像/)
     expect(chainReasonCopy('repeat')).toMatch(/用过/)
   })
 

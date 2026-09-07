@@ -17,9 +17,18 @@ import {
   updateBestChain,
   type WordChainBest,
 } from '../lib/wordChain'
-import type { Card } from '../../../types/card'
+import { isEnglishWord, loadEnglishWords } from '../lib/englishWord'
 
 const LETTERS_ONLY = /^[a-z]{2,}$/
+
+/** 链上一节：词库词带图卡与中文，词库外真词只有单词本身。 */
+type ChainRow = {
+  word: string
+  image: string | null
+  zh: string | null
+  /** 词库词（稀有）：×2 分。 */
+  bonus: boolean
+}
 
 function zipfOf(word: string): number {
   return WORD_PRIORITY[word]?.[1] ?? 0
@@ -48,7 +57,7 @@ export function WordChainPage() {
     'loading',
   )
   const [retryKey, setRetryKey] = useState(0)
-  const [chain, setChain] = useState<Card[]>([])
+  const [chain, setChain] = useState<ChainRow[]>([])
   const [lastLetter, setLastLetter] = useState('')
   const [score, setScore] = useState(0)
   const [draft, setDraft] = useState('')
@@ -58,7 +67,7 @@ export function WordChainPage() {
   const [result, setResult] = useState<WordChainBest | null>(null)
   const [isNewBest, setIsNewBest] = useState(false)
   const usedRef = useRef<Set<string>>(new Set())
-  const knownRef = useRef<Set<string>>(new Set())
+  const catalogRef = useRef<Set<string>>(new Set())
   const settledRef = useRef(false)
   const listEndRef = useRef<HTMLDivElement>(null)
 
@@ -76,21 +85,30 @@ export function WordChainPage() {
     try {
       await ensurePictureWordsReady()
       // 词库全集 = 词频表 ∩ 实际词库（词频表可能比 DB 略大）
-      knownRef.current = new Set(
+      catalogRef.current = new Set(
         allPriorityWords.filter((w) => hasPictureWord(w)),
       )
-      if (knownRef.current.size === 0) throw new Error('empty catalog')
+      if (catalogRef.current.size === 0) throw new Error('empty catalog')
       const learned = [
         ...new Set([...progress.strongIds, ...progress.warmIds]),
-      ].filter((w) => knownRef.current.has(w))
+      ].filter((w) => catalogRef.current.has(w))
       const candidates =
-        learned.length > 0 ? learned : allPriorityWords.filter((w) => knownRef.current.has(w))
+        learned.length > 0
+          ? learned
+          : allPriorityWords.filter((w) => catalogRef.current.has(w))
       const word = pickStartWord(candidates, zipfOf, 3)
       if (!word) throw new Error('no start word')
       const card = getPictureWordsByWords([word])[0]
       if (!card) throw new Error('start card missing')
       usedRef.current.add(word)
-      setChain([card])
+      setChain([
+        {
+          word: card.word,
+          image: card.image ?? null,
+          zh: card.zh ?? null,
+          bonus: false,
+        },
+      ])
       setLastLetter(lastLetterOf(word))
       setScore(0)
       setRemainingMs(CHAIN_TIMEOUT_MS)
@@ -104,6 +122,11 @@ export function WordChainPage() {
   useEffect(() => {
     void startGame()
   }, [startGame, retryKey])
+
+  // 后台预取英文词表（词库外真词判定用；离线则退回启发式）
+  useEffect(() => {
+    void loadEnglishWords()
+  }, [])
 
   // 每个新词重置倒计时（chain 变化即新词入链）
   useEffect(() => {
@@ -149,17 +172,26 @@ export function WordChainPage() {
       trimmed,
       lastLetter,
       usedRef.current,
-      knownRef.current,
+      { catalog: catalogRef.current, isEnglish: isEnglishWord },
     )
     if (!check.ok) {
       setMessage(chainReasonCopy(check.reason))
       return
     }
-    const card = getPictureWordsByWords([check.word])[0]
+    let image: string | null = null
+    let zh: string | null = null
+    if (check.inCatalog) {
+      const card = getPictureWordsByWords([check.word])[0]
+      image = card?.image ?? null
+      zh = card?.zh ?? null
+    }
     setDraft('')
     setMessage(null)
     usedRef.current.add(check.word)
-    setChain((prev) => [...prev, ...(card ? [card] : [])])
+    setChain((prev) => [
+      ...prev,
+      { word: check.word, image, zh, bonus: check.inCatalog },
+    ])
     setScore((s) => s + check.score)
     setLastLetter(lastLetterOf(check.word))
   }
@@ -260,24 +292,44 @@ export function WordChainPage() {
           </div>
         </div>
 
+        <p className="px-1 text-[11px] tracking-[0.18em] text-day/45">
+          词库词 ×2 · 词库外的真单词也能接
+        </p>
+
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
-          {chain.map((card, index) => (
+          {chain.map((row, index) => (
             <div
-              key={`${card.word}-${index}`}
+              key={`${row.word}-${index}`}
               className="flex items-center gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-3 py-2"
             >
-              <img
-                src={card.image}
-                alt=""
-                loading="lazy"
-                className="h-11 w-11 flex-none rounded-xl object-cover"
-              />
+              {row.image ? (
+                <img
+                  src={row.image}
+                  alt=""
+                  loading="lazy"
+                  className="h-11 w-11 flex-none rounded-xl object-cover"
+                />
+              ) : (
+                <div
+                  aria-hidden="true"
+                  className="grid h-11 w-11 flex-none place-items-center rounded-xl bg-day/10 font-cue text-lg font-bold tracking-[0.08em] text-day/60"
+                >
+                  {row.word[0].toUpperCase()}
+                </div>
+              )}
               <p className="min-w-0 flex-1 truncate text-lg font-semibold tracking-[0.02em] text-day">
-                {card.word}
+                {row.word}
               </p>
-              <p className="max-w-[45%] flex-none truncate text-right text-sm text-day/55">
-                {card.zh}
-              </p>
+              {row.bonus ? (
+                <span className="flex-none rounded-full border border-gold/40 bg-gold/15 px-2 py-0.5 text-[11px] font-semibold tracking-[0.14em] text-gold">
+                  ×2
+                </span>
+              ) : null}
+              {row.zh ? (
+                <p className="max-w-[45%] flex-none truncate text-right text-sm text-day/55">
+                  {row.zh}
+                </p>
+              ) : null}
             </div>
           ))}
           <div ref={listEndRef} />
