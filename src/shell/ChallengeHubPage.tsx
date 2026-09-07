@@ -12,7 +12,7 @@ import {
 } from '../shared/stageMaterials'
 import { passedLevelCount, useGrammarProgress } from '../features/grammar/lib/storage'
 import { challengeWordCount, useChallengeWords } from '../features/pictures/lib/challengeCollection'
-import { isAiAllowed } from '../ai/allowance'
+import { isAiAllowedWithDetail } from '../ai/allowance'
 import { getOrCreateDeviceId } from '../ai/deviceId'
 import {
   loadBestChain,
@@ -37,20 +37,31 @@ type Door = {
 export function ChallengeHubPage() {
   const grammar = useGrammarProgress()
   useChallengeWords()
-  const [aiOk, setAiOk] = useState<boolean | null>(null)
+  const [aiState, setAiState] = useState<
+    'checking' | 'allowed' | 'denied' | 'error'
+  >('checking')
+  const [aiCheckKey, setAiCheckKey] = useState(0)
   useEffect(() => {
     let cancelled = false
-    void isAiAllowed(getOrCreateDeviceId()).then((ok) => {
-      if (!cancelled) setAiOk(ok)
+    setAiState('checking')
+    void isAiAllowedWithDetail(getOrCreateDeviceId()).then((detail) => {
+      if (cancelled) return
+      setAiState(
+        detail.allowed
+          ? 'allowed'
+          : detail.ok
+            ? 'denied'
+            : 'error',
+      )
     })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [aiCheckKey])
   const { hint, showHint } = useStageHint()
   const grammarOpen = passedLevelCount(grammar) > 0
   const mineOpen = challengeWordCount() > 0
-  const challengerOpen = grammarOpen && aiOk === true
+  const challengerOpen = grammarOpen && aiState === 'allowed'
   const chainBest = loadBestChain()
 
   const doors: Door[] = [
@@ -79,13 +90,23 @@ export function ChallengeHubPage() {
       title: '挑战者',
       detail: challengerOpen
         ? '自由造句连战，3 句击败一个知识点'
-        : aiOk === false
-          ? '需要先开通 AI'
-          : '先去语法学习过一关',
+        : aiState === 'error'
+          ? 'AI 状态确认失败'
+          : aiState === 'denied'
+            ? '需要先开通 AI'
+            : aiState === 'checking'
+              ? '正在确认 AI 状态…'
+              : '先去语法学习过一关',
       to: challengerOpen ? '/practice/challenge/challenger' : null,
       available: challengerOpen,
       unavailableHint:
-        aiOk === false ? '挑战者需要 AI 判定，请先开通' : '先去语法学习过一关',
+        aiState === 'error'
+          ? 'AI 状态确认失败，请检查网络后重试'
+          : aiState === 'denied'
+            ? '挑战者需要 AI 判定，请先开通'
+            : aiState === 'checking'
+              ? '正在确认 AI 状态…'
+              : '先去语法学习过一关',
       material: 'cobalt',
     },
     {
@@ -117,6 +138,15 @@ export function ChallengeHubPage() {
                 onBlocked={() => showHint(door.unavailableHint)}
               />
             ))}
+            {aiState === 'error' ? (
+              <button
+                type="button"
+                onClick={() => setAiCheckKey((k) => k + 1)}
+                className="self-end text-sm tracking-[0.1em] text-day/50 underline-offset-4 hover:underline"
+              >
+                重试 AI 状态
+              </button>
+            ) : null}
           </div>
         </div>
       </StageShell>
