@@ -8,6 +8,7 @@ import { unlockUiSound } from './shared/uiSound'
 import { MePage } from './pages/MePage'
 import { PracticePage } from './features/pictures/pages/PracticePage'
 import { MyChallengePage } from './features/pictures/pages/MyChallengePage'
+import { WordChainPage } from './features/pictures/pages/WordChainPage'
 import { MyChallengeRunPage } from './features/pictures/pages/MyChallengeRunPage'
 import { ReviewPage } from './pages/ReviewPage'
 import { PracticeHomePage } from './shell/PracticeHomePage'
@@ -51,6 +52,10 @@ export default function App() {
           <Route path="/" element={<PracticeHomePage />} />
           <Route path="/practice/pictures" element={<PracticePage />} />
           <Route path="/practice/pictures/play" element={<MyChallengePage />} />
+          <Route
+            path="/practice/pictures/chain"
+            element={<WordChainPage />}
+          />
           <Route path="/practice/pictures/play/run" element={<MyChallengeRunPage />} />
           <Route path="/practice/challenge" element={<ChallengeHubPage />} />
           <Route path="/practice/grammar/learn" element={<LearnListPage />} />

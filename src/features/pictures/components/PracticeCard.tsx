@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { playCardAudio, stopCardAudio } from '../lib/playAudio'
 import {
   hasChallengeWord,
@@ -33,6 +34,8 @@ export interface PracticeCardProps {
   backTo?: string
   onBack?: () => void
   stageTitle?: string
+  /** 练习卡片右上角「接龙」入口（进词语接龙挑战）；sheet 复习态不显示。 */
+  chainEntryTo?: string
 }
 
 const cueButton =
@@ -131,6 +134,7 @@ export function PracticeCard({
   backTo,
   onBack,
   stageTitle = 'Name Everything',
+  chainEntryTo,
 }: PracticeCardProps) {
   const [imageSrc, setImageSrc] = useState(card.image)
   const sheet = chrome === 'sheet'
@@ -285,6 +289,14 @@ export function PracticeCard({
                   tone="onCyc"
                   size="sm"
                 />
+                {chainEntryTo && !sheet ? (
+                  <Link
+                    to={chainEntryTo}
+                    className="inline-flex h-7 items-center rounded-xl border border-day/40 px-2.5 text-sm font-semibold tracking-[0.1em] text-day transition-colors duration-200 ease-out hover:border-day active:brightness-90"
+                  >
+                    接龙
+                  </Link>
+                ) : null}
                 {!sheet && progressLabel ? (
                   <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
                     {progressLabel}

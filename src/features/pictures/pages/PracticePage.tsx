@@ -311,6 +311,7 @@ export function PracticePage() {
           hintLangDefault={progress.settings.hintLang}
           autoSpeak={progress.settings.autoSpeak}
           thinkHoldMs={progress.settings.thinkHoldMs}
+          chainEntryTo="/practice/pictures/chain"
           onGotIt={() => {
             setHeldCard(null)
             advanceAfter((p) => markGotIt(p, shown.id, today))

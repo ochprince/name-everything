@@ -50,6 +50,11 @@ export function isPictureWordsReady(): boolean {
   return memory !== null
 }
 
+/** 词是否在全量目录中（目录未就绪时返回 false）。 */
+export function hasPictureWord(word: string): boolean {
+  return memory?.byWord.has(word) ?? false
+}
+
 export function hydratePictureWords(version: number, rows: PictureWordRow[]) {
   // 词汇记忆学习顺序（用户定案，口语速成/二语习得）：
   // 词性优先级（动词>名词>代词&冠词>介词>形容词>副词）→ 同词性内词频降序。
