@@ -37,7 +37,7 @@
   {
     "id": "gp-ditrans",
     "title_zh": "主谓双宾 S+V+IO+DO",
-    "body_zh": "及物动词后接两个宾语：间接宾语（给谁）+ 直接宾语（给什么）。常见 send / give / show。"
+    "body_zh": "及物动词表达「让某人得到某物」时，可接两个宾语：间接宾语（给/带给谁，指人）+ 直接宾语（给的什么，指物），语序是「人先、物后」。核心语义是物品转移到接收者手上，所以常见动词都是给/递/传/寄/带义——give 给、hand 递、pass 传、lend 借、send 寄/送、bring 和 take 带给（把物品带给某人，如 bring you the book、take him this box）。造句自检：这个动作的结果是让另一个人收到或拿到某物吗？是，双宾就成立。"
   },
   {
     "id": "gp-svo",
@@ -87,7 +87,7 @@
   {
     "id": "gp-svoc",
     "title_zh": "主谓宾补 S+V+O+OC",
-    "body_zh": "主语 + 谓语 + 宾语 + 宾补。宾补说明宾语变成什么或处于什么状态。"
+    "body_zh": "主语 + 谓语 + 宾语 + 宾补：补语不是随手给宾语贴一个形容词，而是描述谓语动作施加在宾语上之后的结果——宾语因为动作变成了什么状态或样子。所以补语动词多为「使成」义：make / keep / find / leave / paint / call / name 等，例如 paint the wall white（墙被刷成白色）、The news made me happy（消息使我开心）。判断关键：去掉补语后动作的影响不完整（光说 paint the wall，没说刷成什么样），这才是需要补语的原因。少数表「认为」的动词（consider / think 接 sb + adj）例外地表示主观看法而非状态变化。"
   },
   {
     "id": "gp-predicate-form",
