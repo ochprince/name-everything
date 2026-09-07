@@ -53,15 +53,15 @@ export default function App() {
           <Route path="/" element={<PracticeHomePage />} />
           <Route path="/practice/pictures" element={<PracticePage />} />
           <Route path="/practice/pictures/play" element={<MyChallengePage />} />
-          <Route
-            path="/practice/pictures/chain"
-            element={<WordChainPage />}
-          />
           <Route path="/practice/pictures/play/run" element={<MyChallengeRunPage />} />
           <Route path="/practice/challenge" element={<ChallengeHubPage />} />
           <Route
             path="/practice/challenge/challenger"
             element={<ChallengerPage />}
+          />
+          <Route
+            path="/practice/challenge/chain"
+            element={<WordChainPage />}
           />
           <Route path="/practice/grammar/learn" element={<LearnListPage />} />
           <Route path="/practice/grammar/learn/:levelId" element={<LearnPage />} />

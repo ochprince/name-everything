@@ -14,6 +14,11 @@ import { passedLevelCount, useGrammarProgress } from '../features/grammar/lib/st
 import { challengeWordCount, useChallengeWords } from '../features/pictures/lib/challengeCollection'
 import { isAiAllowed } from '../ai/allowance'
 import { getOrCreateDeviceId } from '../ai/deviceId'
+import {
+  loadBestChain,
+  CHAIN_TROPHY_SCORE,
+} from '../features/pictures/lib/wordChain'
+import trophyPassed from '../features/grammar/assets/trophy-passed.svg'
 import { StageHint, useStageHint } from '../shared/StageHint'
 import { useEffect, useState } from 'react'
 
@@ -25,6 +30,8 @@ type Door = {
   available: boolean
   unavailableHint: string
   material: StageMaterial
+  /** 历史最高分达到奖杯线时显示小金杯。 */
+  earnedTrophy?: boolean
 }
 
 export function ChallengeHubPage() {
@@ -44,6 +51,7 @@ export function ChallengeHubPage() {
   const grammarOpen = passedLevelCount(grammar) > 0
   const mineOpen = challengeWordCount() > 0
   const challengerOpen = grammarOpen && aiOk === true
+  const chainBest = loadBestChain()
 
   const doors: Door[] = [
     {
@@ -80,6 +88,18 @@ export function ChallengeHubPage() {
         aiOk === false ? '挑战者需要 AI 判定，请先开通' : '先去语法学习过一关',
       material: 'cobalt',
     },
+    {
+      id: 'chain',
+      title: '词语接龙',
+      detail: chainBest
+        ? `历史最高 ${chainBest.score} 分 · ${chainBest.length} 词`
+        : '词库词 ×2，词库外真词也能接',
+      to: '/practice/challenge/chain',
+      available: true,
+      unavailableHint: '',
+      material: 'day',
+      earnedTrophy: chainBest !== null && chainBest.score >= CHAIN_TROPHY_SCORE,
+    },
   ]
 
   return (
@@ -87,7 +107,7 @@ export function ChallengeHubPage() {
       <StageShell header={<StageHeader backTo="/" title="挑战模式" />}>
         <div className="flex flex-1 flex-col gap-4 pt-4">
           <p className="text-pretty text-base font-medium tracking-[0.02em] text-day/70">
-            选一种挑战：语法综合局、你收藏的词汇例句，或自由造句连战。
+            选一种挑战：语法综合局、你收藏的词汇例句、自由造句，或词语接龙。
           </p>
           <div className="flex flex-col gap-2.5">
             {doors.map((door) => (
@@ -130,6 +150,14 @@ function ChallengeDoor({
       <span className="min-w-0 flex-1">
         <span className="block text-xl font-semibold tracking-[0.06em]">
           {door.title}
+          {door.earnedTrophy ? (
+            <img
+              src={trophyPassed}
+              alt="已获词语接龙奖杯"
+              title="词语接龙历史最高分达到 30 分奖杯线"
+              className="ml-2 inline-block h-6 w-6 align-[-4px]"
+            />
+          ) : null}
         </span>
         <span className={`mt-1 block text-base font-medium tracking-[0.02em] ${detailClass}`}>
           {door.detail}

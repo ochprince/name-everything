@@ -10,6 +10,7 @@ import {
 import { useProgress } from '../hooks/useProgress'
 import {
   CHAIN_TIMEOUT_MS,
+  CHAIN_TROPHY_SCORE,
   chainReasonCopy,
   checkChainWord,
   loadBestChain,
@@ -17,6 +18,7 @@ import {
   updateBestChain,
   type WordChainBest,
 } from '../lib/wordChain'
+import trophyPassed from '../../grammar/assets/trophy-passed.svg'
 import { isEnglishWord, loadEnglishWords } from '../lib/englishWord'
 
 const LETTERS_ONLY = /^[a-z]{2,}$/
@@ -207,7 +209,7 @@ export function WordChainPage() {
 
   const header = (
     <StageHeader
-      backTo="/practice/pictures"
+      backTo="/practice/challenge"
       title="词语接龙"
       trailing={
         best ? (
@@ -248,6 +250,12 @@ export function WordChainPage() {
             {isNewBest ? (
               <p className="text-sm font-medium tracking-[0.24em] text-gold">
                 新纪录
+              </p>
+            ) : null}
+            {result.score >= CHAIN_TROPHY_SCORE ? (
+              <p className="flex items-center gap-1.5 text-sm font-medium tracking-[0.18em] text-gold">
+                <img src={trophyPassed} alt="" className="h-5 w-5" />
+                奖杯线 {CHAIN_TROPHY_SCORE} 分达成
               </p>
             ) : null}
             <p className="font-cue text-5xl font-semibold tracking-[0.04em] text-day">

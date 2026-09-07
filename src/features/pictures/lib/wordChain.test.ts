@@ -57,12 +57,32 @@ describe('checkChainWord', () => {
     })
   })
 
-  it('rejects empty and non-letter input', () => {
+  it('cleans voice-input punctuation before judging', () => {
+    // 语音输入常带句号/逗号：与例句判定一致，先清洗再判
+    expect(checkChainWord('Time.', 't', new Set(), checker)).toEqual({
+      ok: true,
+      word: 'time',
+      score: 2,
+      inCatalog: true,
+    })
+    expect(checkChainWord('tiger,', 't', new Set(), checker)).toEqual({
+      ok: true,
+      word: 'tiger',
+      score: 1,
+      inCatalog: false,
+    })
+  })
+
+  it('rejects empty, single-letter and pure-symbol input', () => {
     expect(checkChainWord('   ', 'e', new Set(), checker)).toEqual({
       ok: false,
       reason: 'notword',
     })
-    expect(checkChainWord('time2', 't', new Set(), checker)).toEqual({
+    expect(checkChainWord('t', 't', new Set(), checker)).toEqual({
+      ok: false,
+      reason: 'notword',
+    })
+    expect(checkChainWord('2$%^', 't', new Set(), checker)).toEqual({
       ok: false,
       reason: 'notword',
     })

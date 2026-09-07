@@ -8,12 +8,21 @@ export const CHAIN_TIMEOUT_MS = 10_000
 /** 词库词（命中图片卡）每词得分。 */
 export const CHAIN_CATALOG_BONUS = 1
 
+/** 历史最高分达到该值即得奖杯（挑战门展示）。 */
+export const CHAIN_TROPHY_SCORE = 30
+
 export type WordChainBest = { length: number; score: number }
 
 const BEST_KEY = 'name-everything/wordChain/best'
 
 export function normalizeWord(input: string): string {
   return input.trim().toLowerCase()
+}
+
+/** 与例句判定一致的口径：去标点/特殊符号/空格、统一小写（语音输入常带句号）。 */
+const WORD_CLEAN = /[^a-z]/g
+function cleanChainInput(raw: string): string {
+  return normalizeWord(raw).replace(WORD_CLEAN, '')
 }
 
 export type ChainCheck =
@@ -42,7 +51,7 @@ export function checkChainWord(
   used: Set<string>,
   checker: ChainChecker,
 ): ChainCheck {
-  const word = normalizeWord(raw)
+  const word = cleanChainInput(raw)
   const target = lastLetter.toLowerCase()
   if (!/^[a-z]{2,16}$/.test(word)) return { ok: false, reason: 'notword' }
   if (word[0] !== target) return { ok: false, reason: 'letter' }
