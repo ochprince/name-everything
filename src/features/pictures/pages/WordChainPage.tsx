@@ -318,20 +318,22 @@ export function WordChainPage() {
             <ChainSummary label="得分" value={`${score}`} />
           </div>
         )}
-        <div className="flex min-h-14 flex-none items-center justify-center gap-1.5 rounded-2xl bg-day px-3">
-          <p className="max-w-24 truncate text-sm font-medium tracking-[0.02em] text-cyc/70">
-            {chain[chain.length - 1]?.word}
-          </p>
-          <p aria-hidden="true" className="flex-none text-sm text-cyc/45">
-            →
-          </p>
-          <p className="font-cue text-2xl font-bold tracking-[0.08em] text-cyc">
-            {lastLetter.toUpperCase()}
-          </p>
-          <p className="whitespace-nowrap text-sm tracking-[0.12em] text-cyc/60">
-            开头的词
-          </p>
-        </div>
+        {keyboardOpen ? null : (
+          <div className="flex min-h-14 flex-none items-center justify-center gap-1.5 rounded-2xl bg-day px-3">
+            <p className="max-w-24 truncate text-sm font-medium tracking-[0.02em] text-cyc/70">
+              {chain[chain.length - 1]?.word}
+            </p>
+            <p aria-hidden="true" className="flex-none text-sm text-cyc/45">
+              →
+            </p>
+            <p className="font-cue text-2xl font-bold tracking-[0.08em] text-cyc">
+              {lastLetter.toUpperCase()}
+            </p>
+            <p className="whitespace-nowrap text-sm tracking-[0.12em] text-cyc/60">
+              开头的词
+            </p>
+          </div>
+        )}
 
         {keyboardOpen ? null : (
           <p className="px-1 text-[11px] tracking-[0.18em] text-day/45">
@@ -339,52 +341,68 @@ export function WordChainPage() {
           </p>
         )}
 
-        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
-          {chain.map((row, index) => (
-            <div
-              key={`${row.word}-${index}`}
-              className="flex items-center gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-3 py-2"
-            >
-              {row.image ? (
-                <img
-                  src={row.image}
-                  alt=""
-                  loading="lazy"
-                  className="h-11 w-11 flex-none rounded-xl object-cover"
-                />
-              ) : (
-                <div
-                  aria-hidden="true"
-                  className="grid h-11 w-11 flex-none place-items-center rounded-xl bg-day/10 font-cue text-lg font-bold tracking-[0.08em] text-day/60"
-                >
-                  {row.word[0].toUpperCase()}
-                </div>
-              )}
-              <p className="min-w-0 flex-1 truncate text-lg font-semibold tracking-[0.02em] text-day">
-                {row.word}
-              </p>
-              {row.bonus ? (
-                <span className="flex-none rounded-full border border-gold/40 bg-gold/15 px-2 py-0.5 text-[11px] font-semibold tracking-[0.14em] text-gold">
-                  ×2
-                </span>
-              ) : null}
-              {row.zh ? (
-                <p className="max-w-[45%] flex-none truncate text-right text-sm text-day/55">
-                  {row.zh}
+        {keyboardOpen ? null : (
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
+            {chain.map((row, index) => (
+              <div
+                key={`${row.word}-${index}`}
+                className="flex items-center gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-3 py-2"
+              >
+                {row.image ? (
+                  <img
+                    src={row.image}
+                    alt=""
+                    loading="lazy"
+                    className="h-11 w-11 flex-none rounded-xl object-cover"
+                  />
+                ) : (
+                  <div
+                    aria-hidden="true"
+                    className="grid h-11 w-11 flex-none place-items-center rounded-xl bg-day/10 font-cue text-lg font-bold tracking-[0.08em] text-day/60"
+                  >
+                    {row.word[0].toUpperCase()}
+                  </div>
+                )}
+                <p className="min-w-0 flex-1 truncate text-lg font-semibold tracking-[0.02em] text-day">
+                  {row.word}
                 </p>
-              ) : null}
-            </div>
-          ))}
-          <div ref={listEndRef} />
-        </div>
+                {row.bonus ? (
+                  <span className="flex-none rounded-full border border-gold/40 bg-gold/15 px-2 py-0.5 text-[11px] font-semibold tracking-[0.14em] text-gold">
+                    ×2
+                  </span>
+                ) : null}
+                {row.zh ? (
+                  <p className="max-w-[45%] flex-none truncate text-right text-sm text-day/55">
+                    {row.zh}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+            <div ref={listEndRef} />
+          </div>
+        )}
 
         <form
-          className="flex flex-col gap-2 rounded-2xl border border-day/20 bg-cyc/40 px-3 pb-3 pt-3"
+          className={`flex flex-col gap-2 rounded-2xl border border-day/20 bg-cyc/40 px-3 pb-3 pt-3 ${
+            keyboardOpen ? 'mt-auto' : ''
+          }`}
           onSubmit={(event) => {
             event.preventDefault()
             submit()
           }}
         >
+          {keyboardOpen ? (
+            <p className="flex items-center justify-between gap-2 text-sm tracking-[0.06em] text-day/75">
+              <span className="min-w-0 truncate">
+                上一词{' '}
+                <b className="text-day">{chain[chain.length - 1]?.word}</b> →{' '}
+                <b className="text-day">{lastLetter.toUpperCase()}</b>
+              </span>
+              <span className="flex-none text-day/45">
+                {chain.length} 词 · {score} 分
+              </span>
+            </p>
+          ) : null}
           <div className="h-1.5 overflow-hidden rounded-full bg-day/10">
             <div
               className={`h-full rounded-full transition-none ${
