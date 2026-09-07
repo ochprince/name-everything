@@ -282,7 +282,7 @@ export function PracticeCard({
             onBack={sheet ? onBack : undefined}
             title={sheet ? '复习' : stageTitle}
             trailing={
-              <div className="flex items-center gap-1.5">
+              <div className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
                 <ReportDialog
                   target={{ asset_type: 'picture_word', asset_id: card.word }}
                   label="报错"
@@ -292,13 +292,13 @@ export function PracticeCard({
                 {chainEntryTo && !sheet ? (
                   <Link
                     to={chainEntryTo}
-                    className="inline-flex h-7 items-center rounded-xl border border-day/40 px-2.5 text-sm font-semibold tracking-[0.1em] text-day transition-colors duration-200 ease-out hover:border-day active:brightness-90"
+                    className="text-[13px] font-semibold tracking-[0.08em] text-day/80 transition-colors duration-200 ease-out hover:text-day"
                   >
                     接龙
                   </Link>
                 ) : null}
                 {!sheet && progressLabel ? (
-                  <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
+                  <p className="inline-flex h-7 items-center whitespace-nowrap rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
                     {progressLabel}
                   </p>
                 ) : null}

@@ -244,12 +244,19 @@ export function WordChainPage() {
         <div className="flex items-center gap-3">
           <ChainSummary label="当前链" value={`${chain.length} 词`} />
           <ChainSummary label="得分" value={`${score}`} />
-          <div className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-day px-3">
-            <p className="text-sm tracking-[0.12em] text-cyc/60">接</p>
+          <div className="flex min-h-14 flex-1 items-center justify-center gap-1.5 rounded-2xl bg-day px-3">
+            <p className="max-w-24 truncate text-sm font-medium tracking-[0.02em] text-cyc/70">
+              {chain[chain.length - 1]?.word}
+            </p>
+            <p aria-hidden="true" className="flex-none text-sm text-cyc/45">
+              →
+            </p>
             <p className="font-cue text-2xl font-bold tracking-[0.08em] text-cyc">
               {lastLetter.toUpperCase()}
             </p>
-            <p className="text-sm tracking-[0.12em] text-cyc/60">开头的词</p>
+            <p className="whitespace-nowrap text-sm tracking-[0.12em] text-cyc/60">
+              开头的词
+            </p>
           </div>
         </div>
 
@@ -257,7 +264,7 @@ export function WordChainPage() {
           {chain.map((card, index) => (
             <div
               key={`${card.word}-${index}`}
-              className="flex items-center gap-3 rounded-2xl border border-day/15 bg-cyc/40 px-3 py-2"
+              className="flex items-center gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-3 py-2"
             >
               <img
                 src={card.image}
@@ -268,7 +275,9 @@ export function WordChainPage() {
               <p className="min-w-0 flex-1 truncate text-lg font-semibold tracking-[0.02em] text-day">
                 {card.word}
               </p>
-              <p className="flex-none text-sm text-day/55">{card.zh}</p>
+              <p className="max-w-[45%] flex-none truncate text-right text-sm text-day/55">
+                {card.zh}
+              </p>
             </div>
           ))}
           <div ref={listEndRef} />
