@@ -10,6 +10,8 @@ export type ProduceJudgeVerdict = {
   pass: boolean
   zh: string
   reason: string
+  /** 合格时 AI 的一句话点评（为什么正确）；不合格时为空。 */
+  comment: string
 }
 
 const FALLBACK_FAIL_REASON = '再试试，要用对本关语法，并写成正确的英文句子。'
@@ -51,7 +53,7 @@ function extractJsonObject(text: string): unknown | null {
 export function parseProduceJudgeResponse(text: string): ProduceJudgeVerdict {
   const raw = extractJsonObject(text)
   if (!raw || typeof raw !== 'object') {
-    return { pass: false, zh: '', reason: PARSE_FAIL_REASON }
+    return { pass: false, zh: '', reason: PARSE_FAIL_REASON, comment: '' }
   }
   const obj = raw as Record<string, unknown>
   const pass = obj.pass === true
@@ -60,14 +62,15 @@ export function parseProduceJudgeResponse(text: string): ProduceJudgeVerdict {
     typeof obj.reason === 'string' && obj.reason.trim()
       ? obj.reason.trim()
       : FALLBACK_FAIL_REASON
+  const comment = typeof obj.comment === 'string' ? obj.comment.trim() : ''
 
   if (pass && !zh) {
-    return { pass: false, zh: '', reason: PASS_MISSING_ZH_REASON }
+    return { pass: false, zh: '', reason: PASS_MISSING_ZH_REASON, comment: '' }
   }
   if (pass) {
-    return { pass: true, zh, reason: '' }
+    return { pass: true, zh, reason: '', comment }
   }
-  return { pass: false, zh: '', reason }
+  return { pass: false, zh: '', reason, comment: '' }
 }
 
 export function buildProduceJudgePrompt(input: {
@@ -94,7 +97,7 @@ export function buildProduceJudgePrompt(input: {
     samples,
     '',
     '只输出一个 JSON 对象，不要其它文字：',
-    '{"pass":true|false,"zh":"合格时给中文译文，否则空字符串","reason":"不合格时用一两句中文说明原因，合格时为空字符串"}',
+    '{"pass":true|false,"zh":"合格时给中文译文，否则空字符串","reason":"不合格时用一两句中文说明原因，否则空字符串","comment":"合格时用一句话中文点评，说明为什么正确（例如点出用对了哪个语法结构），否则空字符串"}',
   ].join('\n')
 
   return { instructions, input: input.learnerEn.trim() }
@@ -122,7 +125,7 @@ export async function judgeProduceSentence(
     deviceId: input.deviceId,
     timeoutMs: input.timeoutMs,
     temperature: 0.2,
-    maxOutputTokens: 256,
+    maxOutputTokens: 320,
   })
   return parseProduceJudgeResponse(result.text)
 }

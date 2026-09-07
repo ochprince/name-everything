@@ -288,6 +288,12 @@ function FallingBoard({
   const [gateDraft, setGateDraft] = useState('')
   const [gateBusy, setGateBusy] = useState(false)
   const [gateFeedback, setGateFeedback] = useState<string | null>(null)
+  /** 判定合格后的结果（AI 译文 + 点评）；非空时门闩页显示通过态。 */
+  const [gateResult, setGateResult] = useState<{
+    en: string
+    zh: string
+    comment: string
+  } | null>(null)
   const usedRef = useRef<string[]>(firstId ? [firstId] : [])
   const settled = useRef(false)
   const pendingAdvanceRef = useRef<(() => void) | null>(null)
@@ -624,6 +630,7 @@ function FallingBoard({
     setGateDraft('')
     setGateFeedback(null)
     setGateBusy(false)
+    setGateResult(null)
     setProduceGateActive(true)
   }
 
@@ -693,7 +700,12 @@ function FallingBoard({
           zh: verdict.zh,
           deviceId,
         })
-        finishRound()
+        // 通过态：展示 AI 译文与点评，用户看完点「查看结算」再进结算页。
+        setGateResult({
+          en: trimmed,
+          zh: verdict.zh,
+          comment: verdict.comment,
+        })
         return
       }
       playUiFail()
@@ -771,6 +783,7 @@ function FallingBoard({
     const point = level ? pointById(level.grammar_point_id) : undefined
     return (
       <StageShell
+        lockViewport
         header={<StageHeader backTo={backTo} title="举一反三" />}
       >
         <ProduceGatePanel
@@ -783,6 +796,8 @@ function FallingBoard({
           }}
           busy={gateBusy}
           feedback={gateFeedback}
+          result={gateResult}
+          onFinish={finishRound}
         />
       </StageShell>
     )

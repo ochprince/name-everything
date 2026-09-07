@@ -58,4 +58,51 @@ describe('ProduceGatePanel', () => {
     )
     expect(screen.getByRole('button', { name: /判定中|提交/ })).toBeDisabled()
   })
+
+  it('shows passed result with zh, comment and finish button', async () => {
+    const user = userEvent.setup()
+    const onFinish = vi.fn()
+    render(
+      <ProduceGatePanel
+        titleZh="与格"
+        bodyZh="body"
+        draft="I gave her a gift."
+        onDraftChange={() => {}}
+        onSubmit={() => {}}
+        busy={false}
+        feedback={null}
+        result={{
+          en: 'I gave her a gift.',
+          zh: '我送了她一份礼物。',
+          comment: 'gave 后接人再接物，与格结构正确。',
+        }}
+        onFinish={onFinish}
+      />,
+    )
+    expect(screen.getByText('判定通过')).toBeInTheDocument()
+    expect(screen.getByText('我送了她一份礼物。')).toBeInTheDocument()
+    expect(screen.getByText('I gave her a gift.')).toBeInTheDocument()
+    expect(
+      screen.getByText('gave 后接人再接物，与格结构正确。'),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '查看结算' }))
+    expect(onFinish).toHaveBeenCalledOnce()
+  })
+
+  it('falls back to a generic comment when AI comment is empty', () => {
+    render(
+      <ProduceGatePanel
+        titleZh="与格"
+        bodyZh="body"
+        draft="I gave her a gift."
+        onDraftChange={() => {}}
+        onSubmit={() => {}}
+        busy={false}
+        feedback={null}
+        result={{ en: 'I gave her a gift.', zh: '我送了她一份礼物。', comment: '  ' }}
+        onFinish={() => {}}
+      />,
+    )
+    expect(screen.getByText(/句子结构正确/)).toBeInTheDocument()
+  })
 })

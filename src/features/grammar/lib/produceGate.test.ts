@@ -56,17 +56,22 @@ describe('parseProduceJudgeResponse', () => {
   it('parses pass with zh', () => {
     expect(
       parseProduceJudgeResponse(
-        '{"pass":true,"zh":"我给他一本书。","reason":""}',
+        '{"pass":true,"zh":"我给他一本书。","reason":"","comment":"用对了与格结构，动词后直接接间接宾语。"}',
       ),
-    ).toEqual({ pass: true, zh: '我给他一本书。', reason: '' })
+    ).toEqual({
+      pass: true,
+      zh: '我给他一本书。',
+      reason: '',
+      comment: '用对了与格结构，动词后直接接间接宾语。',
+    })
   })
 
   it('parses fail with reason from fenced json', () => {
     expect(
       parseProduceJudgeResponse(
-        '```json\n{"pass":false,"zh":"","reason":"没有用到与格结构"}\n```',
+        '```json\n{"pass":false,"zh":"","reason":"没有用到与格结构","comment":""}\n```',
       ),
-    ).toEqual({ pass: false, zh: '', reason: '没有用到与格结构' })
+    ).toEqual({ pass: false, zh: '', reason: '没有用到与格结构', comment: '' })
   })
 
   it('treats pass without zh as fail', () => {
@@ -101,7 +106,7 @@ describe('judgeProduceSentence', () => {
   it('returns parsed verdict from completeText', async () => {
     const completeText = vi.fn().mockResolvedValue({
       id: 'j1',
-      text: '{"pass":true,"zh":"我把钥匙递给她。","reason":""}',
+      text: '{"pass":true,"zh":"我把钥匙递给她。","reason":"","comment":"hand 后接人再接物，与格结构正确。"}',
       model: 'x',
     })
     const { judgeProduceSentence } = await import('./produceGate')
@@ -119,6 +124,7 @@ describe('judgeProduceSentence', () => {
       pass: true,
       zh: '我把钥匙递给她。',
       reason: '',
+      comment: 'hand 后接人再接物，与格结构正确。',
     })
     expect(completeText).toHaveBeenCalledOnce()
   })
