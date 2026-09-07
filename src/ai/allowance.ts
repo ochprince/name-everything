@@ -1,4 +1,9 @@
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase'
+import {
+  isAiAllowCacheFresh,
+  readAiAllowCache,
+  writeAiAllowCache,
+} from './allowCache'
 
 export {
   AI_ALLOW_DEVICE_IDS_KEY,
@@ -15,6 +20,36 @@ export {
  */
 export async function isAiAllowed(deviceId: string): Promise<boolean> {
   return (await isAiAllowedWithDetail(deviceId)).allowed
+}
+
+/**
+ * 懒加载版确认：TTL 内直接读本地缓存（不发起请求）；
+ * 过期/无缓存才真实调 RPC，成功后回写缓存。
+ * 真实请求失败时：有缓存就沿用缓存值（离线降级），无缓存则如实返回失败。
+ */
+export async function checkAiAllowedCached(
+  deviceId: string,
+): Promise<AiAllowedDetail> {
+  if (isAiAllowCacheFresh()) {
+    const cache = readAiAllowCache()
+    if (cache) return { allowed: cache.allowed, ok: true }
+  }
+  const detail = await isAiAllowedWithDetail(deviceId)
+  if (detail.ok) {
+    writeAiAllowCache(detail.allowed)
+    return detail
+  }
+  const cache = readAiAllowCache()
+  if (cache) return { allowed: cache.allowed, ok: true }
+  return detail
+}
+
+/**
+ * 真实判句被后端拒绝（设备未开通/quota_users）时调用：
+ * 把缓存立即置为「未开通」并标记过期，下次入口会重查，而不是锁死 6 小时。
+ */
+export function invalidateAiAllowCache(): void {
+  writeAiAllowCache(false, { expired: true })
 }
 
 export type AiAllowedDetail = {

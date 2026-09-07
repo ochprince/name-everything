@@ -1,5 +1,5 @@
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase'
-import { isAiAllowed } from './allowance'
+import { checkAiAllowedCached } from './allowance'
 import {
   jobChannelName,
   type AiDonePayload,
@@ -61,7 +61,8 @@ export async function completeText(
     )
   }
 
-  if (!(await isAiAllowed(options.deviceId))) {
+  const detail = await checkAiAllowedCached(options.deviceId)
+  if (!detail.allowed) {
     throw new AiJobError('quota_users')
   }
 

@@ -38,7 +38,7 @@ import {
   recordSentenceOutcome,
   useGrammarProgress,
 } from '../lib/storage'
-import { isAiAllowed } from '../../../ai/allowance'
+import { checkAiAllowedCached } from '../../../ai/allowance'
 import { getOrCreateDeviceId } from '../../../ai/deviceId'
 import { ProduceGatePanel } from '../components/ProduceGatePanel'
 import {
@@ -320,8 +320,8 @@ function FallingBoard({
       return
     }
     let cancelled = false
-    void isAiAllowed(getOrCreateDeviceId()).then((ok) => {
-      if (!cancelled) setAiAllowed(ok)
+    void checkAiAllowedCached(getOrCreateDeviceId()).then((detail) => {
+      if (!cancelled) setAiAllowed(detail.allowed)
     })
     return () => {
       cancelled = true
@@ -612,7 +612,8 @@ function FallingBoard({
 
     let allowed = aiAllowed
     if (allowed === null) {
-      allowed = await isAiAllowed(getOrCreateDeviceId())
+      const detail = await checkAiAllowedCached(getOrCreateDeviceId())
+      allowed = detail.allowed
       setAiAllowed(allowed)
     }
 

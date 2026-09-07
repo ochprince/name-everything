@@ -18,7 +18,7 @@ import {
   loadBestChallengerStreak,
   updateBestChallengerStreak,
 } from '../lib/challenger'
-import { isAiAllowedWithDetail } from '../../../ai/allowance'
+import { checkAiAllowedCached } from '../../../ai/allowance'
 import { getOrCreateDeviceId } from '../../../ai/deviceId'
 
 const HIT_TOTAL = 3
@@ -78,7 +78,7 @@ export function ChallengerPage() {
   async function startGame() {
     setPhase('loading')
     try {
-      const detail = await isAiAllowedWithDetail(getOrCreateDeviceId())
+      const detail = await checkAiAllowedCached(getOrCreateDeviceId())
       if (!detail.ok) {
         // 网络失败/超时：能确认"没放行"，但没说清是没开通还是网络问题
         setPhase('error')

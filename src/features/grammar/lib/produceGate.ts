@@ -3,6 +3,7 @@ import {
   completeText as defaultCompleteText,
 } from '../../../ai/client'
 import type { CompleteTextOptions, CompleteTextResult } from '../../../ai/client'
+import { invalidateAiAllowCache } from '../../../ai/allowance'
 
 export type ProduceGateMode = 'level' | 'arcade' | 'vocab'
 
@@ -158,7 +159,11 @@ export async function judgeProduceSentence(
 /** User-facing copy when the judge request itself fails. */
 export function formatProduceJudgeError(error: unknown): string {
   if (error instanceof AiJobError) {
-    if (error.code === 'quota_users') return '当前设备未开通 AI，无法判定。'
+    if (error.code === 'quota_users') {
+      // 真实判句被拒 = 白名单状态已变：失效本地缓存，下次入口重查
+      invalidateAiAllowCache()
+      return '当前设备未开通 AI，无法判定。'
+    }
     if (error.code === 'timeout') return '判定超时，请再提交一次。'
     if (error.code === 'quota_daily' || error.code === 'rate_limited') {
       return 'AI 暂时繁忙，请稍后再试。'

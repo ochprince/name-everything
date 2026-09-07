@@ -12,7 +12,8 @@ import {
 } from '../shared/stageMaterials'
 import { passedLevelCount, useGrammarProgress } from '../features/grammar/lib/storage'
 import { challengeWordCount, useChallengeWords } from '../features/pictures/lib/challengeCollection'
-import { isAiAllowedWithDetail } from '../ai/allowance'
+import { checkAiAllowedCached } from '../ai/allowance'
+import { readAiAllowCache } from '../ai/allowCache'
 import { getOrCreateDeviceId } from '../ai/deviceId'
 import {
   loadBestChain,
@@ -39,12 +40,14 @@ export function ChallengeHubPage() {
   useChallengeWords()
   const [aiState, setAiState] = useState<
     'checking' | 'allowed' | 'denied' | 'error'
-  >('checking')
+  >(() => {
+    const cache = readAiAllowCache()
+    return cache ? (cache.allowed ? 'allowed' : 'denied') : 'checking'
+  })
   const [aiCheckKey, setAiCheckKey] = useState(0)
   useEffect(() => {
     let cancelled = false
-    setAiState('checking')
-    void isAiAllowedWithDetail(getOrCreateDeviceId()).then((detail) => {
+    void checkAiAllowedCached(getOrCreateDeviceId()).then((detail) => {
       if (cancelled) return
       setAiState(
         detail.allowed
