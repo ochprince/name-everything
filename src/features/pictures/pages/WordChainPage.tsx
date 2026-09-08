@@ -552,16 +552,34 @@ export function WordChainPage() {
           }}
         >
           {keyboardOpen ? (
-            <p className="flex items-center justify-between gap-2 text-sm tracking-[0.06em] text-day/75">
-              <span className="min-w-0 truncate">
-                上一词{' '}
-                <b className="text-day">{chain[chain.length - 1]?.word}</b> →{' '}
-                <b className="text-day">{lastLetter.toUpperCase()}</b>
-              </span>
-              <span className="flex-none text-day/45">
-                {chain.length} 词 · {score} 分
-              </span>
-            </p>
+            <div className="flex flex-col gap-1.5">
+              {/* 最近几个已接词 + 目标字母（可横向滑，贴键盘不被顶走） */}
+              <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap pb-0.5 overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {chain.slice(-4).map((row, index) => (
+                  <span
+                    key={`${row.word}-${index}`}
+                    className={`flex-none rounded-lg px-2 py-1 text-sm tracking-[0.02em] ${
+                      index === chain.slice(-4).length - 1
+                        ? 'bg-day/10 text-day'
+                        : 'bg-day/[0.06] text-day/55'
+                    }`}
+                  >
+                    {row.word}
+                  </span>
+                ))}
+                {chain.length > 0 ? (
+                  <span aria-hidden="true" className="flex-none text-day/40">
+                    →
+                  </span>
+                ) : null}
+                <span className="flex-none rounded-lg bg-day px-2 py-1 font-cue text-base font-bold tracking-[0.06em] text-cyc">
+                  {lastLetter.toUpperCase()}
+                </span>
+              </div>
+              <p className="text-right text-[11px] tracking-[0.14em] text-day/45">
+                已接 {chain.length} 词 · {score} 分
+              </p>
+            </div>
           ) : null}
           <div className="h-1.5 overflow-hidden rounded-full bg-day/10">
             <div
