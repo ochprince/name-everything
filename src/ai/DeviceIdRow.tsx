@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { isAiAllowed } from './allowance'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { checkAiAllowedCached, isAiAllowedWithDetail } from './allowance'
+import { writeAiAllowCache } from './allowCache'
 import { getOrCreateDeviceId } from './deviceId'
 
 const holdButton =
@@ -29,18 +30,33 @@ export function DeviceIdRow() {
   const id = getOrCreateDeviceId()
   const [copied, setCopied] = useState(false)
   const [allowed, setAllowed] = useState<boolean | null>(null)
+  const [checking, setChecking] = useState(true)
   const timer = useRef<number | null>(null)
 
+  // 缓存优先：TTL 内直接读本地状态，不再每次打开「我的」都真实调接口。
+  const refresh = useCallback(
+    async (force: boolean) => {
+      setChecking(true)
+      if (force) {
+        // 手动「重新检测」：绕过缓存走真实 RPC，成功即回写缓存。
+        const detail = await isAiAllowedWithDetail(id)
+        if (detail.ok) writeAiAllowCache(detail.allowed)
+        setAllowed(detail.allowed)
+      } else {
+        const detail = await checkAiAllowedCached(id)
+        setAllowed(detail.allowed)
+      }
+      setChecking(false)
+    },
+    [id],
+  )
+
   useEffect(() => {
-    let cancelled = false
-    void isAiAllowed(id).then((ok) => {
-      if (!cancelled) setAllowed(ok)
-    })
+    void refresh(false)
     return () => {
-      cancelled = true
       if (timer.current !== null) window.clearTimeout(timer.current)
     }
-  }, [id])
+  }, [refresh])
 
   async function onCopy() {
     await copyText(id)
@@ -69,6 +85,14 @@ export function DeviceIdRow() {
           className={`${holdButton} bg-day text-cyc hover:brightness-105`}
         >
           {copied ? '已复制' : '复制'}
+        </button>
+        <button
+          type="button"
+          disabled={checking}
+          onClick={() => void refresh(true)}
+          className={`${holdButton} border border-day/30 bg-cyc text-day/85 hover:border-day/60 disabled:opacity-50`}
+        >
+          {checking ? '检测中…' : '重新检测'}
         </button>
       </div>
     </div>
