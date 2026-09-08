@@ -13,8 +13,10 @@ import {
   CHAIN_TROPHY_SCORE,
   chainReasonCopy,
   checkChainWord,
+  countChainTrophy,
   loadBestChain,
   loadChainHistory,
+  loadChainTrophyCount,
   pickStartWord,
   recordChainRun,
   updateBestChain,
@@ -79,6 +81,9 @@ export function WordChainPage() {
   const [best, setBest] = useState<WordChainBest | null>(() => loadBestChain())
   const [history, setHistory] = useState<WordChainRun[]>(() =>
     loadChainHistory(),
+  )
+  const [trophyCount, setTrophyCount] = useState<number>(() =>
+    loadChainTrophyCount(),
   )
   const [result, setResult] = useState<WordChainBest | null>(null)
   const [isNewBest, setIsNewBest] = useState(false)
@@ -185,6 +190,7 @@ export function WordChainPage() {
     const outcome = updateBestChain(roundResult)
     recordChainRun({ ...roundResult, at: Date.now() })
     setHistory(loadChainHistory())
+    setTrophyCount(countChainTrophy(total))
     setBest(outcome.best)
     setIsNewBest(outcome.isNew)
     setResult(roundResult)
@@ -259,39 +265,32 @@ export function WordChainPage() {
     return (
       <StageShell header={header} lockViewport>
         <div className="flex min-h-0 flex-1 flex-col gap-3 px-1 pt-3">
-          {/* 第一行：奖杯 + 纪录（右上角只留玩法入口，纪录不再重复） */}
+          {/* 第一行：奖杯累计 + 纪录（右上角只留玩法入口，纪录不重复占位） */}
           <div className="flex flex-none items-center gap-3 rounded-2xl border border-day/15 bg-cyc/40 px-4 py-3">
             <img
               src={trophyPassed}
               alt=""
-              className={`h-10 w-10 flex-none ${
-                best && best.score >= CHAIN_TROPHY_SCORE ? '' : 'opacity-30'
+              className={`h-11 w-11 flex-none ${
+                trophyCount > 0 ? '' : 'opacity-30'
               }`}
             />
             <div className="min-w-0 flex-1">
+              <p className="flex items-baseline gap-2">
+                <span className="font-cue text-3xl font-semibold tracking-[0.04em] text-day">
+                  {trophyCount}
+                </span>
+                <span className="text-sm font-medium tracking-[0.16em] text-gold">
+                  座奖杯
+                </span>
+              </p>
               {best ? (
-                <>
-                  <p className="font-cue text-2xl font-semibold tracking-[0.04em] text-day">
-                    {best.score}
-                    <span className="ml-1 text-sm font-medium text-day/55">
-                      分
-                    </span>
-                    <span className="ml-3 text-base font-medium text-day/60">
-                      {best.length} 词
-                    </span>
-                  </p>
-                  {best.score >= CHAIN_TROPHY_SCORE ? (
-                    <p className="text-xs tracking-[0.18em] text-gold">
-                      奖杯线 {CHAIN_TROPHY_SCORE} 分已达成
-                    </p>
-                  ) : (
-                    <p className="text-xs tracking-[0.1em] text-day/45">
-                      达到 {CHAIN_TROPHY_SCORE} 分点亮奖杯
-                    </p>
-                  )}
-                </>
+                <p className="text-xs tracking-[0.1em] text-day/50">
+                  历史最高 {best.score} 分 · {best.length} 词
+                </p>
               ) : (
-                <p className="text-base text-day/70">还没有纪录，来一局吧</p>
+                <p className="text-xs tracking-[0.1em] text-day/45">
+                  单局 {CHAIN_TROPHY_SCORE} 分获得一座，可重复累积
+                </p>
               )}
             </div>
           </div>
@@ -373,7 +372,7 @@ export function WordChainPage() {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-gold">●</span>
-                  单局达到 {CHAIN_TROPHY_SCORE} 分点亮奖杯
+                  单局 {CHAIN_TROPHY_SCORE} 分获得一座奖杯，可重复累积
                 </li>
               </ul>
               <button

@@ -18,6 +18,7 @@ export type WordChainRun = WordChainBest & { at: number }
 
 const BEST_KEY = 'name-everything/wordChain/best'
 const HISTORY_KEY = 'name-everything/wordChain/history'
+const TROPHY_KEY = 'name-everything/wordChain/trophies'
 const HISTORY_MAX = 20
 
 export function normalizeWord(input: string): string {
@@ -158,4 +159,37 @@ export function recordChainRun(run: WordChainRun): void {
   } catch {
     // storage 不可用时静默
   }
+}
+
+/**
+ * 终身累计奖杯数（每局 score ≥ CHAIN_TROPHY_SCORE 加一座，不只点亮一次）。
+ * 独立计数器，不依赖会被截断的历史列表；旧数据首次读取时从历史回填。
+ */
+export function loadChainTrophyCount(): number {
+  try {
+    const raw = localStorage.getItem(TROPHY_KEY)
+    if (raw !== null) {
+      const n = Number(raw)
+      if (Number.isFinite(n) && n >= 0) return Math.floor(n)
+    }
+    // 首次读取（升级前无计数器）：从已有历史回填
+    const backfill = loadChainHistory().filter(
+      (run) => run.score >= CHAIN_TROPHY_SCORE,
+    ).length
+    localStorage.setItem(TROPHY_KEY, String(backfill))
+    return backfill
+  } catch {
+    return 0
+  }
+}
+
+/** 本局得分达奖杯线则 +1；返回最新累计数。 */
+export function countChainTrophy(score: number): number {
+  const next = loadChainTrophyCount() + (score >= CHAIN_TROPHY_SCORE ? 1 : 0)
+  try {
+    localStorage.setItem(TROPHY_KEY, String(next))
+  } catch {
+    // storage 不可用时静默
+  }
+  return next
 }

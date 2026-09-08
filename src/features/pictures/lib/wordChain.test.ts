@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   chainReasonCopy,
   checkChainWord,
+  countChainTrophy,
   loadBestChain,
   loadChainHistory,
+  loadChainTrophyCount,
   normalizeWord,
   pickStartWord,
   recordChainRun,
@@ -146,6 +148,25 @@ describe('best record', () => {
       { length: 5, score: 9, at: 200 },
       { length: 3, score: 4, at: 100 },
     ])
+    localStorage.clear()
+  })
+
+  it('counts trophies cumulatively, backfilling from history once', () => {
+    // 空状态 → 0
+    localStorage.clear()
+    expect(loadChainTrophyCount()).toBe(0)
+
+    // 升级场景：旧数据只有历史、没有计数器 → 首读回填 2
+    localStorage.removeItem('name-everything/wordChain/trophies')
+    recordChainRun({ length: 30, score: 31, at: 100 })
+    recordChainRun({ length: 35, score: 40, at: 200 })
+    recordChainRun({ length: 5, score: 5, at: 300 })
+    expect(loadChainTrophyCount()).toBe(2)
+
+    // 之后每局达线 +1，未达线不变（可重复累积）
+    expect(countChainTrophy(30)).toBe(3)
+    expect(countChainTrophy(29)).toBe(3)
+    expect(loadChainTrophyCount()).toBe(3)
     localStorage.clear()
   })
 
