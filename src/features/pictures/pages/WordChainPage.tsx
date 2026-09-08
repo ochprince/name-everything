@@ -14,9 +14,12 @@ import {
   chainReasonCopy,
   checkChainWord,
   loadBestChain,
+  loadChainHistory,
   pickStartWord,
+  recordChainRun,
   updateBestChain,
   type WordChainBest,
+  type WordChainRun,
 } from '../lib/wordChain'
 import trophyPassed from '../../grammar/assets/trophy-passed.svg'
 import { isEnglishWord, loadEnglishWords } from '../lib/englishWord'
@@ -42,6 +45,13 @@ function lastLetterOf(word: string): string {
   return word[word.length - 1]
 }
 
+function fmtRunTime(at: number): string {
+  const d = new Date(at)
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  return `${d.getMonth() + 1}/${d.getDate()} ${hh}:${mm}`
+}
+
 function ChainSummary({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-day/15 bg-cyc/40 px-3 py-2 text-center">
@@ -57,10 +67,9 @@ function ChainSummary({ label, value }: { label: string; value: string }) {
 
 export function WordChainPage() {
   const { progress } = useProgress()
-  const [phase, setPhase] = useState<'loading' | 'error' | 'play' | 'done'>(
-    'loading',
+  const [phase, setPhase] = useState<'ready' | 'loading' | 'error' | 'play' | 'done'>(
+    'ready',
   )
-  const [retryKey, setRetryKey] = useState(0)
   const [chain, setChain] = useState<ChainRow[]>([])
   const [lastLetter, setLastLetter] = useState('')
   const [score, setScore] = useState(0)
@@ -68,11 +77,15 @@ export function WordChainPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [remainingMs, setRemainingMs] = useState(CHAIN_TIMEOUT_MS)
   const [best, setBest] = useState<WordChainBest | null>(() => loadBestChain())
+  const [history, setHistory] = useState<WordChainRun[]>(() =>
+    loadChainHistory(),
+  )
   const [result, setResult] = useState<WordChainBest | null>(null)
   const [isNewBest, setIsNewBest] = useState(false)
   const usedRef = useRef<Set<string>>(new Set())
   const catalogRef = useRef<Set<string>>(new Set())
   const settledRef = useRef(false)
+  const startingRef = useRef(false)
   const listEndRef = useRef<HTMLDivElement>(null)
   const keyboardOverlapPx = useKeyboardOverlapPx()
   const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
@@ -85,6 +98,8 @@ export function WordChainPage() {
   )
 
   const startGame = useCallback(async () => {
+    if (startingRef.current) return
+    startingRef.current = true
     setPhase('loading')
     setResult(null)
     setIsNewBest(false)
@@ -124,17 +139,16 @@ export function WordChainPage() {
       setPhase('play')
     } catch {
       setPhase('error')
+    } finally {
+      startingRef.current = false
     }
   }, [allPriorityWords, progress.strongIds, progress.warmIds])
 
   useEffect(() => {
-    void startGame()
-  }, [startGame, retryKey])
-
-  // 后台预取英文词表（词库外真词判定用；离线则退回启发式）
-  useEffect(() => {
+    if (phase !== 'ready') return
+    // 进场页预取英文词表（词库外真词判定用；离线则退回启发式）
     void loadEnglishWords()
-  }, [])
+  }, [phase])
 
   // 每个新词重置倒计时（chain 变化即新词入链）
   useEffect(() => {
@@ -166,6 +180,8 @@ export function WordChainPage() {
     const length = chain.length
     const total = score
     const outcome = updateBestChain({ length, score: total })
+    recordChainRun({ length, score: total, at: Date.now() })
+    setHistory(loadChainHistory())
     setBest(outcome.best)
     setIsNewBest(outcome.isNew)
     setResult(outcome.best)
@@ -227,6 +243,102 @@ export function WordChainPage() {
     />
   )
 
+  if (phase === 'ready') {
+    return (
+      <StageShell header={header}>
+        <div className="flex flex-col gap-4 px-1 pt-4">
+          <div className="flex flex-col gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-4 py-4">
+            <p className="text-[10px] font-medium tracking-[0.24em] text-day/50">
+              历史最高
+            </p>
+            {best ? (
+              <>
+                <p className="font-cue text-4xl font-semibold tracking-[0.04em] text-day">
+                  {best.score}
+                  <span className="ml-1.5 text-base font-medium text-day/60">
+                    分
+                  </span>
+                  <span className="ml-3 text-lg font-medium text-day/60">
+                    {best.length} 词
+                  </span>
+                </p>
+                {best.score >= CHAIN_TROPHY_SCORE ? (
+                  <p className="flex items-center gap-1.5 text-sm font-medium tracking-[0.18em] text-gold">
+                    <img src={trophyPassed} alt="" className="h-5 w-5" />
+                    奖杯线 {CHAIN_TROPHY_SCORE} 分已达成
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <p className="text-base text-day/70">还没有纪录，来一局吧</p>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-day/15 bg-cyc/40 px-4 py-3">
+            <ul className="flex flex-col gap-2.5 text-sm leading-relaxed tracking-[0.02em] text-day/80">
+              <li className="flex gap-2">
+                <span className="text-gold">●</span>
+                下一个词以上一词结尾字母开头
+              </li>
+              <li className="flex gap-2">
+                <span className="text-gold">●</span>
+                词库里的词 ×2，词库外的真单词也能接
+              </li>
+              <li className="flex gap-2">
+                <span className="text-gold">●</span>
+                每词 10 秒倒计时，超时即结算
+              </li>
+            </ul>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <p className="px-1 text-[10px] font-medium tracking-[0.24em] text-day/50">
+              历史对局
+            </p>
+            {history.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-day/20 px-4 py-5 text-center text-sm text-day/45">
+                完成一局后，这里会留下纪录
+              </p>
+            ) : (
+              <div className="flex flex-col divide-y divide-day/10 rounded-2xl border border-day/15 bg-cyc/40">
+                {history.slice(0, 6).map((run, index) => (
+                  <div
+                    key={`${run.at}-${index}`}
+                    className="flex items-center gap-3 px-4 py-2.5"
+                  >
+                    <p className="font-cue text-lg font-semibold tracking-[0.04em] text-day">
+                      {run.score}
+                      <span className="ml-1 text-sm text-day/55">分</span>
+                    </p>
+                    <p className="text-sm text-day/60">{run.length} 词</p>
+                    {run.score >= CHAIN_TROPHY_SCORE ? (
+                      <img
+                        src={trophyPassed}
+                        alt="奖杯"
+                        className="h-4 w-4 flex-none"
+                      />
+                    ) : null}
+                    <p className="ml-auto flex-none text-xs tracking-[0.08em] text-day/40">
+                      {fmtRunTime(run.at)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void startGame()}
+            className="mt-1 inline-flex min-h-14 w-full items-center justify-center rounded-2xl bg-day px-6 font-cue text-lg font-semibold tracking-[0.1em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 active:brightness-95"
+          >
+            开始游戏
+          </button>
+        </div>
+      </StageShell>
+    )
+  }
+
   if (phase === 'loading' || phase === 'error') {
     return (
       <StageShell header={header}>
@@ -237,7 +349,7 @@ export function WordChainPage() {
           {phase === 'error' ? (
             <button
               type="button"
-              onClick={() => setRetryKey((k) => k + 1)}
+              onClick={() => void startGame()}
               className="inline-flex min-h-12 min-w-[10rem] items-center justify-center rounded-2xl bg-day px-6 font-cue text-base font-semibold tracking-[0.08em] text-cyc"
             >
               重试

@@ -13,7 +13,12 @@ export const CHAIN_TROPHY_SCORE = 30
 
 export type WordChainBest = { length: number; score: number }
 
+/** 历史对局（完整结算一次记一条，新局在前）。 */
+export type WordChainRun = WordChainBest & { at: number }
+
 const BEST_KEY = 'name-everything/wordChain/best'
+const HISTORY_KEY = 'name-everything/wordChain/history'
+const HISTORY_MAX = 20
 
 export function normalizeWord(input: string): string {
   return input.trim().toLowerCase()
@@ -104,7 +109,7 @@ export function loadBestChain(): WordChainBest | null {
   }
 }
 
-/** 结算时更新纪录；返回是否刷新（严格高于原纪录，score 优先）。 */
+/** 结算时更新纪录；返回 { 实际最高纪录, 是否刷新 }（score 优先，并列比链长）。 */
 export function updateBestChain(
   result: WordChainBest,
 ): { best: WordChainBest; isNew: boolean } {
@@ -120,5 +125,37 @@ export function updateBestChain(
       // storage 不可用时静默：纪录只是锦上添花
     }
   }
-  return { best: result, isNew }
+  // 未刷新时返回仍存的最高纪录，而不是本次结果——否则页面会把当前分当纪录展示
+  const best = isNew ? result : (prev ?? result)
+  return { best, isNew }
+}
+
+/** 历史对局列表（新局在前，最多 HISTORY_MAX 条）。 */
+export function loadChainHistory(): WordChainRun[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as WordChainRun[]
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter(
+      (run) =>
+        run !== null &&
+        typeof run === 'object' &&
+        Number.isFinite(run.length) &&
+        Number.isFinite(run.score) &&
+        Number.isFinite(run.at),
+    )
+  } catch {
+    return []
+  }
+}
+
+/** 记一条完整对局到历史（新局在前）。 */
+export function recordChainRun(run: WordChainRun): void {
+  try {
+    const next = [run, ...loadChainHistory()].slice(0, HISTORY_MAX)
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(next))
+  } catch {
+    // storage 不可用时静默
+  }
 }

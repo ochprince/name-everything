@@ -3,8 +3,10 @@ import {
   chainReasonCopy,
   checkChainWord,
   loadBestChain,
+  loadChainHistory,
   normalizeWord,
   pickStartWord,
+  recordChainRun,
   updateBestChain,
 } from './wordChain'
 
@@ -125,8 +127,25 @@ describe('best record', () => {
     // same length but higher score -> new record
     expect(updateBestChain({ length: 3, score: 5 }).isNew).toBe(true)
     // lower score -> not a record even with longer chain
-    expect(updateBestChain({ length: 4, score: 3 }).isNew).toBe(false)
+    const lower = updateBestChain({ length: 4, score: 3 })
+    expect(lower.isNew).toBe(false)
+    // 未刷新时返回的应是仍存的最高纪录，不是本次（低分）结果
+    expect(lower.best).toEqual({ length: 3, score: 5 })
     expect(loadBestChain()).toEqual({ length: 3, score: 5 })
+    localStorage.clear()
+  })
+
+  it('keeps a newest-first run history (capped)', () => {
+    localStorage.clear()
+    expect(loadChainHistory()).toEqual([])
+    recordChainRun({ length: 3, score: 4, at: 100 })
+    recordChainRun({ length: 5, score: 9, at: 200 })
+    recordChainRun({ length: 2, score: 2, at: 300 })
+    expect(loadChainHistory()).toEqual([
+      { length: 2, score: 2, at: 300 },
+      { length: 5, score: 9, at: 200 },
+      { length: 3, score: 4, at: 100 },
+    ])
     localStorage.clear()
   })
 
