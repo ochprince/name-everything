@@ -22,7 +22,8 @@ import trophyPassed from '../../grammar/assets/trophy-passed.svg'
 import { isEnglishWord, loadEnglishWords } from '../lib/englishWord'
 import { useKeyboardOverlapPx, usePinLayoutOnKeyboardDismiss } from '../../../shared/useAppViewportHeight'
 import { KEYBOARD_OVERLAP_LOCK_PX } from '../../../shared/appViewport'
-import { pinLayoutToTop } from '../../../shared/appViewport'
+import { pinLayoutToTop, readKeyboardOverlapPx } from '../../../shared/appViewport'
+import { isEditableTarget } from '../../../shared/keyboardOverlap'
 
 const LETTERS_ONLY = /^[a-z]{2,}$/
 
@@ -79,27 +80,42 @@ export function WordChainPage() {
   const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
   usePinLayoutOnKeyboardDismiss()
 
-  // iOS 聚焦底部输入框会把可视视口整体下移（即使页面锁死不滚文档也会），
-  // 造成上方留白、词链/锚点被顶出视野。键盘弹起期间持续把视口钉回顶部：
-  // 输入框已被垫高到键盘上沿后，钉顶不会再把输入框顶走。
+  // 照抄语法学习输入模式的防顶走逻辑：iOS 聚焦底部输入框会把页面/可视视口
+  // 整体滚上去（窗口 scrollY 或 vv offsetTop），露出输入框的同时把上方内容顶出
+  // 视野。这里不是只在键盘状态变化时钉一次，而是输入框聚焦期间常驻监听——
+  // focusin 先发制人钉顶，之后 window scroll / visualViewport scroll / resize
+  // 任一事件发现偏移或键盘已开就持续钉回，直到失焦。
   useEffect(() => {
-    if (!keyboardOpen) return
-    pinLayoutToTop()
-    const timers = [50, 120, 300, 600].map((ms) =>
-      window.setTimeout(pinLayoutToTop, ms),
-    )
-    const vv = window.visualViewport
-    const onVisualScroll = () => {
-      if (window.visualViewport && window.visualViewport.offsetTop > 0) {
-        pinLayoutToTop()
+    if (phase !== 'play') return
+    const pin = () => pinLayoutToTop()
+    const onFocusIn = (event: FocusEvent) => {
+      if (!isEditableTarget(event.target)) return
+      pin()
+      requestAnimationFrame(pin)
+      window.setTimeout(pin, 50)
+      window.setTimeout(pin, 300)
+    }
+    const onScroll = () => {
+      if (
+        window.scrollY > 0 ||
+        (window.visualViewport?.offsetTop ?? 0) > 0 ||
+        readKeyboardOverlapPx() > KEYBOARD_OVERLAP_LOCK_PX
+      ) {
+        pin()
       }
     }
-    vv?.addEventListener('scroll', onVisualScroll)
+    document.addEventListener('focusin', onFocusIn)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.visualViewport?.addEventListener('scroll', onScroll)
+    window.visualViewport?.addEventListener('resize', onScroll)
     return () => {
-      timers.forEach((id) => window.clearTimeout(id))
-      vv?.removeEventListener('scroll', onVisualScroll)
+      document.removeEventListener('focusin', onFocusIn)
+      window.removeEventListener('scroll', onScroll)
+      window.visualViewport?.removeEventListener('scroll', onScroll)
+      window.visualViewport?.removeEventListener('resize', onScroll)
+      pin()
     }
-  }, [keyboardOpen])
+  }, [phase])
 
   const allPriorityWords = useMemo(
     () => Object.keys(WORD_PRIORITY).filter((w) => LETTERS_ONLY.test(w)),
