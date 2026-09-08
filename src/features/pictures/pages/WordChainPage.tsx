@@ -82,6 +82,7 @@ export function WordChainPage() {
   )
   const [result, setResult] = useState<WordChainBest | null>(null)
   const [isNewBest, setIsNewBest] = useState(false)
+  const [showRules, setShowRules] = useState(false)
   const usedRef = useRef<Set<string>>(new Set())
   const catalogRef = useRef<Set<string>>(new Set())
   const settledRef = useRef(false)
@@ -234,7 +235,16 @@ export function WordChainPage() {
       backTo="/practice/challenge"
       title="词语接龙"
       trailing={
-        best ? (
+        phase === 'ready' ? (
+          <button
+            type="button"
+            onClick={() => setShowRules(true)}
+            aria-label="查看玩法说明"
+            className="inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-day/25 bg-cyc/60 px-2 font-cue text-sm font-semibold tracking-[0.08em] text-day/70 active:brightness-95"
+          >
+            ?
+          </button>
+        ) : best ? (
           <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
             纪录 {best.score} 分
           </p>
@@ -245,96 +255,135 @@ export function WordChainPage() {
 
   if (phase === 'ready') {
     return (
-      <StageShell header={header}>
-        <div className="flex flex-col gap-4 px-1 pt-4">
-          <div className="flex flex-col gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-4 py-4">
-            <p className="text-[10px] font-medium tracking-[0.24em] text-day/50">
-              历史最高
-            </p>
-            {best ? (
-              <>
-                <p className="font-cue text-4xl font-semibold tracking-[0.04em] text-day">
-                  {best.score}
-                  <span className="ml-1.5 text-base font-medium text-day/60">
-                    分
-                  </span>
-                  <span className="ml-3 text-lg font-medium text-day/60">
-                    {best.length} 词
-                  </span>
-                </p>
-                {best.score >= CHAIN_TROPHY_SCORE ? (
-                  <p className="flex items-center gap-1.5 text-sm font-medium tracking-[0.18em] text-gold">
-                    <img src={trophyPassed} alt="" className="h-5 w-5" />
-                    奖杯线 {CHAIN_TROPHY_SCORE} 分已达成
+      <StageShell header={header} lockViewport>
+        <div className="flex min-h-0 flex-1 flex-col gap-3 px-1 pt-3">
+          {/* 第一行：奖杯 + 纪录（右上角只留玩法入口，纪录不再重复） */}
+          <div className="flex flex-none items-center gap-3 rounded-2xl border border-day/15 bg-cyc/40 px-4 py-3">
+            <img
+              src={trophyPassed}
+              alt=""
+              className={`h-10 w-10 flex-none ${
+                best && best.score >= CHAIN_TROPHY_SCORE ? '' : 'opacity-30'
+              }`}
+            />
+            <div className="min-w-0 flex-1">
+              {best ? (
+                <>
+                  <p className="font-cue text-2xl font-semibold tracking-[0.04em] text-day">
+                    {best.score}
+                    <span className="ml-1 text-sm font-medium text-day/55">
+                      分
+                    </span>
+                    <span className="ml-3 text-base font-medium text-day/60">
+                      {best.length} 词
+                    </span>
                   </p>
-                ) : null}
-              </>
-            ) : (
-              <p className="text-base text-day/70">还没有纪录，来一局吧</p>
-            )}
+                  {best.score >= CHAIN_TROPHY_SCORE ? (
+                    <p className="text-xs tracking-[0.18em] text-gold">
+                      奖杯线 {CHAIN_TROPHY_SCORE} 分已达成
+                    </p>
+                  ) : (
+                    <p className="text-xs tracking-[0.1em] text-day/45">
+                      达到 {CHAIN_TROPHY_SCORE} 分点亮奖杯
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-base text-day/70">还没有纪录，来一局吧</p>
+              )}
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-day/15 bg-cyc/40 px-4 py-3">
-            <ul className="flex flex-col gap-2.5 text-sm leading-relaxed tracking-[0.02em] text-day/80">
-              <li className="flex gap-2">
-                <span className="text-gold">●</span>
-                下一个词以上一词结尾字母开头
-              </li>
-              <li className="flex gap-2">
-                <span className="text-gold">●</span>
-                词库里的词 ×2，词库外的真单词也能接
-              </li>
-              <li className="flex gap-2">
-                <span className="text-gold">●</span>
-                每词 10 秒倒计时，超时即结算
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col gap-2">
+          {/* 第二行：历史对局列表（可滚动） */}
+          <div className="flex min-h-0 flex-1 flex-col gap-1.5">
             <p className="px-1 text-[10px] font-medium tracking-[0.24em] text-day/50">
               历史对局
             </p>
             {history.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-day/20 px-4 py-5 text-center text-sm text-day/45">
-                完成一局后，这里会留下纪录
-              </p>
+              <div className="flex min-h-0 flex-1 place-items-center rounded-2xl border border-dashed border-day/20 px-4 py-8">
+                <p className="w-full text-center text-sm text-day/45">
+                  完成一局后，这里会留下纪录
+                </p>
+              </div>
             ) : (
-              <div className="flex flex-col divide-y divide-day/10 rounded-2xl border border-day/15 bg-cyc/40">
-                {history.slice(0, 6).map((run, index) => (
-                  <div
-                    key={`${run.at}-${index}`}
-                    className="flex items-center gap-3 px-4 py-2.5"
-                  >
-                    <p className="font-cue text-lg font-semibold tracking-[0.04em] text-day">
-                      {run.score}
-                      <span className="ml-1 text-sm text-day/55">分</span>
-                    </p>
-                    <p className="text-sm text-day/60">{run.length} 词</p>
-                    {run.score >= CHAIN_TROPHY_SCORE ? (
-                      <img
-                        src={trophyPassed}
-                        alt="奖杯"
-                        className="h-4 w-4 flex-none"
-                      />
-                    ) : null}
-                    <p className="ml-auto flex-none text-xs tracking-[0.08em] text-day/40">
-                      {fmtRunTime(run.at)}
-                    </p>
-                  </div>
-                ))}
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                <div className="flex flex-col divide-y divide-day/10 rounded-2xl border border-day/15 bg-cyc/40">
+                  {history.map((run, index) => (
+                    <div
+                      key={`${run.at}-${index}`}
+                      className="flex items-center gap-3 px-4 py-3"
+                    >
+                      <p className="font-cue text-xl font-semibold tracking-[0.04em] text-day">
+                        {run.score}
+                        <span className="ml-1 text-sm text-day/55">分</span>
+                      </p>
+                      <p className="text-sm text-day/60">{run.length} 词</p>
+                      {run.score >= CHAIN_TROPHY_SCORE ? (
+                        <img
+                          src={trophyPassed}
+                          alt="奖杯"
+                          className="h-4 w-4 flex-none"
+                        />
+                      ) : null}
+                      <p className="ml-auto flex-none text-xs tracking-[0.08em] text-day/40">
+                        {fmtRunTime(run.at)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
+          {/* 第三行：开始游戏 */}
           <button
             type="button"
             onClick={() => void startGame()}
-            className="mt-1 inline-flex min-h-14 w-full items-center justify-center rounded-2xl bg-day px-6 font-cue text-lg font-semibold tracking-[0.1em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 active:brightness-95"
+            className="mt-1 inline-flex min-h-14 w-full flex-none items-center justify-center rounded-2xl bg-day px-6 font-cue text-lg font-semibold tracking-[0.1em] text-cyc transition-[filter] duration-200 ease-out hover:brightness-105 active:brightness-95"
           >
             开始游戏
           </button>
         </div>
+
+        {showRules ? (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="玩法说明"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-cyc/85 px-6"
+          >
+            <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl border border-day/20 bg-cyc px-5 py-5">
+              <p className="text-lg font-semibold tracking-[0.1em] text-day">
+                玩法
+              </p>
+              <ul className="flex flex-col gap-2.5 text-sm leading-relaxed tracking-[0.02em] text-day/80">
+                <li className="flex gap-2">
+                  <span className="text-gold">●</span>
+                  下一个词以上一词结尾字母开头
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-gold">●</span>
+                  词库里的词 ×2，词库外的真单词也能接
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-gold">●</span>
+                  每词 10 秒倒计时，超时即结算
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-gold">●</span>
+                  单局达到 {CHAIN_TROPHY_SCORE} 分点亮奖杯
+                </li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => setShowRules(false)}
+                className="mt-1 inline-flex min-h-11 w-full items-center justify-center rounded-2xl bg-day font-cue text-base font-semibold tracking-[0.1em] text-cyc"
+              >
+                知道了
+              </button>
+            </div>
+          </div>
+        ) : null}
       </StageShell>
     )
   }
