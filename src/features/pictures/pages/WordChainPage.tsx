@@ -92,6 +92,7 @@ export function WordChainPage() {
   const catalogRef = useRef<Set<string>>(new Set())
   const settledRef = useRef(false)
   const startingRef = useRef(false)
+  const lastStartRef = useRef<string | null>(null)
   const listEndRef = useRef<HTMLDivElement>(null)
   const keyboardOverlapPx = useKeyboardOverlapPx()
   const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
@@ -121,12 +122,33 @@ export function WordChainPage() {
       const learned = [
         ...new Set([...progress.strongIds, ...progress.warmIds]),
       ].filter((w) => catalogRef.current.has(w))
-      const candidates =
-        learned.length > 0
-          ? learned
-          : allPriorityWords.filter((w) => catalogRef.current.has(w))
-      const word = pickStartWord(candidates, zipfOf, 3)
+      const learnedSet = new Set(learned)
+      // 起点池：已学词优先；已学太少时补词库高频词，避免每次都从同一个词开始。
+      // （补进来的词未学过也会带图卡中文展示，可顺着学）
+      let startPool: string[]
+      if (learned.length >= 4) {
+        startPool = learned
+      } else if (learned.length > 0) {
+        const extra = allPriorityWords.filter(
+          (w) => catalogRef.current.has(w) && !learnedSet.has(w),
+        )
+        startPool = [...learned, ...extra.slice(0, 6 - learned.length)]
+      } else {
+        startPool = allPriorityWords.filter((w) => catalogRef.current.has(w))
+      }
+      // 随机池取词频前 10；并避免上一局的起点词连续出现
+      const pickTop = Math.min(10, Math.max(3, startPool.length))
+      let word: string | null = null
+      for (let attempt = 0; attempt < 8 && startPool.length > 1; attempt += 1) {
+        const candidate = pickStartWord(startPool, zipfOf, pickTop)
+        if (candidate && candidate !== lastStartRef.current) {
+          word = candidate
+          break
+        }
+      }
+      word = word ?? pickStartWord(startPool, zipfOf, pickTop)
       if (!word) throw new Error('no start word')
+      lastStartRef.current = word
       const card = getPictureWordsByWords([word])[0]
       if (!card) throw new Error('start card missing')
       usedRef.current.add(word)
@@ -265,34 +287,32 @@ export function WordChainPage() {
     return (
       <StageShell header={header} lockViewport>
         <div className="flex min-h-0 flex-1 flex-col gap-3 px-1 pt-3">
-          {/* 第一行：奖杯累计 + 纪录（右上角只留玩法入口，纪录不重复占位） */}
-          <div className="flex flex-none items-center gap-3 rounded-2xl border border-day/15 bg-cyc/40 px-4 py-3">
+          {/* 第一行：奖杯累计 + 纪录（整体左右居中） */}
+          <div className="flex flex-none flex-col items-center gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-4 py-4">
             <img
               src={trophyPassed}
               alt=""
-              className={`h-11 w-11 flex-none ${
+              className={`h-12 w-12 flex-none ${
                 trophyCount > 0 ? '' : 'opacity-30'
               }`}
             />
-            <div className="min-w-0 flex-1">
-              <p className="flex items-baseline gap-2">
-                <span className="font-cue text-3xl font-semibold tracking-[0.04em] text-day">
-                  {trophyCount}
-                </span>
-                <span className="text-sm font-medium tracking-[0.16em] text-gold">
-                  座奖杯
-                </span>
+            <p className="flex items-baseline gap-2">
+              <span className="font-cue text-4xl font-semibold tracking-[0.04em] text-day">
+                {trophyCount}
+              </span>
+              <span className="text-sm font-medium tracking-[0.16em] text-gold">
+                座奖杯
+              </span>
+            </p>
+            {best ? (
+              <p className="text-xs tracking-[0.1em] text-day/50">
+                历史最高 {best.score} 分 · {best.length} 词
               </p>
-              {best ? (
-                <p className="text-xs tracking-[0.1em] text-day/50">
-                  历史最高 {best.score} 分 · {best.length} 词
-                </p>
-              ) : (
-                <p className="text-xs tracking-[0.1em] text-day/45">
-                  单局 {CHAIN_TROPHY_SCORE} 分获得一座，可重复累积
-                </p>
-              )}
-            </div>
+            ) : (
+              <p className="text-xs tracking-[0.1em] text-day/45">
+                单局 {CHAIN_TROPHY_SCORE} 分获得一座，可重复累积
+              </p>
+            )}
           </div>
 
           {/* 第二行：历史对局列表（可滚动） */}
