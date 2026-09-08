@@ -180,12 +180,14 @@ export function WordChainPage() {
     settledRef.current = true
     const length = chain.length
     const total = score
-    const outcome = updateBestChain({ length, score: total })
-    recordChainRun({ length, score: total, at: Date.now() })
+    // 本局结算结果（中间大字只展示这一局，历史最高走右上角 chip）
+    const roundResult: WordChainBest = { length, score: total }
+    const outcome = updateBestChain(roundResult)
+    recordChainRun({ ...roundResult, at: Date.now() })
     setHistory(loadChainHistory())
     setBest(outcome.best)
     setIsNewBest(outcome.isNew)
-    setResult(outcome.best)
+    setResult(roundResult)
     setPhase('done')
   }
 
