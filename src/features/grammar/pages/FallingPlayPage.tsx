@@ -5,11 +5,11 @@ import { StageHeader, StickyStageChrome } from '../../../shared/StageHeader'
 import {
   useKeyboardOverlapPx,
   usePinLayoutOnKeyboardDismiss,
+  usePinViewportWhileEditable,
 } from '../../../shared/useAppViewportHeight'
 import {
   KEYBOARD_OVERLAP_LOCK_PX,
   pinLayoutToTop,
-  readKeyboardOverlapPx,
 } from '../../../shared/appViewport'
 import { isEditableTarget } from '../../../shared/keyboardOverlap'
 import { ReportDialog } from '../components/ReportDialog'
@@ -308,6 +308,10 @@ function FallingBoard({
   // 输入模式：键盘弹出时顶部中文隐藏，中文例句改由 placeholder 轮播提示。
   const keyboardOpen = keyboardOverlapPx > KEYBOARD_OVERLAP_LOCK_PX
   usePinLayoutOnKeyboardDismiss()
+  // iOS 聚焦 produce 输入框会把页面滚上去顶走上方内容；聚焦期间常驻钉顶（共享钩子）。
+  usePinViewportWhileEditable(
+    state?.answerMode === 'produce' && !sentenceResult,
+  )
 
   useEffect(() => {
     // SPA remount after produce can inherit iOS/visualViewport scroll leftovers.
@@ -367,47 +371,6 @@ function FallingBoard({
   useEffect(() => {
     setProduceDraft('')
   }, [state?.sentenceId])
-
-  // iOS focuses the produce field by scrolling the page up. That parks the fall
-  // start above the visible viewport (long wait to see text) and leaves a black
-  // gap after dismiss until the user scrolls back. Keep scroll pinned at top and
-  // let keyboardOverlapPx shrink the board instead.
-  useEffect(() => {
-    if (state?.answerMode !== 'produce' || sentenceResult) return
-
-    const pin = () => pinLayoutToTop()
-
-    const onFocusIn = (event: FocusEvent) => {
-      if (!isEditableTarget(event.target)) return
-      pin()
-      requestAnimationFrame(pin)
-      window.setTimeout(pin, 50)
-      window.setTimeout(pin, 300)
-    }
-
-    const onScroll = () => {
-      if (
-        window.scrollY > 0 ||
-        (window.visualViewport?.offsetTop ?? 0) > 0 ||
-        readKeyboardOverlapPx() > KEYBOARD_OVERLAP_LOCK_PX
-      ) {
-        pin()
-      }
-    }
-
-    document.addEventListener('focusin', onFocusIn)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.visualViewport?.addEventListener('scroll', onScroll)
-    window.visualViewport?.addEventListener('resize', onScroll)
-
-    return () => {
-      document.removeEventListener('focusin', onFocusIn)
-      window.removeEventListener('scroll', onScroll)
-      window.visualViewport?.removeEventListener('scroll', onScroll)
-      window.visualViewport?.removeEventListener('resize', onScroll)
-      pin()
-    }
-  }, [state?.answerMode, state?.sentenceId, sentenceResult])
 
   const triggerLandFail = useCallback(() => {
     if (bottomHandledRef.current || sentenceResultRef.current) return
