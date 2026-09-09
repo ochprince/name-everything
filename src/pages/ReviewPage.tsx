@@ -138,14 +138,9 @@ export function ReviewPage() {
             title="复习"
             trailing={
               total > 0 ? (
-                <div className="flex items-center gap-1.5">
-                  <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
-                    {done} / {total}
-                  </p>
-                  <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
-                    待复习 {remaining}
-                  </p>
-                </div>
+                <p className="whitespace-nowrap text-xs tracking-[0.12em] text-day/70">
+                  {done} / {total}
+                </p>
               ) : undefined
             }
           />

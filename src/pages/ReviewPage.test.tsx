@@ -161,7 +161,7 @@ describe('ReviewPage', () => {
     expect(main?.querySelector('.cyc-wash')).toHaveClass('absolute', 'inset-0')
   })
 
-  it('shows progress badges and the completion gate after clearing the whole queue', async () => {
+  it('shows header progress and the completion gate after clearing the whole queue', async () => {
     const user = userEvent.setup()
     const [first, second] = TEST_PICTURE_CARDS.slice(0, 2)
     saveProgress({
@@ -170,11 +170,10 @@ describe('ReviewPage', () => {
     })
     renderWithProgress(<ReviewPage />)
 
-    // 右上角进度：进入时 0 过关 / 2 待复习
+    // 右上角进度：进入时 0 过关 / 2 待复习（剩余数由标题下 Forgot 计数承担）
     await waitFor(() => {
       expect(screen.getByText('0 / 2')).toBeInTheDocument()
     })
-    expect(screen.getByText('待复习 2')).toBeInTheDocument()
 
     // sheet 模式打开即揭示：直接 Got it 过关第一张 → 1 / 2
     await user.click(screen.getByRole('button', { name: first.sentence }))
@@ -182,7 +181,6 @@ describe('ReviewPage', () => {
     await waitFor(() => {
       expect(screen.getByText('1 / 2')).toBeInTheDocument()
     })
-    expect(screen.getByText('待复习 1')).toBeInTheDocument()
 
     // 过关第二张：完成态 + 继续练习
     await user.click(screen.getByRole('button', { name: 'Got it' }))
