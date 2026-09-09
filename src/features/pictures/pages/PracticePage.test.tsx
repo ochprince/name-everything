@@ -178,7 +178,7 @@ describe('PracticePage', () => {
     expect(screen.queryByRole('button', { name: '继续' })).not.toBeInTheDocument()
   })
 
-  it('shows 先过关再继续 gate with review count when the batch is only forgot', async () => {
+  it('shows 先过关再继续 gate when the batch is only forgot', async () => {
     saveProgress({
       ...defaultProgress(),
       forgotIds: TEST_PICTURE_CARDS.map((c) => c.id),
@@ -188,7 +188,6 @@ describe('PracticePage', () => {
       expect(screen.getByText('先过关，再继续')).toBeInTheDocument()
     })
     expect(screen.getByRole('button', { name: '去复习（12）' })).toBeInTheDocument()
-    expect(screen.getByText('待复习 12')).toBeInTheDocument()
     expect(screen.getByText('0 / 10')).toBeInTheDocument()
   })
 

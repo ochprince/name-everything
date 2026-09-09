@@ -274,16 +274,9 @@ export function PracticePage() {
         title="先过关，再继续"
         subtitle={`本批 ${batchCards.length} 个词：已过关 ${batchStrong} · 待复习 ${batchForgot}。复习过关后会回到练习里，再练一次才算真正掌握。`}
         trailing={
-          <div className="flex items-center gap-1.5">
-            <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
-              {view.gotInSet} / {view.denom}
-            </p>
-            {reviewCount > 0 ? (
-              <p className="inline-flex h-7 items-center rounded-xl bg-day px-2.5 text-sm font-semibold tracking-[0.12em] text-cyc">
-                待复习 {reviewCount}
-              </p>
-            ) : null}
-          </div>
+          <p className="whitespace-nowrap text-xs tracking-[0.12em] text-day/70">
+            {view.gotInSet} / {view.denom}
+          </p>
         }
         action={{
           label: `去复习（${reviewCount}）`,
