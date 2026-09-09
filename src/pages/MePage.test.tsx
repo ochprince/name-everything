@@ -11,9 +11,21 @@ import {
 import { MePage } from './MePage'
 import { subscribeToasts } from '../features/pictures/lib/toast'
 
-vi.mock('../ai/allowance', () => ({
-  isAiAllowed: vi.fn(async () => false),
-}))
+vi.mock('../ai/allowance', () => {
+  const isAiAllowed = vi.fn(async () => false)
+  return {
+    isAiAllowed,
+    checkAiAllowedCached: vi.fn(async () => ({
+      allowed: await isAiAllowed(),
+      ok: true,
+    })),
+    isAiAllowedWithDetail: vi.fn(async () => ({
+      allowed: await isAiAllowed(),
+      ok: true,
+    })),
+    invalidateAiAllowCache: vi.fn(),
+  }
+})
 
 beforeEach(() => {
   localStorage.clear()

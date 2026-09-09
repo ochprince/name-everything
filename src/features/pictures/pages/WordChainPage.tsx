@@ -23,6 +23,7 @@ import {
   type WordChainBest,
   type WordChainRun,
 } from '../lib/wordChain'
+import { ensureChainZh, readCachedZh } from '../lib/chainZh'
 import trophyPassed from '../../grammar/assets/trophy-passed.svg'
 import { isEnglishWord, loadEnglishWords } from '../lib/englishWord'
 import { useKeyboardOverlapPx, usePinLayoutOnKeyboardDismiss, usePinViewportWhileEditable } from '../../../shared/useAppViewportHeight'
@@ -63,6 +64,41 @@ function ChainSummary({ label, value }: { label: string; value: string }) {
       <p className="font-cue text-lg font-semibold tracking-[0.06em] text-day">
         {value}
       </p>
+    </div>
+  )
+}
+
+function ChainWordRow({ row }: { row: ChainRow }) {
+  return (
+    <div className="flex items-center gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-3 py-2">
+      {row.image ? (
+        <img
+          src={row.image}
+          alt=""
+          loading="lazy"
+          className="h-11 w-11 flex-none rounded-xl object-cover"
+        />
+      ) : (
+        <div
+          aria-hidden="true"
+          className="grid h-11 w-11 flex-none place-items-center rounded-xl bg-day/10 font-cue text-lg font-bold tracking-[0.08em] text-day/60"
+        >
+          {row.word[0].toUpperCase()}
+        </div>
+      )}
+      <p className="min-w-0 flex-1 truncate text-lg font-semibold tracking-[0.02em] text-day">
+        {row.word}
+      </p>
+      {row.bonus ? (
+        <span className="flex-none rounded-full border border-gold/40 bg-gold/15 px-2 py-0.5 text-[11px] font-semibold tracking-[0.14em] text-gold">
+          ×2
+        </span>
+      ) : null}
+      {row.zh ? (
+        <p className="max-w-[45%] flex-none truncate text-right text-sm text-day/55">
+          {row.zh}
+        </p>
+      ) : null}
     </div>
   )
 }
@@ -239,6 +275,17 @@ export function WordChainPage() {
       const card = getPictureWordsByWords([check.word])[0]
       image = card?.image ?? null
       zh = card?.zh ?? null
+    } else {
+      // 词库外真词：先读本地缓存（此前查过/离线可用），没有再在线查一次并缓存
+      zh = readCachedZh(check.word)
+      void ensureChainZh(check.word).then((resolved) => {
+        if (!resolved) return
+        setChain((prev) =>
+          prev.map((row) =>
+            row.word === check.word && !row.zh ? { ...row, zh: resolved } : row,
+          ),
+        )
+      })
     }
     setDraft('')
     setMessage(null)
@@ -472,6 +519,11 @@ export function WordChainPage() {
         className="flex min-h-0 flex-1 flex-col gap-3 px-1 pt-3"
         style={keyboardOpen ? { paddingBottom: keyboardOverlapPx } : undefined}
       >
+        {keyboardOpen && chain.length > 0 ? (
+          <div className="flex-none">
+            <ChainWordRow row={chain[chain.length - 1]} />
+          </div>
+        ) : null}
         {keyboardOpen ? null : (
           <div className="flex items-center gap-3">
             <ChainSummary label="当前链" value={`${chain.length} 词`} />
@@ -504,39 +556,7 @@ export function WordChainPage() {
         {keyboardOpen ? null : (
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain">
             {chain.map((row, index) => (
-              <div
-                key={`${row.word}-${index}`}
-                className="flex items-center gap-2 rounded-2xl border border-day/15 bg-cyc/40 px-3 py-2"
-              >
-                {row.image ? (
-                  <img
-                    src={row.image}
-                    alt=""
-                    loading="lazy"
-                    className="h-11 w-11 flex-none rounded-xl object-cover"
-                  />
-                ) : (
-                  <div
-                    aria-hidden="true"
-                    className="grid h-11 w-11 flex-none place-items-center rounded-xl bg-day/10 font-cue text-lg font-bold tracking-[0.08em] text-day/60"
-                  >
-                    {row.word[0].toUpperCase()}
-                  </div>
-                )}
-                <p className="min-w-0 flex-1 truncate text-lg font-semibold tracking-[0.02em] text-day">
-                  {row.word}
-                </p>
-                {row.bonus ? (
-                  <span className="flex-none rounded-full border border-gold/40 bg-gold/15 px-2 py-0.5 text-[11px] font-semibold tracking-[0.14em] text-gold">
-                    ×2
-                  </span>
-                ) : null}
-                {row.zh ? (
-                  <p className="max-w-[45%] flex-none truncate text-right text-sm text-day/55">
-                    {row.zh}
-                  </p>
-                ) : null}
-              </div>
+              <ChainWordRow key={`${row.word}-${index}`} row={row} />
             ))}
             <div ref={listEndRef} />
           </div>

@@ -7,9 +7,21 @@ const removeChannel = vi.fn()
 let broadcastCb: ((msg: { payload: Record<string, unknown> }) => void) | null =
   null
 
-vi.mock('./allowance', () => ({
-  isAiAllowed: vi.fn(async () => true),
-}))
+vi.mock('./allowance', () => {
+  const isAiAllowed = vi.fn(async () => true)
+  return {
+    isAiAllowed,
+    checkAiAllowedCached: vi.fn(async () => ({
+      allowed: await isAiAllowed(),
+      ok: true,
+    })),
+    isAiAllowedWithDetail: vi.fn(async () => ({
+      allowed: await isAiAllowed(),
+      ok: true,
+    })),
+    invalidateAiAllowCache: vi.fn(),
+  }
+})
 
 vi.mock('../lib/supabase', () => ({
   isSupabaseConfigured: vi.fn(() => true),

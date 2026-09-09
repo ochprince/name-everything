@@ -3,9 +3,21 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { DEVICE_ID_STORAGE_KEY } from './deviceId'
 import { DeviceIdRow } from './DeviceIdRow'
 
-vi.mock('./allowance', () => ({
-  isAiAllowed: vi.fn(async () => false),
-}))
+vi.mock('./allowance', () => {
+  const isAiAllowed = vi.fn(async () => false)
+  return {
+    isAiAllowed,
+    checkAiAllowedCached: vi.fn(async () => ({
+      allowed: await isAiAllowed(),
+      ok: true,
+    })),
+    isAiAllowedWithDetail: vi.fn(async () => ({
+      allowed: await isAiAllowed(),
+      ok: true,
+    })),
+    invalidateAiAllowCache: vi.fn(),
+  }
+})
 
 import { isAiAllowed } from './allowance'
 
