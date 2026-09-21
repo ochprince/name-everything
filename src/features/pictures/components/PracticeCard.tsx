@@ -146,6 +146,8 @@ export function PracticeCard({
   const autoSpeakRef = useRef(autoSpeak)
   const cardRef = useRef(card)
   const showZh = hintLang === 'zh' && Boolean(card.zh)
+  // 切到中文提示时，例句也显示中文译文（无译文则回退英文）
+  const sentenceIsZh = showZh && Boolean(card.sentenceZh)
 
   onTimeoutRef.current = onTimeout
   autoSpeakRef.current = autoSpeak
@@ -346,8 +348,14 @@ export function PracticeCard({
                 data-testid="sentence-band"
                 className="cue-raise-late flex w-full shrink-0 items-center gap-2 rounded-2xl bg-day px-3 py-3"
               >
-                <p className="min-w-0 flex-1 text-pretty text-center text-xl font-medium leading-snug tracking-[0.01em] text-cyc">
-                  {card.sentence}
+                <p
+                  className={`min-w-0 flex-1 text-pretty text-center font-medium text-cyc ${
+                    sentenceIsZh
+                      ? 'text-base leading-relaxed'
+                      : 'text-xl leading-snug tracking-[0.01em]'
+                  }`}
+                >
+                  {sentenceIsZh ? card.sentenceZh : card.sentence}
                 </p>
                 <CueSpeaker
                   label="朗读句子"

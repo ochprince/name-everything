@@ -248,6 +248,42 @@ describe('PracticeCard', () => {
     expect(screen.queryByText('cup')).not.toBeInTheDocument()
   })
 
+  it('shows the Chinese example sentence with smaller type when zh is selected', async () => {
+    const { speakFn } = stubSpeech()
+    stubAudio()
+    const user = userEvent.setup()
+    render(
+      <PracticeCard {...props} card={{ ...card, sentenceZh: '这是一个杯子。' }} />,
+    )
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
+    expect(screen.getByTestId('sentence-band')).toHaveTextContent('This is a cup.')
+
+    await user.click(screen.getByRole('radio', { name: 'ZH' }))
+    const band = screen.getByTestId('sentence-band')
+    expect(band).toHaveTextContent('这是一个杯子。')
+    expect(band).not.toHaveTextContent('This is a cup.')
+    expect(screen.getByText('这是一个杯子。').className).toContain('text-base')
+
+    // 朗读按钮始终播放英文原句
+    await user.click(screen.getByRole('button', { name: '朗读句子' }))
+    expect(
+      (speakFn.mock.calls[0][0] as SpeechSynthesisUtterance).text,
+    ).toBe('This is a cup.')
+
+    await user.click(screen.getByRole('radio', { name: 'EN' }))
+    expect(screen.getByTestId('sentence-band')).toHaveTextContent('This is a cup.')
+    expect(screen.getByText('This is a cup.').className).toContain('text-xl')
+  })
+
+  it('keeps the English sentence when the card has no translation', async () => {
+    const user = userEvent.setup()
+    render(<PracticeCard {...props} hintLangDefault="zh" />)
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
+    expect(screen.getByText('杯子')).toBeInTheDocument()
+    expect(screen.getByTestId('sentence-band')).toHaveTextContent('This is a cup.')
+    expect(screen.getByText('This is a cup.').className).toContain('text-xl')
+  })
+
   it('auto-plays the word then the sentence after Aha!', () => {
     vi.useFakeTimers()
     const { speakFn } = stubSpeech()
