@@ -248,6 +248,18 @@ describe('PracticeCard', () => {
     expect(screen.queryByText('cup')).not.toBeInTheDocument()
   })
 
+  it('renders the Chinese meaning in the small size so long entries stay above the photo', async () => {
+    const user = userEvent.setup()
+    const longZh =
+      'v.释放；排放（气体等）；免除（责任、债务等）；放开，松开，使自由移动；发泄（情感）；发布，发行；n.释放'
+    render(<PracticeCard {...props} card={{ ...card, zh: longZh }} />)
+    await user.click(screen.getByRole('button', { name: 'Aha!' }))
+    await user.click(screen.getByRole('radio', { name: 'ZH' }))
+    const meaning = screen.getByText(longZh)
+    expect(meaning.className).toContain('text-base')
+    expect(meaning.className).not.toContain('text-xl')
+  })
+
   it('shows the Chinese example sentence with smaller type when zh is selected', async () => {
     const { speakFn } = stubSpeech()
     stubAudio()

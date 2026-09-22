@@ -315,7 +315,9 @@ export function PracticeCard({
           className="flex min-h-[12.5rem] flex-1 flex-col overflow-y-auto overscroll-contain"
         >
           {revealed ? (
-            <div className="flex min-h-full flex-col justify-center gap-3 py-2">
+            // my-auto（而非 justify-center）：内容超高时自动边距归零，从顶部开始排，
+            // 否则居中会让开头溢出滚动区上沿、永久看不到
+            <div className="my-auto flex w-full flex-col gap-3 py-2">
               <div
                 data-testid="cue-stage"
                 aria-label="提示区"
@@ -327,7 +329,11 @@ export function PracticeCard({
                   className="cue-raise flex min-h-11 w-full items-center justify-center gap-2 text-day"
                 >
                   {showZh ? (
-                    <p className="text-center text-3xl font-semibold tracking-[0.04em]">
+                    // 中文释义可能很长（库内最长 64 字，如 release 有 8 个义项），
+                    // 字号压到 16px（与中文例句同号）：20px 时最长释义要占 4 行、
+                    // 整块撑高后顶到上方图片的下沿，开头被图片阴影压住看不清。
+                    // 16px 下同一个词只要 3 行，且普通词（中位数 12 字）仍是一行。
+                    <p className="w-full text-center text-base font-semibold leading-relaxed tracking-[0.02em]">
                       {card.zh}
                     </p>
                   ) : (

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>probe</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import '/src/index.css'
+      import React from 'react'
+      import { createRoot } from 'react-dom/client'
+      import { PracticeCard } from '/src/features/pictures/components/PracticeCard.tsx'
+
+      const params = new URLSearchParams(location.search)
+      const word = params.get('w') || 'release'
+      const DATA = {
+        release: {
+          zh: 'v.释放；排放（气体等）；免除（责任、债务等）；放开，松开，使自由移动（或飞翔、降落等）；发泄（情感）；发布，发行；  n.释放',
+          sentence: 'The prisoner was released after ten years.',
+          sentenceZh: '那名囚犯十年后获释。',
+        },
+        check: {
+          zh: 'v.检查；阻止；  n.阻碍物；支票（=cheque）；阻止；检查',
+          sentence: 'Let me check if your blood pressure is normal.',
+          sentenceZh: '让我查查你的血压是否正常。',
+        },
+        keep: { zh: 'v.保持', sentence: 'Keep your room clean.', sentenceZh: '保持你的房间干净。' },
+      }
+      const d = DATA[word]
+      const card = {
+        id: word,
+        word,
+        sentence: d.sentence,
+        sentenceZh: params.get('nozh') ? undefined : d.sentenceZh,
+        image: '/images/cards/fallback.svg',
+        imageSource: 'curated',
+        zh: d.zh,
+        tags: [],
+        tier: 'T1',
+      }
+      createRoot(document.getElementById('root')).render(
+        React.createElement(PracticeCard, {
+          card,
+          hintLangDefault: params.get('lang') || 'zh',
+          thinkHoldMs: 100000,
+          onGotIt() {},
+          onForgot() {},
+          onTimeout() {},
+        }),
+      )
+    </script>
+  </body>
+</html>
