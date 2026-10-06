@@ -40,3 +40,6 @@ supabase/backups/*
 
 .worktrees/
 tmp/
+.playwright/
+.playwright-cli/
+output/
